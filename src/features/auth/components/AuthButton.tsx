@@ -6,6 +6,8 @@ import { signIn } from "next-auth/react";
 import Button from "@/shared/components/ui/Button";
 import { ROUTES } from "@/shared/constants/routes";
 import { OAuthProvider } from "../types/oauth";
+import { toast } from "sonner";
+import { OAUTH_ERROR_MESSAGE } from "../constants/message";
 
 type AuthButtonProps = {
   oauth: OAuthProvider;
@@ -25,6 +27,7 @@ const AuthButton = ({ oauth }: AuthButtonProps) => {
         redirectTo: ROUTES.FEED,
       });
     } catch (error) {
+      toast.error(OAUTH_ERROR_MESSAGE);
       console.error("소셜 로그인 실패", error);
     }
   };

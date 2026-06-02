@@ -29,6 +29,18 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   adapter: MongoDBAdapter(clientPromise),
 
   /**
+   * OAuth 인증 중 오류가 발생하면
+   * 홈 페이지로 이동한다.
+   *
+   * 예:
+   * /?error=Configuration
+   * /?error=AccessDenied
+   */
+  pages: {
+    error: "/",
+  },
+
+  /**
    * OAuth 로그인 제공자 목록.
    *
    * 현재는 Google 로그인만 사용한다.
@@ -46,6 +58,19 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
        * OAuth Client Secret.
        */
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+
+      /**
+       * Google OAuth 추가 인증 옵션.
+       *
+       * prompt: "consent"
+       * - 로그인할 때마다 권한 동의 화면을 표시한다.
+       * - 이미 로그인한 계정이어도 재동의를 요청한다.
+       */
+      authorization: {
+        params: {
+          prompt: "consent",
+        },
+      },
     }),
   ],
 });
