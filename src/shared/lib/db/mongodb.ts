@@ -1,34 +1,28 @@
 import { MongoClient } from "mongodb";
 
-/**
- * MongoDB Atlas 연결 문자열.
- */
 const mongodbUri = process.env.MONGODB_URI;
 
-/**
- * MongoDB 연결 정보가 없으면
- * 애플리케이션 실행을 중단한다.
- */
 if (!mongodbUri) {
   throw new Error("MONGODB_URI 환경 변수가 설정되지 않았습니다.");
 }
 
-/**
- * MongoDB Native Driver 클라이언트.
- *
- * NextAuth MongoDB Adapter에서 사용한다.
- */
-const client = new MongoClient(mongodbUri);
+declare global {
+   
+  var mongoClientPromise: Promise<MongoClient> | undefined;
+}
 
 /**
- * MongoDB 연결 Promise.
+ * NextAuth MongoDB Adapter에서 사용하는 MongoDB Native Driver 클라이언트.
  *
- * NextAuth는 MongoClient 인스턴스가 아니라
- * 연결된 Promise 객체를 전달받아 사용한다.
- *
- * 예:
- * MongoDBAdapter(clientPromise)
+ * 개발 환경에서는 Next.js HMR로 인해 모듈이 여러 번 재실행될 수 있다.
+ * 이때 MongoClient를 매번 새로 만들면 Atlas 연결 수가 불필요하게 증가할 수 있으므로
+ * globalThis에 connect promise를 캐싱해 재사용한다.
  */
-const clientPromise = client.connect();
+const clientPromise =
+  globalThis.mongoClientPromise ?? new MongoClient(mongodbUri).connect();
+
+if (process.env.NODE_ENV !== "production") {
+  globalThis.mongoClientPromise = clientPromise;
+}
 
 export default clientPromise;
