@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import QueryProvider from "@/shared/providers/QueryProvider";
+import AppToaster from "@/shared/components/ui/Toaster";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -33,6 +34,7 @@ export default function RootLayout({
           <div className="mx-auto flex min-h-screen max-w-2xl xl:max-w-6xl">
             {children}
           </div>
+          <AppToaster />
         </QueryProvider>
       </body>
     </html>
