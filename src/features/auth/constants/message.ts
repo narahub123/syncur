@@ -44,3 +44,25 @@ export const OAUTH_ERROR_MESSAGE_MAP: Record<string, string> = {
    */
   Default: "로그인 중 문제가 발생했습니다. 잠시 후 다시 시도해주세요.",
 };
+
+/**
+ * 앱 내부 라우팅 및 접근 제어 에러 코드별 사용자 메시지.
+ *
+ * 사용 예:
+ * /?appError=LoginRequired
+ *
+ * OAuth 인증 에러가 아닌
+ * 애플리케이션 내부 정책에 의해 발생한 에러를 처리한다.
+ */
+export const APP_ERROR_MESSAGE_MAP: Record<string, string> = {
+  /**
+   * 로그인하지 않은 사용자가
+   * 인증이 필요한 페이지에 접근한 경우.
+   */
+  LoginRequired: "로그인이 필요합니다.",
+
+  /**
+   * 정의되지 않은 앱 에러가 발생한 경우.
+   */
+  Default: "요청을 처리할 수 없습니다. 잠시 후 다시 시도해주세요.",
+};
