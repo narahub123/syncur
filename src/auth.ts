@@ -1,24 +1,51 @@
 import NextAuth from "next-auth";
 import Google from "next-auth/providers/google";
+import { MongoDBAdapter } from "@auth/mongodb-adapter";
+
+import clientPromise from "@/shared/lib/db/mongodb";
 
 /**
  * NextAuth v5 인증 설정.
  *
  * export 항목:
  * - handlers: 인증 API Route Handler에서 사용
- * - auth: 서버에서 현재 세션 조회
+ * - auth: 서버 컴포넌트에서 현재 세션 조회
  * - signIn: Server Action에서 로그인 실행
  * - signOut: Server Action에서 로그아웃 실행
  */
 export const { handlers, auth, signIn, signOut } = NextAuth({
+  /**
+   * 인증 관련 데이터를 MongoDB에 저장한다.
+   *
+   * 저장 대상:
+   * - User
+   * - Account
+   * - Session
+   * - VerificationToken
+   *
+   * OAuth 로그인 시 필요한 사용자 정보를
+   * MongoDB에 자동으로 생성 및 관리한다.
+   */
+  adapter: MongoDBAdapter(clientPromise),
+
+  /**
+   * OAuth 로그인 제공자 목록.
+   *
+   * 현재는 Google 로그인만 사용한다.
+   */
   providers: [
     Google({
+      /**
+       * Google Cloud Console에서 발급받은
+       * OAuth Client ID.
+       */
       clientId: process.env.GOOGLE_CLIENT_ID,
+
+      /**
+       * Google Cloud Console에서 발급받은
+       * OAuth Client Secret.
+       */
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
     }),
   ],
-
-  session: {
-    strategy: "jwt",
-  },
 });
