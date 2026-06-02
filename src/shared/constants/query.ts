@@ -19,3 +19,21 @@ export const QUERY_PARAM = {
   QUERY: "query", // 검색어
   PERIOD: "period", // 인기글 기간
 } as const;
+
+/**
+ * TanStack Query 기본 설정값
+ */
+export const QUERY_CONFIG = {
+  /**
+   * 데이터를 1분 동안 최신 상태로 간주한다.
+   *
+   * stale 상태가 되기 전까지는
+   * 네트워크 재요청을 하지 않는다.
+   */
+  STALE_TIME: 1000 * 60,
+
+  /**
+   * 요청 실패 시 재시도 횟수
+   */
+  RETRY_COUNT: 1,
+} as const;
