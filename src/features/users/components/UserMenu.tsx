@@ -25,11 +25,7 @@ const UserMenu = () => {
   }
 
   return (
-    <button
-      className="m-2 flex cursor-pointer items-center gap-2"
-      type="button"
-      title="프로필 열기"
-    >
+    <div className="m-2 flex cursor-pointer items-center gap-2">
       {data?.user?.image && (
         <UserAvatar
           src={data.user.image}
@@ -44,7 +40,7 @@ const UserMenu = () => {
 
         <p className="truncate text-left text-gray-400">{data?.user?.email}</p>
       </div>
-    </button>
+    </div>
   );
 };
 
