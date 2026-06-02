@@ -25,11 +25,15 @@ export default function RootLayout({
 }>) {
   return (
     <html
-      lang="en"
+      lang="ko"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="flex min-h-full flex-col">
-        <QueryProvider>{children}</QueryProvider>
+      <body>
+        <QueryProvider>
+          <div className="mx-auto flex min-h-screen max-w-2xl xl:max-w-6xl">
+            {children}
+          </div>
+        </QueryProvider>
       </body>
     </html>
   );
