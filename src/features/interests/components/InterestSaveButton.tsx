@@ -10,7 +10,7 @@ import { SAVE_USER_INTERESTS_ERROR_MESSAGE } from "../constants/interest-selecti
 type InterestSaveButtonProps = {
   disabled: boolean;
   selectedInterests: Interest[];
-  onClose: () => void;
+  onClose?: () => void;
 };
 
 const InterestSaveButton = ({
@@ -40,7 +40,9 @@ const InterestSaveButton = ({
 
       toast.success("관심사가 저장되었습니다.");
 
-      onClose();
+      if (onClose) {
+        onClose();
+      }
     } catch (error) {
       console.error("[InterestSaveButton] 관심사 저장 실패", error);
       toast.error(SAVE_USER_INTERESTS_ERROR_MESSAGE);

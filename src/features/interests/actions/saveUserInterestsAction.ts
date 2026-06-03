@@ -51,7 +51,7 @@ export async function saveUserInterestsAction({
   const categoryIds = selectedCategoryIds ?? [];
   const interestIds = selectedInterestIds ?? [];
 
-  const totalSelectedCount = categoryIds.length + interestIds.length;
+  const totalSelectedCount = interestIds.length;
 
   if (totalSelectedCount < MIN_INTEREST_COUNT) {
     return {

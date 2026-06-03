@@ -33,3 +33,17 @@ export async function updateUserInterestProfile({
     { upsert: true },
   );
 }
+
+/**
+ * 이메일로 사용자 관심사 프로필을 조회한다.
+ *
+ * 사용 위치:
+ * - 설정 페이지에서 현재 사용자가 저장한 관심사를 표시할 때 사용한다.
+ *
+ * 주의:
+ * - 관심사 선택을 완료하지 않은 사용자는
+ *   관심사 프로필이 없을 수 있으므로 null을 반환할 수 있다.
+ */
+export const findUserInterestProfileByEmail = async (userEmail: string) => {
+  return UserInterestProfile.findOne({ userEmail }).lean();
+};

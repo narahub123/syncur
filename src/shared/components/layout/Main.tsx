@@ -1,12 +1,16 @@
+import { cn } from "@/shared/utils/cn";
 import { ReactNode } from "react";
 
 type MainProps = {
   children: ReactNode;
+  className?: string;
 };
 
-const Main = ({ children }: MainProps) => {
+const Main = ({ className, children }: MainProps) => {
   return (
-    <main className="min-w-0 flex-1 border-x border-gray-100">{children}</main>
+    <main className={cn("min-w-0 flex-1 border-x border-gray-100", className)}>
+      {children}
+    </main>
   );
 };
 
