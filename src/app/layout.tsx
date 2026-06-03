@@ -4,6 +4,7 @@ import "./globals.css";
 import QueryProvider from "@/shared/providers/QueryProvider";
 import AppToaster from "@/shared/components/ui/Toaster";
 import SessionProvider from "@/shared/providers/SessionProvider";
+import ThemeProvider from "@/shared/providers/ThemeProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -29,13 +30,16 @@ export default function RootLayout({
     <html
       lang="ko"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      suppressHydrationWarning
     >
       <body>
         <SessionProvider>
           <QueryProvider>
-            <div className="mx-auto flex min-h-screen max-w-2xl xl:max-w-6xl">
-              {children}
-            </div>
+            <ThemeProvider>
+              <div className="mx-auto flex min-h-screen max-w-2xl xl:max-w-6xl">
+                {children}
+              </div>
+            </ThemeProvider>
             <AppToaster />
           </QueryProvider>
         </SessionProvider>
