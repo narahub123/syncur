@@ -16,6 +16,7 @@ export const ROUTES = {
   SETTINGS: "/settings",
   SETTINGS_PROFILE: "/settings/profile",
   SETTINGS_INTERESTS: "/settings/interests",
+  SETTINGS_APPEARANCE: "/settings/appearance",
 
   SUBSCRIPTIONS: "/subscriptions",
   LIKES: "/likes",

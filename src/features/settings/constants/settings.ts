@@ -3,8 +3,13 @@ import { SettingsMenuItemType } from "../types/settings";
 
 export const SETTINGS_LIST: SettingsMenuItemType[] = [
   {
-    category: "",
+    category: "interests",
     label: "관심사",
     href: ROUTES.SETTINGS_INTERESTS,
+  },
+  {
+    category: "appearance",
+    label: "화면 설정",
+    href: ROUTES.SETTINGS_APPEARANCE,
   },
 ];
