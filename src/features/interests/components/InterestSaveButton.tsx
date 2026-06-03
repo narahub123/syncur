@@ -2,31 +2,48 @@ import Button from "@/shared/components/ui/Button";
 import { Interest } from "../types/interests";
 import { useState } from "react";
 import { LoaderCircle } from "lucide-react";
+import { saveUserInterestsAction } from "../actions/saveUserInterestsAction";
+import { getCategoryIdsByInterestIds } from "../lib/getCategoriesByInterests";
+import { toast } from "sonner";
+import { SAVE_USER_INTERESTS_ERROR_MESSAGE } from "../constants/interest-selection-modal";
 
-// 저장 후 창을 닫는다면 onClose도 전달받아야 함
 type InterestSaveButtonProps = {
   disabled: boolean;
   selectedInterests: Interest[];
+  onClose: () => void;
 };
 
 const InterestSaveButton = ({
   disabled,
   selectedInterests,
+  onClose,
 }: InterestSaveButtonProps) => {
   const [isFetching, setIsFetching] = useState(false);
 
   const handleClick = async () => {
-    /**
-     * 중복 클릭 방지
-     */
     if (isFetching) return;
 
     try {
       setIsFetching(true);
 
-      // TODO: 관심사 저장 API 호출
+      const interestIds = selectedInterests.map((interest) => interest.id);
+
+      const result = await saveUserInterestsAction({
+        selectedCategoryIds: getCategoryIdsByInterestIds(interestIds),
+        selectedInterestIds: interestIds,
+      });
+
+      if (!result.ok) {
+        toast.error(result.message);
+        return;
+      }
+
+      toast.success("관심사가 저장되었습니다.");
+
+      onClose();
     } catch (error) {
       console.error("[InterestSaveButton] 관심사 저장 실패", error);
+      toast.error(SAVE_USER_INTERESTS_ERROR_MESSAGE);
     } finally {
       setIsFetching(false);
     }
@@ -45,7 +62,7 @@ const InterestSaveButton = ({
       {isFetching ? (
         <>
           <LoaderCircle
-            size={12}
+            size={16}
             className="animate-spin"
             /**
              * 장식용 아이콘이므로 스크린 리더에서 제외한다.

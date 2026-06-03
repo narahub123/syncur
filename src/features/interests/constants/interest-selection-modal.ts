@@ -8,8 +8,11 @@ ${MIN_INTEREST_COUNT}개 이상, 최대 ${MAX_INTEREST_COUNT}개까지 선택할
 } as const;
 
 export const INTEREST_MODAL_ERROR_MESSAGE = {
-  EXCEED: `관심사는 ${MAX_INTEREST_COUNT}개 이상 선택할 수 없습니다.`,
+  EXCEED: `관심사는 최대 ${MAX_INTEREST_COUNT}개까지 선택할 수 있습니다.`,
   INSUFFICIENT: `관심사를 ${MIN_INTEREST_COUNT}개 이상 선택해주세요.`,
 };
 
 export type InterestModalErrorCode = keyof typeof INTEREST_MODAL_ERROR_MESSAGE;
+
+export const SAVE_USER_INTERESTS_ERROR_MESSAGE =
+  "관심사 저장에 실패했습니다. 잠시 후 다시 시도해주세요.";

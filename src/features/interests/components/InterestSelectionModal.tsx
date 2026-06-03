@@ -82,6 +82,7 @@ const InterestSelectionModal = ({
           <InterestSaveButton
             disabled={selectedInterests.length < MIN_INTEREST_COUNT}
             selectedInterests={selectedInterests}
+            onClose={onClose}
           />
         </Modal.Footer>
       </Modal.Content>
