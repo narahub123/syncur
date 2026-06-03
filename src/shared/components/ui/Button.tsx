@@ -22,7 +22,7 @@ const buttonVariants: Record<ButtonVariant, string> = {
   danger: "bg-red-500 text-white hover:bg-red-600",
 
   outline:
-    "border border-gray-300 bg-transparent text-gray-900 hover:bg-gray-100",
+    "border border-gray-300 bg-transparent text-gray-900 hover:bg-muted/50",
 
   ghost: "bg-transparent text-gray-900 hover:bg-gray-100",
 
