@@ -7,7 +7,7 @@ type Props = {
 };
 
 const ModalDescription = ({ className: _className, children }: Props) => {
-  const className = cn("mt-2 text-gray-600", _className);
+  const className = cn("mt-2 text-gray-600 whitespace-pre-line", _className);
   return <p className={className}>{children}</p>;
 };
 

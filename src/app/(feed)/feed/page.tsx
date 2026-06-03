@@ -1,5 +1,7 @@
+import FeedClient from "@/features/feeds/components/FeedClient";
+
 const FeedPage = () => {
-  return <div>피드 페이지</div>;
+  return <FeedClient />;
 };
 
 export default FeedPage;

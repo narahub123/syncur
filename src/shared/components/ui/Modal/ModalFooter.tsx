@@ -6,10 +6,12 @@ type Props = {
   className?: string;
 };
 
-const ModalFooter = ({ className: _className, children }: Props) => {
-  const className = cn("mt-6 flex justify-end gap-2", _className);
-
-  return <div className={className}>{children}</div>;
+const ModalFooter = ({ className, children }: Props) => {
+  return (
+    <div className={cn("mt-6 flex justify-end gap-2", className)}>
+      {children}
+    </div>
+  );
 };
 
 export default ModalFooter;
