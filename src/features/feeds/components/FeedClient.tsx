@@ -3,8 +3,13 @@
 import InterestSelectionModal from "@/features/interests/components/InterestSelectionModal";
 import { useState } from "react";
 
-const FeedClient = () => {
-  const [isOpen, setIsOpen] = useState(true);
+type FeedClientProps = {
+  isFirstLogin: boolean;
+};
+
+const FeedClient = ({ isFirstLogin }: FeedClientProps) => {
+  const [isOpen, setIsOpen] = useState(isFirstLogin);
+
   return (
     <div>
       <InterestSelectionModal open={isOpen} onClose={() => setIsOpen(false)} />

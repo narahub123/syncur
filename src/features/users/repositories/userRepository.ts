@@ -27,3 +27,17 @@ export async function completeInterestOnboarding({
     },
   );
 }
+
+/**
+ * 이메일로 사용자 정보를 조회한다.
+ *
+ * 사용 목적:
+ * - 현재 로그인한 사용자의 온보딩 완료 여부 확인
+ * - 사용자별 데이터 조회의 기준점 확보
+ *
+ * @param email NextAuth session.user.email
+ * @returns 조회된 사용자 문서. 없으면 null
+ */
+export async function findUserByEmail(email: string) {
+  return User.findOne({ email });
+}
