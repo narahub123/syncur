@@ -1,8 +1,12 @@
+import { NativeInputProps } from "@/shared/types/element-props";
 import React from "react";
 
 export type InputSize = "sm" | "md" | "lg";
 
-export type InputProps = {
+export type InputProps = Omit<
+  NativeInputProps,
+  "onChange" | "onFocus" | "onBlur"
+> & {
   value?: string;
   defaultValue?: string;
   onChange?: (value: string) => void;

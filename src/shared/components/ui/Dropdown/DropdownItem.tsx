@@ -4,12 +4,13 @@ import { ButtonHTMLAttributes } from "react";
 import { useDropdown } from "./DropdownRoot";
 import { cn } from "@/shared/utils/cn";
 
-type Props = ButtonHTMLAttributes<HTMLButtonElement>;
+type Props = { active?: boolean } & ButtonHTMLAttributes<HTMLButtonElement>;
 
 const DropdownItem = ({
+  active,
   children,
   onClick,
-  className: _className,
+  className,
   ...props
 }: Props) => {
   const { close } = useDropdown();
@@ -21,7 +22,8 @@ const DropdownItem = ({
       className={cn(
         "text-card-foreground w-full cursor-pointer rounded-sm px-3 py-2 text-left text-sm",
         "hover:bg-muted focus-visible:bg-muted focus-visible:ring-primary focus-visible:ring-2 focus-visible:outline-none",
-        _className,
+        active ? "bg-muted" : "",
+        className,
       )}
       {...props}
       onClick={(event) => {

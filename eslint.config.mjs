@@ -16,6 +16,7 @@ const eslintConfig = defineConfig([
           caughtErrorsIgnorePattern: "^_",
         },
       ],
+      "react-hooks/refs": "off",
     },
   },
 

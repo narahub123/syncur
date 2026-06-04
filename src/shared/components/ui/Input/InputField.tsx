@@ -9,7 +9,7 @@ import { useState } from "react";
 import { InputIcon } from "./InputIcon";
 
 type Props = InputProps & {
-  onValueChange?: (value: string) => void;
+  inputRef?: React.Ref<HTMLInputElement>;
 };
 
 export const InputField = ({
@@ -21,7 +21,8 @@ export const InputField = ({
   rightIcon,
   inputClassName,
   wrapperClassName,
-  onValueChange,
+  inputRef,
+  onChange,
   ...rest
 }: Props) => {
   /**
@@ -66,8 +67,9 @@ export const InputField = ({
         {leftIcon && <InputIcon position="left">{leftIcon}</InputIcon>}
 
         <InputBase
+          ref={inputRef}
           {...rest}
-          onValueChange={onValueChange}
+          onValueChange={onChange}
           /**
            * focus safety
            * - disabled 상태에서는 focus 의미 제거
