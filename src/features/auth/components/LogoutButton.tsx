@@ -1,6 +1,6 @@
 "use client";
 
-import Button from "@/shared/components/ui/Button";
+import { Button } from "@/shared/components/ui/button";
 import { ROUTES } from "@/shared/constants/routes";
 import { signOut } from "next-auth/react";
 

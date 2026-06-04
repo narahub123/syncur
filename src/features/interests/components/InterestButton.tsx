@@ -1,4 +1,4 @@
-import Button from "@/shared/components/ui/Button";
+import { Button } from "@/shared/components/ui/button";
 import { Interest } from "../types/interests";
 import { cn } from "@/shared/utils/cn";
 

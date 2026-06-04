@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { signIn } from "next-auth/react";
 
-import Button from "@/shared/components/ui/Button";
+import { Button } from "@/shared/components/ui/button";
 import { ROUTES } from "@/shared/constants/routes";
 import { OAuthProvider } from "../types/oauth";
 import { toast } from "sonner";

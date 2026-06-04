@@ -1,7 +1,7 @@
 "use client";
 
-import Button from "@/shared/components/ui/Button";
-import { Combobox } from "@/shared/components/ui/ComboBox";
+import { Button } from "@/shared/components/ui/button";
+import { Combobox } from "@/shared/components/ui/combobox";
 import { Dropdown } from "@/shared/components/ui/Dropdown";
 import { Input } from "@/shared/components/ui/Input/Input";
 import { Modal } from "@/shared/components/ui/Modal";
@@ -31,15 +31,6 @@ const TestClient = () => {
           </p>
         </header>
 
-        <section>
-          <Combobox
-            options={options}
-            placeholder="과일 선택"
-            onChange={(value) => {
-              setValue(value);
-            }}
-          />
-        </section>
         <section className="bg-card border-border rounded-lg border p-4">
           <h2 className="text-card-foreground font-semibold">Card 테스트</h2>
 
@@ -79,10 +70,6 @@ const TestClient = () => {
         <br />
 
         <section className="space-y-3">
-          <Button disabled={false} variant="danger">
-            Primary Button
-          </Button>
-
           <input
             type="text"
             placeholder="포커스 스타일 확인"

@@ -85,7 +85,6 @@ const DropdownContent = ({ children }: Props) => {
         style={floatingStyles}
         role="menu"
         aria-label="드롭다운 메뉴"
-        aria-modal="true"
         onKeyDown={handleKeyDown}
         className="border-border bg-card text-card-foreground z-50 min-w-30 rounded-md border shadow-lg"
       >

@@ -2,7 +2,7 @@
 
 import { Moon, Sun } from "lucide-react";
 import { useTheme } from "@/features/settings/apperance/theme/hooks/useTheme";
-import Button from "../ui/Button";
+import { Button } from "../ui/button";
 
 export const ThemeToggle = () => {
   const { resolvedTheme, setTheme, mounted } = useTheme();
