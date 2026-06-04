@@ -5,6 +5,7 @@ import ModalHeader from "./ModalHeader";
 import ModalRoot from "./ModalRoot";
 import ModalTitle from "./ModalTitle";
 import ModalClose from "./ModalClose";
+import ModalMain from "./ModalMain";
 
 export const Modal = {
   Root: ModalRoot,
@@ -12,6 +13,7 @@ export const Modal = {
   Header: ModalHeader,
   Title: ModalTitle,
   Description: ModalDescription,
+  Main: ModalMain,
   Footer: ModalFooter,
   Close: ModalClose,
 };

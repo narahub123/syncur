@@ -1,14 +1,25 @@
 import { cn } from "@/shared/utils/cn";
 import { ReactNode } from "react";
+import { useModal } from "./ModalRoot";
 
 type Props = {
   children: ReactNode;
   className?: string;
 };
 
-const ModalDescription = ({ className: _className, children }: Props) => {
-  const className = cn("mt-2 text-gray-600 whitespace-pre-line", _className);
-  return <p className={className}>{children}</p>;
+const ModalDescription = ({ className, children }: Props) => {
+  const { descriptionId } = useModal();
+  return (
+    <p
+      className={cn(
+        "text-muted-foreground mt-2 text-sm whitespace-pre-line",
+        className,
+      )}
+      id={descriptionId}
+    >
+      {children}
+    </p>
+  );
 };
 
 export default ModalDescription;

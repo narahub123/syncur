@@ -19,7 +19,7 @@ const FOCUSABLE_SELECTOR = `
 `;
 
 const ModalContent = ({ className, children }: Props) => {
-  const { onClose } = useModal();
+  const { onClose, titleId, descriptionId } = useModal();
   const dialogRef = useRef<HTMLDivElement>(null);
 
   /**
@@ -105,15 +105,17 @@ const ModalContent = ({ className, children }: Props) => {
 
   return (
     <>
-      <div onClick={onClose} className="absolute inset-0 bg-black/50" />
+      <div onClick={onClose} className="bg-overlay absolute inset-0" />
 
       <div
         ref={dialogRef}
         role="dialog"
         aria-modal="true"
+        aria-labelledby={titleId}
+        aria-describedby={descriptionId}
         tabIndex={-1}
         className={cn(
-          "relative z-10 w-full max-w-xl rounded-lg bg-white p-6 shadow-lg",
+          "bg-card text-card-foreground border-border relative z-10 w-full max-w-xl rounded-lg border p-6 shadow-lg",
           className,
         )}
       >

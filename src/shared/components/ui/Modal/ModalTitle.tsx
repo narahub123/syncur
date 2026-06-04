@@ -6,9 +6,12 @@ type Props = {
   className?: string;
 };
 
-const ModalTitle = ({ className: _className, children }: Props) => {
-  const className = cn("text-lg font-bold", _className);
-  return <h2 className={className}>{children}</h2>;
+const ModalTitle = ({ className, children }: Props) => {
+  return (
+    <h2 className={cn("text-card-foreground text-lg font-semibold", className)}>
+      {children}
+    </h2>
+  );
 };
 
 export default ModalTitle;

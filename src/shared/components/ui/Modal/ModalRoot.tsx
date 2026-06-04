@@ -1,10 +1,12 @@
 "use client";
 
-import { createContext, ReactNode, useContext, useEffect } from "react";
+import { createContext, ReactNode, useContext, useEffect, useId } from "react";
 
 type ModalContextType = {
   open: boolean;
   onClose: () => void;
+  titleId: string;
+  descriptionId: string;
 };
 
 const ModalContext = createContext<ModalContextType | null>(null);
@@ -26,6 +28,8 @@ type Props = {
 };
 
 const ModalRoot = ({ open, onClose, children }: Props) => {
+  const baseId = useId();
+
   useEffect(() => {
     if (!open) return;
 
@@ -42,15 +46,16 @@ const ModalRoot = ({ open, onClose, children }: Props) => {
     };
   }, [open, onClose]);
 
+  const value = {
+    open,
+    onClose,
+    titleId: `${baseId}-title`,
+    descriptionId: `${baseId}-description`,
+  };
   if (!open) return null;
 
   return (
-    <ModalContext.Provider
-      value={{
-        open,
-        onClose,
-      }}
-    >
+    <ModalContext.Provider value={value}>
       <div className="fixed inset-0 z-50 flex items-center justify-center">
         {children}
       </div>
