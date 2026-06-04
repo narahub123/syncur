@@ -1,6 +1,7 @@
 "use client";
 
 import InterestSelectionModal from "@/features/interests/components/InterestSelectionModal";
+import SiteSubscriptionForm from "@/features/subscriptions/components/SiteSubscriptionForm";
 import { useState } from "react";
 
 type FeedClientProps = {
@@ -13,6 +14,9 @@ const FeedClient = ({ isFirstLogin }: FeedClientProps) => {
   return (
     <div>
       <InterestSelectionModal open={isOpen} onClose={() => setIsOpen(false)} />
+      <section className="p-4">
+        <SiteSubscriptionForm />
+      </section>
     </div>
   );
 };
