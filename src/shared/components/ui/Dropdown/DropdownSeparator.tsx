@@ -1,5 +1,5 @@
 const DropdownSeparator = () => {
-  return <div className="h-px bg-gray-200" />;
+  return <div className="bg-border h-px" role="separator" />;
 };
 
 export default DropdownSeparator;

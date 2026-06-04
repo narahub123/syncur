@@ -1,6 +1,8 @@
 "use client";
 
 import Button from "@/shared/components/ui/Button";
+import { Dropdown } from "@/shared/components/ui/Dropdown";
+import DropdownTrigger from "@/shared/components/ui/Dropdown/DropdownTrigger";
 import { Modal } from "@/shared/components/ui/Modal";
 import { useState } from "react";
 
@@ -27,6 +29,7 @@ const TestClient = () => {
           </p>
         </section>
         <Button onClick={() => setIsOpen(true)}>모달 열기</Button>
+
         <Modal.Root open={isOpen} onClose={onClose}>
           <Modal.Content>
             <Modal.Close>닫기</Modal.Close>
@@ -38,6 +41,14 @@ const TestClient = () => {
             <Modal.Footer>푸터</Modal.Footer>
           </Modal.Content>
         </Modal.Root>
+
+        <Dropdown.Root>
+          <Dropdown.Trigger>드롭다운 열기</Dropdown.Trigger>
+          <Dropdown.Content>
+            <Dropdown.Item>먼가</Dropdown.Item>
+            <Dropdown.Separator />
+          </Dropdown.Content>
+        </Dropdown.Root>
 
         <section className="space-y-3">
           <Button disabled={false} variant="danger">

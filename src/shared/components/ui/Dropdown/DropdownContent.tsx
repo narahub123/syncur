@@ -73,7 +73,7 @@ const DropdownContent = ({ children }: Props) => {
         type="button"
         tabIndex={-1}
         aria-label="드롭다운 닫기"
-        className="fixed inset-0 z-40"
+        className="bg-overlay fixed inset-0 z-40"
         onClick={close}
       />
 
@@ -84,8 +84,10 @@ const DropdownContent = ({ children }: Props) => {
         }}
         style={floatingStyles}
         role="menu"
+        aria-label="드롭다운 메뉴"
+        aria-modal="true"
         onKeyDown={handleKeyDown}
-        className="z-50 min-w-30 rounded-md border bg-white shadow-lg"
+        className="border-border bg-card text-card-foreground z-50 min-w-30 rounded-md border shadow-lg"
       >
         {children}
       </div>

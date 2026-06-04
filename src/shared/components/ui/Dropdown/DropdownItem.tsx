@@ -14,16 +14,15 @@ const DropdownItem = ({
 }: Props) => {
   const { close } = useDropdown();
 
-  const className = cn(
-    "w-full rounded-sm px-3 py-2 text-left text-sm hover:bg-gray-100 cursor-pointer",
-    _className,
-  );
-
   return (
     <button
       type="button"
       role="menuitem"
-      className={className}
+      className={cn(
+        "text-card-foreground w-full cursor-pointer rounded-sm px-3 py-2 text-left text-sm",
+        "hover:bg-muted focus-visible:bg-muted focus-visible:ring-primary focus-visible:ring-2 focus-visible:outline-none",
+        _className,
+      )}
       {...props}
       onClick={(event) => {
         onClick?.(event);
