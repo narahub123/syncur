@@ -6,6 +6,7 @@ import { InputLabel } from "./InputLabel";
 import { InputHelperText } from "./InputHelperText";
 import { cn } from "@/shared/utils/cn";
 import { useState } from "react";
+import { InputIcon } from "./InputIcon";
 
 type Props = InputProps & {
   onValueChange?: (value: string) => void;
@@ -62,7 +63,7 @@ export const InputField = ({
        * Input Container
        * ========================= */}
       <div className="input-container">
-        {leftIcon && <div className="input-icon left">{leftIcon}</div>}
+        {leftIcon && <InputIcon position="left">{leftIcon}</InputIcon>}
 
         <InputBase
           {...rest}
@@ -102,7 +103,11 @@ export const InputField = ({
           )}
         />
 
-        {rightIcon && <div className="input-icon right">{rightIcon}</div>}
+        {rightIcon && (
+          <InputIcon position="right" variant="interactive">
+            {rightIcon}
+          </InputIcon>
+        )}
       </div>
 
       {/* =========================

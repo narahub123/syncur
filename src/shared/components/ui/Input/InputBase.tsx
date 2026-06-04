@@ -1,9 +1,13 @@
 "use client";
 
 import { InputProps } from "./input.types";
-import { INPUT_SIZE_MAP } from "./input.constants";
+import { cn } from "@/shared/utils/cn";
 
 type Props = InputProps & {
+  /**
+   * value 변경을 string 단위로 추상화한 handler
+   * (native event 대신 design system 레벨 API)
+   */
   onValueChange?: (value: string) => void;
 };
 
@@ -20,8 +24,6 @@ export const InputBase = ({
   onFocus,
   onBlur,
 }: Props) => {
-  const sizeStyle = INPUT_SIZE_MAP[size];
-
   return (
     <input
       type={type}
@@ -33,20 +35,7 @@ export const InputBase = ({
       onFocus={onFocus}
       onBlur={onBlur}
       onChange={(e) => onValueChange?.(e.target.value)}
-      className={inputClassName}
-      style={{
-        height: sizeStyle.height,
-        fontSize: sizeStyle.fontSize,
-        paddingLeft: sizeStyle.paddingX,
-        paddingRight: sizeStyle.paddingX,
-        background: "var(--input-bg)",
-        color: "var(--input-text)",
-        border: "1px solid var(--input-border)",
-        borderRadius: "8px",
-        outline: "none",
-        width: "100%",
-        transition: "all 150ms ease",
-      }}
+      className={cn("input", inputClassName, `input--${size}`)}
     />
   );
 };

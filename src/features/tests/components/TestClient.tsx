@@ -3,7 +3,9 @@
 import Button from "@/shared/components/ui/Button";
 import { Dropdown } from "@/shared/components/ui/Dropdown";
 import { Input } from "@/shared/components/ui/Input/Input";
+import { InputIcon } from "@/shared/components/ui/Input/InputIcon";
 import { Modal } from "@/shared/components/ui/Modal";
+import { Search } from "lucide-react";
 import { useState } from "react";
 
 const TestClient = () => {
@@ -42,7 +44,7 @@ const TestClient = () => {
           </Modal.Content>
         </Modal.Root>
 
-        <Input placeholder="뭐더라?" type="email" error={true} />
+        <Input placeholder="뭐더라?" error={true} leftIcon={<Search />} />
 
         <Dropdown.Root>
           <Dropdown.Trigger>드롭다운 열기</Dropdown.Trigger>

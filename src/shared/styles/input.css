@@ -5,11 +5,11 @@
 /* =====================================================
  * Input State Priority Rules (CRITICAL)
  * =====================================================
-
- * 우선순위:
+ *
+ * 상태 우선순위 규칙
  * disabled > error > focus > hover > readOnly > default
  *
- * 모든 상태 충돌은 이 규칙을 따른다
+ * 모든 상태 충돌은 이 우선순위를 기준으로 해석한다
  */
 
 /* =========================
@@ -18,16 +18,27 @@
 
 /**
  * Input 기본 스타일 레이어
- * - 모든 상태의 기준
- * - CSS variable 기반 디자인 시스템
+ *
+ * 역할:
+ * - 모든 상태의 기준 스타일
+ * - design system의 foundation layer
+ *
+ * 특징:
+ * - layout (padding, width)
+ * - visual (border, bg, color)
+ * - transition 포함
  */
 .input {
   padding-left: 12px;
   padding-right: 12px;
 
   border: 1px solid var(--input-border);
+  border-radius: 8px;
+
   background: var(--input-bg);
   color: var(--input-text);
+
+  width: 100%;
 
   transition:
     border-color 120ms ease,
@@ -39,31 +50,32 @@
  * ========================= */
 
 /**
- * Hover 상태
- * - 가장 약한 interaction state
+ * Hover state
+ * - 가장 약한 interaction feedback
  */
 .input:hover {
   border-color: var(--input-border-hover);
 }
 
 /**
- * Focus 상태
- * - 사용자 interaction 핵심 상태
+ * Focus state
+ * - keyboard / mouse interaction 핵심 상태
  */
 .input--focus {
   border-color: var(--input-border-focus);
 }
 
 /**
- * Focus ring (accessibility + UX)
+ * Focus ring (accessibility)
+ * - focus visibility 강화
  */
 .input--focus:focus-visible {
   box-shadow: 0 0 0 2px var(--input-focus-ring);
 }
 
 /**
- * Error 상태
- * - validation 실패 상태
+ * Error state
+ * - validation failure 상태
  * - focus보다 항상 우선
  */
 .input--error {
@@ -71,15 +83,15 @@
 }
 
 /**
- * Error + Focus 충돌 처리
- * - error가 focus를 override
+ * Error + Focus conflict resolution
+ * - error가 focus보다 우선 적용됨
  */
 .input--error:focus-visible {
   box-shadow: 0 0 0 2px color-mix(in srgb, var(--input-error), transparent 70%);
 }
 
 /**
- * Disabled 상태 (최우선 override)
+ * Disabled state (highest priority)
  * - 모든 interaction 차단
  */
 .input--disabled {
@@ -91,6 +103,10 @@
   background: var(--input-bg);
 }
 
+/**
+ * Disabled override safety
+ * - hover / focus 어떤 상태도 무력화
+ */
 .input--disabled:hover,
 .input--disabled:focus,
 .input--disabled:focus-visible {
@@ -99,8 +115,9 @@
 }
 
 /**
- * Readonly 상태
+ * Readonly state
  * - 입력 불가지만 interaction은 유지
+ * - disabled와 의미적으로 다름
  */
 .input--readonly {
   background: var(--input-bg);
@@ -108,9 +125,9 @@
 }
 
 /**
- * Filled 상태
- * - value 존재 여부 (UX tracking)
- * - visual 변화 최소
+ * Filled state
+ * - value 존재 여부 tracking용
+ * - UI 변화는 최소화
  */
 .input--filled {
   /* intentionally empty */
@@ -122,7 +139,7 @@
 
 /**
  * Input wrapper
- * - label / input / helper vertical 구조
+ * - label / input / helper text vertical layout
  */
 .input-wrapper {
   display: flex;
@@ -131,7 +148,8 @@
 
 /**
  * Input container
- * - icon positioning 기준 영역
+ * - icon positioning context
+ * - relative positioning 기준점
  */
 .input-container {
   display: flex;
@@ -146,6 +164,7 @@
 /**
  * Input icon base
  * - 좌/우 icon 공통 스타일
+ * - absolute positioning 기반
  */
 .input-icon {
   position: absolute;
@@ -173,29 +192,127 @@
  * ========================= */
 
 /**
- * Left icon 존재 시 padding 보정
+ * Left icon 존재 시 input padding 보정
+ * - icon overlap 방지
  */
 .input.has-left-icon {
   padding-left: 36px;
 }
 
 /**
- * Right icon 존재 시 padding 보정
+ * Right icon 존재 시 input padding 보정
  */
 .input.has-right-icon {
   padding-right: 36px;
 }
 
 /* =========================
- * Disabled Override Safety
+ * Input Icon Variants
  * ========================= */
 
 /**
- * disabled는 모든 hover/focus 상태를 무력화
+ * default icon tone
  */
-.input--disabled:hover,
-.input--disabled:focus,
-.input--disabled:focus-visible {
-  border-color: var(--input-border);
-  box-shadow: none;
+.input-icon--default {
+  color: var(--input-icon);
+}
+
+/**
+ * muted icon tone
+ * - secondary / less emphasis
+ */
+.input-icon--muted {
+  color: var(--muted-foreground);
+  opacity: 0.7;
+}
+
+/**
+ * interactive icon
+ * - clickable icon (e.g. password toggle)
+ */
+.input-icon--interactive {
+  cursor: pointer;
+  transition: opacity 120ms ease;
+}
+
+.input-icon--interactive:hover {
+  opacity: 0.8;
+}
+
+/* =========================
+ * Input Icon Sizes
+ * ========================= */
+
+/**
+ * icon size system
+ * - svg 기반 icon size control
+ */
+
+/* small icon */
+.input-icon--sm svg {
+  width: 14px;
+  height: 14px;
+}
+
+/* medium icon (default) */
+.input-icon--md svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* =========================
+ * Size System (Input)
+ * ========================= */
+
+/**
+ * input size system
+ * - height / font-size / padding control
+ */
+.input--sm {
+  height: 32px;
+  font-size: 12px;
+  padding-left: 8px;
+  padding-right: 8px;
+}
+
+.input--md {
+  height: 40px;
+  font-size: 14px;
+  padding-left: 12px;
+  padding-right: 12px;
+}
+
+.input--lg {
+  height: 48px;
+  font-size: 16px;
+  padding-left: 14px;
+  padding-right: 14px;
+}
+
+/**
+ * size + icon combination override
+ * - icon 존재 시 padding 재조정
+ */
+.input.has-left-icon.input--sm {
+  padding-left: 32px;
+}
+
+.input.has-left-icon.input--md {
+  padding-left: 36px;
+}
+
+.input.has-left-icon.input--lg {
+  padding-left: 40px;
+}
+
+.input.has-right-icon.input--sm {
+  padding-right: 32px;
+}
+
+.input.has-right-icon.input--md {
+  padding-right: 36px;
+}
+
+.input.has-right-icon.input--lg {
+  padding-right: 40px;
 }
