@@ -2,7 +2,7 @@
 
 import Button from "@/shared/components/ui/Button";
 import { Dropdown } from "@/shared/components/ui/Dropdown";
-import DropdownTrigger from "@/shared/components/ui/Dropdown/DropdownTrigger";
+import { Input } from "@/shared/components/ui/Input/Input";
 import { Modal } from "@/shared/components/ui/Modal";
 import { useState } from "react";
 
@@ -42,6 +42,8 @@ const TestClient = () => {
           </Modal.Content>
         </Modal.Root>
 
+        <Input placeholder="뭐더라?" type="email" error={true} />
+
         <Dropdown.Root>
           <Dropdown.Trigger>드롭다운 열기</Dropdown.Trigger>
           <Dropdown.Content>
@@ -49,6 +51,7 @@ const TestClient = () => {
             <Dropdown.Separator />
           </Dropdown.Content>
         </Dropdown.Root>
+        <br />
 
         <section className="space-y-3">
           <Button disabled={false} variant="danger">

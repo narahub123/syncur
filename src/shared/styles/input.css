@@ -1,0 +1,201 @@
+/* =====================================================
+ * Input System (Design System Base Component)
+ * ===================================================== */
+
+/* =====================================================
+ * Input State Priority Rules (CRITICAL)
+ * =====================================================
+
+ * 우선순위:
+ * disabled > error > focus > hover > readOnly > default
+ *
+ * 모든 상태 충돌은 이 규칙을 따른다
+ */
+
+/* =========================
+ * Base Input Styles
+ * ========================= */
+
+/**
+ * Input 기본 스타일 레이어
+ * - 모든 상태의 기준
+ * - CSS variable 기반 디자인 시스템
+ */
+.input {
+  padding-left: 12px;
+  padding-right: 12px;
+
+  border: 1px solid var(--input-border);
+  background: var(--input-bg);
+  color: var(--input-text);
+
+  transition:
+    border-color 120ms ease,
+    box-shadow 120ms ease;
+}
+
+/* =========================
+ * Interaction States
+ * ========================= */
+
+/**
+ * Hover 상태
+ * - 가장 약한 interaction state
+ */
+.input:hover {
+  border-color: var(--input-border-hover);
+}
+
+/**
+ * Focus 상태
+ * - 사용자 interaction 핵심 상태
+ */
+.input--focus {
+  border-color: var(--input-border-focus);
+}
+
+/**
+ * Focus ring (accessibility + UX)
+ */
+.input--focus:focus-visible {
+  box-shadow: 0 0 0 2px var(--input-focus-ring);
+}
+
+/**
+ * Error 상태
+ * - validation 실패 상태
+ * - focus보다 항상 우선
+ */
+.input--error {
+  border-color: var(--input-error);
+}
+
+/**
+ * Error + Focus 충돌 처리
+ * - error가 focus를 override
+ */
+.input--error:focus-visible {
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--input-error), transparent 70%);
+}
+
+/**
+ * Disabled 상태 (최우선 override)
+ * - 모든 interaction 차단
+ */
+.input--disabled {
+  opacity: var(--input-disabled-opacity);
+  cursor: not-allowed;
+  pointer-events: none;
+
+  border-color: var(--input-border);
+  background: var(--input-bg);
+}
+
+.input--disabled:hover,
+.input--disabled:focus,
+.input--disabled:focus-visible {
+  border-color: var(--input-border);
+  box-shadow: none;
+}
+
+/**
+ * Readonly 상태
+ * - 입력 불가지만 interaction은 유지
+ */
+.input--readonly {
+  background: var(--input-bg);
+  cursor: default;
+}
+
+/**
+ * Filled 상태
+ * - value 존재 여부 (UX tracking)
+ * - visual 변화 최소
+ */
+.input--filled {
+  /* intentionally empty */
+}
+
+/* =========================
+ * Layout System
+ * ========================= */
+
+/**
+ * Input wrapper
+ * - label / input / helper vertical 구조
+ */
+.input-wrapper {
+  display: flex;
+  flex-direction: column;
+}
+
+/**
+ * Input container
+ * - icon positioning 기준 영역
+ */
+.input-container {
+  display: flex;
+  align-items: center;
+  position: relative;
+}
+
+/* =========================
+ * Icon System
+ * ========================= */
+
+/**
+ * Input icon base
+ * - 좌/우 icon 공통 스타일
+ */
+.input-icon {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--input-icon);
+}
+
+/**
+ * Left icon position
+ */
+.input-icon.left {
+  left: 10px;
+}
+
+/**
+ * Right icon position
+ */
+.input-icon.right {
+  right: 10px;
+}
+
+/* =========================
+ * Icon Spacing Adjustments
+ * ========================= */
+
+/**
+ * Left icon 존재 시 padding 보정
+ */
+.input.has-left-icon {
+  padding-left: 36px;
+}
+
+/**
+ * Right icon 존재 시 padding 보정
+ */
+.input.has-right-icon {
+  padding-right: 36px;
+}
+
+/* =========================
+ * Disabled Override Safety
+ * ========================= */
+
+/**
+ * disabled는 모든 hover/focus 상태를 무력화
+ */
+.input--disabled:hover,
+.input--disabled:focus,
+.input--disabled:focus-visible {
+  border-color: var(--input-border);
+  box-shadow: none;
+}
