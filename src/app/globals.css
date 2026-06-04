@@ -90,6 +90,22 @@ body {
 }
 
 *:focus-visible {
-  outline: 2px solid var(--ring);
-  outline-offset: 2px;
+  outline: none;
+
+  /* 
+   * focus ring을 outline 대신 box-shadow로 구현하는 이유
+   *
+   * 1. border/outline처럼 요소 바깥으로 떨어지지 않고
+   *    요소의 border-radius(shape)를 그대로 따라감
+   *
+   * 2. outline-offset처럼 "이격"이 생기지 않아
+   *    디자인 시스템에서 원하는 밀착된 focus 상태 구현 가능
+   *
+   * 3. 레이아웃에 영향을 주지 않으면서도
+   *    시각적으로 명확한 focus 상태 제공 (no layout shift)
+   *
+   * 4. 다양한 컴포넌트(button, input, card 등)에
+   *    동일한 방식으로 일관된 focus 스타일 적용 가능
+   */
+  box-shadow: 0 0 0 2px var(--ring);
 }

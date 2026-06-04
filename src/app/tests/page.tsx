@@ -1,3 +1,5 @@
+import Button from "@/shared/components/ui/Button";
+
 export default function ThemeTestPage() {
   return (
     <main className="bg-background text-foreground min-h-screen p-8">
@@ -18,12 +20,9 @@ export default function ThemeTestPage() {
         </section>
 
         <section className="space-y-3">
-          <button
-            type="button"
-            className="bg-primary text-primary-foreground rounded-md px-4 py-2"
-          >
+          <Button disabled={false} variant="danger">
             Primary Button
-          </button>
+          </Button>
 
           <input
             type="text"

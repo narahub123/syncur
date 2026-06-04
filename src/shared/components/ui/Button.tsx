@@ -15,18 +15,22 @@ type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
 };
 
 const buttonVariants: Record<ButtonVariant, string> = {
-  primary: "bg-blue-500 text-white hover:bg-blue-600",
+  primary:
+    "bg-primary text-primary-foreground hover:bg-primary-hover active:bg-primary-active focus-visible:ring-primary",
 
-  secondary: "bg-gray-200 text-gray-900 hover:bg-gray-300",
+  secondary:
+    "bg-muted text-foreground hover:bg-muted/80 focus-visible:[--ring:var(--color-muted-foreground)]",
 
-  danger: "bg-red-500 text-white hover:bg-red-600",
+  danger:
+    "bg-red-400 text-white hover:bg-red-600 focus-visible:[--ring:#ef4444]",
 
   outline:
-    "border border-gray-300 bg-transparent text-gray-900 hover:bg-muted/50",
+    "border border-border bg-transparent text-foreground hover:bg-muted/50 focus-visible:ring-primary",
 
-  ghost: "bg-transparent text-gray-900 hover:bg-gray-100",
+  ghost:
+    "bg-transparent text-foreground hover:bg-muted focus-visible:ring-muted-foreground",
 
-  link: "bg-transparent p-0 text-blue-500 underline-offset-4 hover:underline",
+  link: "text-primary underline-offset-4 hover:underline focus-visible:ring-primary",
 };
 
 const Button = ({
@@ -39,7 +43,7 @@ const Button = ({
     <button
       {...props}
       className={cn(
-        "cursor-pointer rounded-lg px-3 py-2 transition-colors disabled:pointer-events-none disabled:opacity-50",
+        "cursor-pointer rounded-lg px-3 py-2 transition-colors focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50",
         buttonVariants[variant],
         variant === "link" && "rounded-none px-0 py-0",
         className,
