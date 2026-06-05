@@ -1,9 +1,9 @@
 "use client";
 
-import { SiteSearchDto } from "@/features/rss/site/dto/siteDto";
+import { SiteContextDTO } from "@/features/rss/site/dto/siteDto";
 
 type SiteAvatarProps = {
-  site: SiteSearchDto;
+  site: SiteContextDTO;
 };
 
 const SiteAvatar = ({ site }: SiteAvatarProps) => {

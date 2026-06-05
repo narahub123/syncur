@@ -18,8 +18,8 @@ export async function subscribeController() {
     /**
      * CASE 1: 이미 DB site 존재
      */
-    if (selectedSite?._id) {
-      const result = await subscribeAction(selectedSite._id);
+    if (selectedSite?.siteId) {
+      const result = await subscribeAction(selectedSite.siteId);
 
       if (result.status === "already_subscribed") {
         useFeedDiscoveryStore.getState().setAlreadySubscribed();

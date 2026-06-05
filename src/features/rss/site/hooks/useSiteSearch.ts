@@ -1,4 +1,4 @@
-import { searchSiteAction } from "@/features/subscriptions/actions/searchSiteAction";
+import { searchSiteAction } from "@/features/rss/site/actions/searchSiteAction";
 import { useQuery } from "@tanstack/react-query";
 
 export const useSiteSearch = (query: string) => {

@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import type { SiteSearchDto } from "@/features/rss/site/dto/siteDto";
+import type { SiteContextDTO } from "@/features/rss/site/dto/siteDto";
 import { UIState } from "../types/feed-discovery";
 
 /**
@@ -32,13 +32,13 @@ type FeedDiscoveryState = {
   /**
    * 사이트 검색 결과 (combobox suggestion 목록)
    */
-  siteOptions: SiteSearchDto[];
+  siteOptions: SiteContextDTO[];
 
   /**
    * 사용자가 선택한 사이트
    * - 없으면 null (직접 입력 상태 포함)
    */
-  selectedSite: SiteSearchDto | null;
+  selectedSite: SiteContextDTO | null;
 
   /* =========================
    * ACTIONS (UI ONLY)
@@ -54,14 +54,14 @@ type FeedDiscoveryState = {
    * 사이트 검색 결과 반영
    * - TanStack Query or hook에서 받은 결과를 store에 반영
    */
-  setSiteOptions: (options: SiteSearchDto[]) => void;
+  setSiteOptions: (options: SiteContextDTO[]) => void;
 
   /**
    * 사이트 선택 처리
    * - combobox에서 선택된 site 반영
    * - input 값 동기화
    */
-  selectSite: (site: SiteSearchDto) => void;
+  selectSite: (site: SiteContextDTO) => void;
 
   /**
    * 구독 진행 상태로 전환

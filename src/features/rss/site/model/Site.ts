@@ -1,5 +1,5 @@
 import { Schema, model, models } from "mongoose";
-import { Site } from "../../../../shared/types/site";
+import { Site } from "@/shared/types/site";
 
 const siteSchema = new Schema<Site>(
   {
@@ -56,8 +56,6 @@ const siteSchema = new Schema<Site>(
      */
     feed_url: {
       type: String,
-      unique: true,
-      sparse: true,
       default: null,
       trim: true,
     },

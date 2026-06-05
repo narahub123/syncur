@@ -45,6 +45,6 @@ SubscriptionSchema.index({ userId: 1, siteId: 1 }, { unique: true });
 /**
  * Model export (hot reload 대응)
  */
-export const Subscription =
+export const SubscriptionModel =
   mongoose.models.Subscription ||
   mongoose.model<SubscriptionDocument>("Subscription", SubscriptionSchema);

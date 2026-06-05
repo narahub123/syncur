@@ -1,4 +1,5 @@
-import { Subscription } from "../model/Subscription";
+import type { Subscription } from "@/shared/types/subacription";
+import { SubscriptionModel } from "../model/Subscription";
 
 /**
  * SubscriptionRepository
@@ -22,7 +23,7 @@ export class SubscriptionRepository {
    * @returns Subscription | null
    */
   async find(userId: string, siteId: string) {
-    const doc = await Subscription.findOne({
+    const doc = await SubscriptionModel.findOne({
       userId,
       siteId,
     }).lean();
@@ -43,7 +44,7 @@ export class SubscriptionRepository {
    * @returns 생성된 Subscription
    */
   async create(userId: string, siteId: string) {
-    const doc = await Subscription.create({
+    const doc = await SubscriptionModel.create({
       userId,
       siteId,
     });
@@ -55,5 +56,13 @@ export class SubscriptionRepository {
       createdAt: doc.createdAt?.toISOString(),
       updatedAt: doc.updatedAt?.toISOString(),
     };
+  }
+
+  /**
+   * 특정 사용자의 모든 구독 정보를 조회한다.
+   * (Context Lookup에서 batch 매핑용)
+   */
+  async findByUserId(userId: string): Promise<Subscription[]> {
+    return SubscriptionModel.find({ userId }).lean();
   }
 }

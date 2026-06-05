@@ -37,7 +37,7 @@ export async function parseAndNormalizeFeed(xml: string): Promise<FeedItem[]> {
     return normalizeAtom(Array.isArray(entry) ? entry : [entry]);
   }
 
-  throw new Error("UNSUPPORTED_FEED_FORMAT");
+  return [];
 }
 
 /**

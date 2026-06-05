@@ -8,9 +8,9 @@ import {
   ComboboxList,
 } from "@/shared/components/ui/combobox";
 
-import { Check, LoaderCircle, X } from "lucide-react";
+import { Check, Circle, LoaderCircle, X } from "lucide-react";
 import SiteAvatar from "./SiteAvatar";
-import { SiteSearchDto } from "@/features/rss/site/dto/siteDto";
+import { SiteContextDTO } from "@/features/rss/site/dto/siteDto";
 
 type SiteComboboxProps = {
   /**
@@ -21,7 +21,7 @@ type SiteComboboxProps = {
    * - server action 또는 React Query에서 가져온 결과
    * - 순수하게 "표시만" 담당
    */
-  options: SiteSearchDto[];
+  options: SiteContextDTO[];
 
   /**
    * 사용자가 입력한 검색어를 외부로 전달하는 트리거
@@ -40,7 +40,7 @@ type SiteComboboxProps = {
    * - UI는 선택만 전달
    * - 실제 상태 변경 / discovery / subscribe는 외부에서 처리
    */
-  onSelect: (site: SiteSearchDto) => void;
+  onSelect: (site: SiteContextDTO) => void;
 
   /**
    * 입력값 (controlled input)
@@ -121,7 +121,7 @@ const SiteCombobox = ({
               options.length > 0 &&
               options.map((site) => (
                 <ComboboxItem
-                  key={site._id}
+                  key={site.siteId}
                   value={site.url}
                   onClick={() => {
                     /**
@@ -146,11 +146,16 @@ const SiteCombobox = ({
                     <span
                       className=""
                       aria-hidden="true"
-                      title={`구독 ${site.feed_url ? "가능" : "불가"}`}
+                      title={`구독 ${site.canSubscribe ? "가능" : "불가"}`}
                     >
-                      {site.feed_url ? (
+                      {site.canSubscribe && site.isSubscribed ? (
                         <div className="flex items-center gap-1 text-xs text-blue-400">
                           <span>구독 가능</span>
+                          <Circle />
+                        </div>
+                      ) : site.canSubscribe && !site.isSubscribed ? (
+                        <div className="flex items-center gap-1 text-xs text-blue-400">
+                          <span>구독중</span>
                           <Check />
                         </div>
                       ) : (

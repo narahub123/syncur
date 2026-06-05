@@ -20,7 +20,7 @@ const SubscribeButton = ({ isFetching }: { isFetching: boolean }) => {
    * - 로딩 아님
    */
   const isDisabled =
-    isLoading || (!!selectedSite && !selectedSite.feed_url) || !inputValue;
+    isLoading || (!!selectedSite && !selectedSite.canSubscribe) || !inputValue;
 
   const handleClick = async () => {
     if (isDisabled) return;

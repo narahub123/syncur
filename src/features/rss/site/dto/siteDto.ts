@@ -32,3 +32,14 @@ export type CreateSiteDto = {
   favicon_url: string | null;
   feed_url: string | null;
 };
+
+export type SiteContextDTO = {
+  siteId: string;
+  url: string;
+  name: string;
+  favicon_url: string | null;
+
+  rssAvailable: boolean;
+  isSubscribed: boolean;
+  canSubscribe: boolean;
+};

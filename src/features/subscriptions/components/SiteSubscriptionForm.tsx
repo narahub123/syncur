@@ -7,6 +7,7 @@ import StatusIndicator from "./StatusIndicator";
 import { useFeedDiscoveryStore } from "../store/feedDiscovery";
 
 import { useSiteSearch } from "@/features/rss/site/hooks/useSiteSearch";
+import { useDebounce } from "@/shared/hooks/useDebounce";
 
 const SiteSubscriptionForm = () => {
   const selectSite = useFeedDiscoveryStore((s) => s.selectSite);
@@ -14,7 +15,9 @@ const SiteSubscriptionForm = () => {
   const inputValue = useFeedDiscoveryStore((s) => s.inputValue);
   const setInputValue = useFeedDiscoveryStore((s) => s.setInputValue);
 
-  const { data: options, isFetching } = useSiteSearch(inputValue);
+  const debouncedInput = useDebounce(inputValue, 300);
+
+  const { data: options, isFetching } = useSiteSearch(debouncedInput);
 
   return (
     <div className="space-y-4 rounded-xl border border-gray-200 p-4">

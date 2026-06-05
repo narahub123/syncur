@@ -2,6 +2,8 @@ import { Site } from "@/shared/types/site";
 import { SITE_SEARCH_LIMIT } from "../constants/site";
 import { SiteModel } from "../model/Site";
 import { CreateSiteDto } from "../dto/siteDto";
+import { escapeRegExp } from "@/shared/utils/regex";
+import { SiteDiscoveryResult } from "../../discovery";
 
 /**
  * Site Repository
@@ -42,5 +44,63 @@ export class SiteRepository {
   async create(data: CreateSiteDto): Promise<Site> {
     const doc = await SiteModel.create(data);
     return doc.toObject();
+  }
+
+  /**
+   * normalizedUrl 기준으로 site 후보 검색
+   * (debounce 기반 검색 대응 → 여러 결과 가능)
+   */
+  async search(normalizedUrl: string): Promise<Site[]> {
+    return SiteModel.find({
+      url: {
+        $regex: escapeRegExp(normalizedUrl),
+        $options: "i",
+      },
+    }).lean();
+  }
+
+  /**
+   * Site upsert (create or update)
+   *
+   * @param discovered - RSS discovery 결과
+   */
+  async upsert(discovered: SiteDiscoveryResult): Promise<Site> {
+    const { url, name, favicon_url, feed_url } = discovered;
+
+    /**
+     * 핵심 기준:
+     * - url (normalizedUrl) 기준으로 unique 처리
+     */
+    return await SiteModel.findOneAndUpdate(
+      { url }, // match condition
+
+      /**
+       * update payload
+       * - discovery 결과를 그대로 반영
+       */
+      {
+        $set: {
+          url,
+          name,
+          favicon_url,
+          feed_url,
+        },
+      },
+
+      /**
+       * options
+       *
+       * upsert: true
+       * - 없으면 생성
+       * - 있으면 업데이트
+       *
+       * returnDocument: "after"
+       * - 업데이트된 최신 document 반환
+       */
+      {
+        upsert: true,
+        returnDocument: "after",
+      },
+    );
   }
 }
