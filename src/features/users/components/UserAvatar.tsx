@@ -1,7 +1,7 @@
+import { NativeImageProps } from "@/shared/types/element-props";
 import { cn } from "@/shared/utils/cn";
-import Image, { ImageProps } from "next/image";
 
-type UserAvatarProps = ImageProps;
+type UserAvatarProps = NativeImageProps;
 
 const UserAvatar = ({
   src,
@@ -12,7 +12,7 @@ const UserAvatar = ({
   ...props
 }: UserAvatarProps) => {
   return (
-    <Image
+    <img
       src={src}
       alt={alt}
       width={width}

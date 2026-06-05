@@ -3,7 +3,6 @@
 import {
   Combobox,
   ComboboxContent,
-  ComboboxEmpty,
   ComboboxInput,
   ComboboxItem,
   ComboboxList,
@@ -11,8 +10,7 @@ import {
 
 import { Check, LoaderCircle, X } from "lucide-react";
 import SiteAvatar from "./SiteAvatar";
-import { SiteSearchDto } from "@/features/rss/site/dto/search-site";
-import { useFeedDiscoveryStore } from "../store/feedDiscovery";
+import { SiteSearchDto } from "@/features/rss/site/dto/siteDto";
 
 type SiteComboboxProps = {
   /**
@@ -72,8 +70,6 @@ const SiteCombobox = ({
   setInputValue,
   isLoading,
 }: SiteComboboxProps) => {
-  const uiState = useFeedDiscoveryStore((s) => s.uiState);
-
   const isEmpty = !inputValue && options.length === 0;
   /**
    * Combobox는 view layer
@@ -145,14 +141,24 @@ const SiteCombobox = ({
                   <div className="flex w-full items-center justify-between">
                     <div className="flex flex-1 items-center gap-2">
                       <SiteAvatar site={site} />
-                      <span>{site.name}</span>
+                      <span className="text-xs">{site.name}</span>
                     </div>
                     <span
                       className=""
                       aria-hidden="true"
                       title={`구독 ${site.feed_url ? "가능" : "불가"}`}
                     >
-                      {site.feed_url ? <Check /> : <X />}
+                      {site.feed_url ? (
+                        <div className="flex items-center gap-1 text-xs text-blue-400">
+                          <span>구독 가능</span>
+                          <Check />
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-1 text-xs text-red-400">
+                          <span>구독 불가</span>
+                          <X />
+                        </div>
+                      )}
                     </span>
                   </div>
                 </ComboboxItem>

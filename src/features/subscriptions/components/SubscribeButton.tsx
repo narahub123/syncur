@@ -4,9 +4,12 @@ import { Button } from "@/shared/components/ui/button";
 import { useFeedDiscoveryStore } from "../store/feedDiscovery";
 import { LoaderCircle } from "lucide-react";
 import { FEED_STATUS_A11Y } from "../constants/feed-discovery";
+import { subscribeController } from "../controllers/subscribeController";
 
 const SubscribeButton = ({ isFetching }: { isFetching: boolean }) => {
   const uiState = useFeedDiscoveryStore((s) => s.uiState);
+  const selectedSite = useFeedDiscoveryStore((s) => s.selectedSite);
+  const inputValue = useFeedDiscoveryStore((s) => s.inputValue);
 
   const isLoading = uiState === "subscribing" || isFetching;
 
@@ -16,19 +19,14 @@ const SubscribeButton = ({ isFetching }: { isFetching: boolean }) => {
    * - feed_found 상태
    * - 로딩 아님
    */
-  const isDisabled = isLoading;
+  const isDisabled =
+    isLoading || (!!selectedSite && !selectedSite.feed_url) || !inputValue;
 
   const handleClick = async () => {
     if (isDisabled) return;
 
     try {
-      /**
-       * TODO: 실제 API 연결
-       * await subscribeFeed(feed)
-       */
-
-      // 성공 시
-      useFeedDiscoveryStore.getState().setSubscribed();
+      await subscribeController();
     } catch (e) {
       useFeedDiscoveryStore.getState().setError("subscribe failed");
       console.error("구독 실패", e);

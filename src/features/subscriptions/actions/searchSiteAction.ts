@@ -1,9 +1,9 @@
 "use server";
 
 import { SITE_SEARCH_RESULT_LIMIT } from "@/features/rss/site/constants/site";
-import { SiteRepository } from "@/features/rss/site/repository/siteRepository";
-import { SiteSearchService } from "@/features/rss/site/service/stieService";
-import { SiteSearchDto } from "@/features/rss/site/dto/search-site";
+import { siteRepository } from "@/features/rss/site/repository/SiteRepository.instance";
+import { siteService } from "@/features/rss/site/service/SiteService.instance";
+import { SiteSearchDto } from "@/features/rss/site/dto/siteDto";
 
 /**
  * Site 검색 Server Action
@@ -35,12 +35,10 @@ export async function searchSiteAction(query: string) {
 
   try {
     // 1. DB에서 Site 목록 조회 (Repository 책임)
-    const sites = await SiteRepository.findAll();
+    const sites = await siteRepository.findAll();
 
     // 2. 검색 조건에 맞는 Site 필터링 (Service 책임)
-    const filtered = sites.filter((site) =>
-      SiteSearchService.match(site, query),
-    );
+    const filtered = sites.filter((site) => siteService.match(site, query));
 
     // 3. 결과 제한 + DTO 변환 (Action 책임)
     return filtered.slice(0, SITE_SEARCH_RESULT_LIMIT).map(

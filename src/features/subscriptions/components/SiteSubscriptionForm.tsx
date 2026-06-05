@@ -9,9 +9,6 @@ import { useFeedDiscoveryStore } from "../store/feedDiscovery";
 import { useSiteSearch } from "@/features/rss/site/hooks/useSiteSearch";
 
 const SiteSubscriptionForm = () => {
-  // 상태 변경 확인을 위한 코드 확인 후 삭제할 것
-  const uiState = useFeedDiscoveryStore((s) => s.uiState);
-
   const selectSite = useFeedDiscoveryStore((s) => s.selectSite);
 
   const inputValue = useFeedDiscoveryStore((s) => s.inputValue);

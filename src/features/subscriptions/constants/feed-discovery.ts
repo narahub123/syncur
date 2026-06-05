@@ -12,7 +12,8 @@ export const FEED_STATUS_A11Y: Record<UIState, string> = {
   idle: "대기 상태",
   subscribing: "구독 처리 중",
   subscribed: "구독 완료",
-  not_supported: "",
+  already_subscribed: "중복 구독",
+  not_supported: "지원 불가",
   error: "오류 상태",
 } as const;
 
@@ -27,6 +28,7 @@ export const FEED_STATUS_MESSAGE: Record<UIState, string> = {
   idle: "",
   subscribing: "구독을 처리하고 있습니다",
   subscribed: "구독이 완료되었습니다",
-  not_supported: "",
+  already_subscribed: "이미 구독된 사이트입니다",
+  not_supported: "RSS를 지원하지 않는 사이트입니다.",
   error: "오류가 발생했습니다",
 } as const;

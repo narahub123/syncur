@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import type { SiteSearchDto } from "@/features/rss/site/dto/search-site";
+import type { SiteSearchDto } from "@/features/rss/site/dto/siteDto";
 import { UIState } from "../types/feed-discovery";
 
 /**
@@ -74,6 +74,16 @@ type FeedDiscoveryState = {
   setSubscribed: () => void;
 
   /**
+   * 이미 구독 중인 상태로 전환
+   */
+  setAlreadySubscribed: () => void;
+
+  /**
+   * RSS를 지원하지 않는 상태로 전환
+   */
+  setNotSupported: () => void;
+
+  /**
    * 에러 상태 설정
    */
   setError: (message?: string) => void;
@@ -142,6 +152,20 @@ export const useFeedDiscoveryStore = create<FeedDiscoveryState>((set) => ({
    */
   setSubscribed: () => {
     set({ uiState: "subscribed" });
+  },
+
+  /**
+   *
+   */
+  setAlreadySubscribed: () => {
+    set({ uiState: "already_subscribed" });
+  },
+
+  /**
+   *
+   */
+  setNotSupported: () => {
+    set({ uiState: "not_supported" });
   },
 
   /**

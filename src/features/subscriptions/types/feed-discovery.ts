@@ -6,6 +6,7 @@ export type UIState =
   | "idle" // 아무 입력 없음
   | "subscribing" // 전체 처리 진행 중
   | "subscribed" // 성공
+  | "already_subscribed" // 이미 구독중
   | "not_supported" // RSS 없음 (실패 결과)
   | "error"; // 시스템 에러
 

@@ -1,23 +1,6 @@
 import { parseStringPromise } from "xml2js";
 import type { FeedItem } from "@/shared/types/feed";
-import { RawAtomEntry, RawRssItem } from "./types";
-
-/**
- * XML parse 결과 최소 구조 타입
- */
-type ParsedFeed =
-  | {
-      rss?: {
-        channel?: {
-          item?: RawRssItem | RawRssItem[];
-        };
-      };
-    }
-  | {
-      feed?: {
-        entry?: RawAtomEntry | RawAtomEntry[];
-      };
-    };
+import { RawRssItem } from "./types";
 
 /**
  * RSS / Atom XML → FeedItem[] 변환
@@ -28,39 +11,32 @@ type ParsedFeed =
  * - Syncur 내부 표준 포맷으로 변환
  */
 export async function parseAndNormalizeFeed(xml: string): Promise<FeedItem[]> {
-  let parsed: ParsedFeed;
+  const raw = await parseStringPromise(xml, {
+    explicitArray: false,
+    trim: true,
+  });
 
-  try {
-    parsed = await parseStringPromise(xml, {
-      explicitArray: false,
-      trim: true,
-    });
-  } catch {
-    /**
-     * INVALID XML
-     * - HTML 응답
-     * - 깨진 RSS
-     */
-    throw new Error("INVALID_FEED_XML");
+  /**
+   * RSS
+   */
+  if ("rss" in raw) {
+    const item = raw.rss?.channel?.item ?? [];
+
+    return normalizeRss(Array.isArray(item) ? item : [item]);
   }
 
   /**
-   * RSS 2.0 구조
+   * Atom (핵심 수정)
    */
-  if ("rss" in parsed && parsed.rss?.channel?.item) {
-    return normalizeRss(parsed.rss.channel.item);
+  if ("feed" in raw) {
+    const feed = raw.feed;
+
+    // 🔥 핵심: entry 무조건 안전화
+    const entry = feed?.entry ?? [];
+
+    return normalizeAtom(Array.isArray(entry) ? entry : [entry]);
   }
 
-  /**
-   * Atom 구조
-   */
-  if ("feed" in parsed && parsed.feed?.entry) {
-    return normalizeAtom(parsed.feed.entry);
-  }
-
-  /**
-   * Unknown structure
-   */
   throw new Error("UNSUPPORTED_FEED_FORMAT");
 }
 
@@ -80,37 +56,24 @@ function normalizeRss(items: RawRssItem | RawRssItem[]): FeedItem[] {
 /**
  * Atom → FeedItem 변환
  */
-function normalizeAtom(entries: RawAtomEntry | RawAtomEntry[]): FeedItem[] {
+function normalizeAtom(entries: unknown): FeedItem[] {
   const list = Array.isArray(entries) ? entries : [entries];
 
-  return list.map((entry) => ({
-    title: safeText(entry.title),
+  return list
+    .map((entry) => {
+      const title = entry?.title?.["#text"] || entry?.title || "";
 
-    /**
-     * Atom은 link 구조가 복잡할 수 있음
-     * <link href="..." />
-     */
-    link: extractAtomLink(entry.link),
+      const link = entry?.link?.href || entry?.link || entry?.id || "";
 
-    publishedAt: parseDate(entry.updated || entry.published || entry.date),
-  }));
-}
+      const publishedAt = entry?.updated || entry?.published || null;
 
-/**
- * Atom link 처리
- */
-function extractAtomLink(link: RawAtomEntry["link"]): string {
-  if (!link) return "";
-
-  if (typeof link === "string") return link;
-
-  if (Array.isArray(link)) {
-    const first = link[0];
-    if (typeof first === "string") return first;
-    return first?.$?.href || "";
-  }
-
-  return link?.$?.href || "";
+      return {
+        title,
+        link,
+        publishedAt,
+      };
+    })
+    .filter((item) => item.link); // 🔥 title 기준 제거
 }
 
 /**

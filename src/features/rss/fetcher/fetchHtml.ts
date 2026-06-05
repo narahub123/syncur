@@ -17,8 +17,10 @@ export async function fetchHtml(url: string): Promise<string> {
     const res = await fetch(url, {
       method: "GET",
       signal: controller.signal,
+      redirect: "follow", // 이거 수정함
       headers: {
-        "user-agent": "SyncurBot/1.0 (+https://syncur.app/bot)",
+        "user-agent":
+          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36",
         accept: "text/html,application/xhtml+xml",
       },
     });
@@ -27,7 +29,9 @@ export async function fetchHtml(url: string): Promise<string> {
       throw new Error(`HTTP_ERROR_${res.status}`);
     }
 
-    return await res.text();
+    const html = await res.text();
+
+    return html;
   } finally {
     clearTimeout(timeout);
   }

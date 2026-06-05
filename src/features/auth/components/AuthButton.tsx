@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import { signIn } from "next-auth/react";
 
 import { Button } from "@/shared/components/ui/button";
@@ -41,7 +40,7 @@ const AuthButton = ({ oauth }: AuthButtonProps) => {
       aria-label={`${name}로 계속하기`}
       title={`${name}로 계속하기`}
     >
-      <Image
+      <img
         src={icon}
         alt=""
         aria-hidden="true"

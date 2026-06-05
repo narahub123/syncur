@@ -5,6 +5,7 @@ import {
   FEED_STATUS_MESSAGE,
   FEED_STATUS_A11Y,
 } from "../constants/feed-discovery";
+import { cn } from "@/shared/utils/cn";
 
 /**
  * StatusIndicator
@@ -31,10 +32,19 @@ const StatusIndicator = () => {
       role="status"
       aria-live="polite"
       aria-atomic="true"
-      className="flex flex-col gap-1"
+      className="flex flex-col gap-1 px-2"
     >
       {/* 사용자 UI 메시지 */}
-      <p className="text-sm text-gray-600">{message}</p>
+      <p
+        className={cn(
+          "text-xs font-medium",
+          uiState === "not_supported" || uiState === "error"
+            ? "text-red-400"
+            : "text-gray-600",
+        )}
+      >
+        {message}
+      </p>
 
       {/* 스크린리더 전용 메시지 */}
       <span className="sr-only">{a11yMessage}</span>

@@ -25,3 +25,10 @@ export type SiteSearchDto = {
   favicon_url: string | null;
   feed_url: string | null;
 };
+
+export type CreateSiteDto = {
+  url: string;
+  name: string;
+  favicon_url: string | null;
+  feed_url: string | null;
+};
