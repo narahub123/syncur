@@ -9,9 +9,10 @@ import {
   ComboboxList,
 } from "@/shared/components/ui/combobox";
 
-import { Check, X } from "lucide-react";
+import { Check, LoaderCircle, X } from "lucide-react";
 import SiteAvatar from "./SiteAvatar";
 import { SiteSearchDto } from "@/features/rss/site/dto/search-site";
+import { useFeedDiscoveryStore } from "../store/feedDiscovery";
 
 type SiteComboboxProps = {
   /**
@@ -59,6 +60,8 @@ type SiteComboboxProps = {
    * - typing state 관리
    */
   setInputValue: (value: string) => void;
+
+  isLoading?: boolean;
 };
 
 const SiteCombobox = ({
@@ -67,7 +70,11 @@ const SiteCombobox = ({
   onSelect,
   inputValue,
   setInputValue,
+  isLoading,
 }: SiteComboboxProps) => {
+  const uiState = useFeedDiscoveryStore((s) => s.uiState);
+
+  const isEmpty = !inputValue && options.length === 0;
   /**
    * Combobox는 view layer
    * 실제 상태는 외부(store)에서 관리
@@ -103,48 +110,56 @@ const SiteCombobox = ({
         }}
       />
 
-      <ComboboxContent>
-        {/* 검색 결과 없음 */}
-        {options.length === 0 && (
-          <ComboboxEmpty>검색 결과가 없습니다.</ComboboxEmpty>
-        )}
-
-        {/* =========================
+      {!isEmpty && (
+        <ComboboxContent>
+          {/* =========================
             LIST (pure render layer)
            ========================= */}
-        <ComboboxList>
-          {options.map((site) => (
-            <ComboboxItem
-              key={site._id}
-              value={site.url}
-              onClick={() => {
-                /**
-                 * 선택 이벤트:
-                 * - 상태 변경 없음
-                 * - store or parent에서 처리
-                 */
-                onSelect(site);
-
-                /**
-                 * UX 개선:
-                 * 선택 시 input도 동기화
-                 */
-                setInputValue(site.url);
-              }}
-            >
-              <div className="flex w-full items-center justify-between">
-                <div className="flex flex-1 items-center gap-2">
-                  <SiteAvatar site={site} />
-                  <span>{site.name}</span>
-                </div>
-                <span className="" aria-hidden>
-                  {site.feed_url ? <Check /> : <X />}
-                </span>
+          <ComboboxList>
+            {isLoading && (
+              <div className="flex min-h-20 items-center justify-center">
+                <LoaderCircle className="animate-spin" />
               </div>
-            </ComboboxItem>
-          ))}
-        </ComboboxList>
-      </ComboboxContent>
+            )}
+            {!isLoading &&
+              options.length > 0 &&
+              options.map((site) => (
+                <ComboboxItem
+                  key={site._id}
+                  value={site.url}
+                  onClick={() => {
+                    /**
+                     * 선택 이벤트:
+                     * - 상태 변경 없음
+                     * - store or parent에서 처리
+                     */
+                    onSelect(site);
+
+                    /**
+                     * UX 개선:
+                     * 선택 시 input도 동기화
+                     */
+                    setInputValue(site.url);
+                  }}
+                >
+                  <div className="flex w-full items-center justify-between">
+                    <div className="flex flex-1 items-center gap-2">
+                      <SiteAvatar site={site} />
+                      <span>{site.name}</span>
+                    </div>
+                    <span
+                      className=""
+                      aria-hidden="true"
+                      title={`구독 ${site.feed_url ? "가능" : "불가"}`}
+                    >
+                      {site.feed_url ? <Check /> : <X />}
+                    </span>
+                  </div>
+                </ComboboxItem>
+              ))}
+          </ComboboxList>
+        </ComboboxContent>
+      )}
     </Combobox>
   );
 };

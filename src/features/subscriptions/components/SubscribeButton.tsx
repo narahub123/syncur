@@ -5,13 +5,10 @@ import { useFeedDiscoveryStore } from "../store/feedDiscovery";
 import { LoaderCircle } from "lucide-react";
 import { FEED_STATUS_A11Y } from "../constants/feed-discovery";
 
-const SubscribeButton = () => {
+const SubscribeButton = ({ isFetching }: { isFetching: boolean }) => {
   const uiState = useFeedDiscoveryStore((s) => s.uiState);
-  const feed = useFeedDiscoveryStore((s) => s.feed);
 
-  const startSubscribe = useFeedDiscoveryStore((s) => s.startSubscribe);
-
-  const isLoading = uiState === "subscribing";
+  const isLoading = uiState === "subscribing" || isFetching;
 
   /**
    * 버튼 활성 조건
@@ -19,12 +16,10 @@ const SubscribeButton = () => {
    * - feed_found 상태
    * - 로딩 아님
    */
-  const isDisabled = isLoading || uiState !== "feed_found" || !feed;
+  const isDisabled = isLoading;
 
   const handleClick = async () => {
     if (isDisabled) return;
-
-    startSubscribe();
 
     try {
       /**

@@ -1,58 +1,90 @@
 import { create } from "zustand";
-import type { UIState, FeedEndpoint } from "../types/feed-discovery";
-import { searchSiteAction } from "../actions/searchSiteAction";
-import { SiteSearchDto } from "@/features/rss/site/dto/search-site";
+import type { SiteSearchDto } from "@/features/rss/site/dto/search-site";
+import { UIState } from "../types/feed-discovery";
 
 /**
  * FeedDiscoveryState
  *
  * 역할:
- * - URL 기반 사이트 검색 → feed discovery → subscription 전체 flow 관리
- * - UI 상태 머신 단일 source of truth
+ * - 사용자의 URL 입력 → 사이트 후보 탐색 → 사이트 선택 → 구독까지의 UI 흐름 관리
+ * - "UI 상태 + 입력값 + 후보 리스트 + 선택 상태"만 관리
+ *
+ * ❗ 핵심 원칙
+ * - RSS 탐색, subscription 생성 등 비즈니스 로직은 절대 포함하지 않음
+ * - store는 UI 상태 저장소 역할만 수행
  */
-export type FeedDiscoveryState = {
+type FeedDiscoveryState = {
   /* =========================
-   * UI STATE
+   * STATE
    * ========================= */
 
-  /** 현재 UI 상태 */
+  /**
+   * 현재 UI 상태
+   * - 화면이 어떤 단계인지 결정하는 최소 상태 머신
+   */
   uiState: UIState;
 
-  /** input 값 (controlled input 핵심) */
+  /**
+   * 사용자 입력값 (controlled input)
+   */
   inputValue: string;
 
-  /** site 검색 결과 */
+  /**
+   * 사이트 검색 결과 (combobox suggestion 목록)
+   */
   siteOptions: SiteSearchDto[];
 
-  /** 선택된 site */
+  /**
+   * 사용자가 선택한 사이트
+   * - 없으면 null (직접 입력 상태 포함)
+   */
   selectedSite: SiteSearchDto | null;
 
-  /** 발견된 feed */
-  feed: FeedEndpoint | null;
-
   /* =========================
-   * ACTIONS
+   * ACTIONS (UI ONLY)
    * ========================= */
 
-  searchSite: (query: string) => Promise<void>;
-  selectSite: (site: SiteSearchDto) => void;
-
-  startDiscovery: () => Promise<void>;
-
-  setFeedFound: (feed: FeedEndpoint) => void;
-  setFeedNotSupported: () => void;
-
-  startSubscribe: () => Promise<void>;
-  setSubscribed: () => void;
-
-  setError: (message?: string) => void;
-
+  /**
+   * input 값 업데이트
+   * - controlled input 반영만 담당
+   */
   setInputValue: (value: string) => void;
 
+  /**
+   * 사이트 검색 결과 반영
+   * - TanStack Query or hook에서 받은 결과를 store에 반영
+   */
+  setSiteOptions: (options: SiteSearchDto[]) => void;
+
+  /**
+   * 사이트 선택 처리
+   * - combobox에서 선택된 site 반영
+   * - input 값 동기화
+   */
+  selectSite: (site: SiteSearchDto) => void;
+
+  /**
+   * 구독 진행 상태로 전환
+   */
+  setSubscribing: () => void;
+
+  /**
+   * 구독 성공 상태로 전환
+   */
+  setSubscribed: () => void;
+
+  /**
+   * 에러 상태 설정
+   */
+  setError: (message?: string) => void;
+
+  /**
+   * 전체 상태 초기화
+   */
   reset: () => void;
 };
 
-export const useFeedDiscoveryStore = create<FeedDiscoveryState>((set, get) => ({
+export const useFeedDiscoveryStore = create<FeedDiscoveryState>((set) => ({
   /* =========================
    * INITIAL STATE
    * ========================= */
@@ -61,133 +93,67 @@ export const useFeedDiscoveryStore = create<FeedDiscoveryState>((set, get) => ({
   inputValue: "",
   siteOptions: [],
   selectedSite: null,
-  feed: null,
 
   /* =========================
    * ACTIONS
    * ========================= */
 
   /**
-   * 입력값 업데이트 (Combobox controlled 핵심)
+   * input 값 변경
+   * - controlled input 업데이트만 담당
    */
   setInputValue: (value) => {
-    set({ inputValue: value });
-  },
-
-  /**
-   * site 검색
-   */
-  searchSite: async (query) => {
     set({
-      uiState: "searching_site",
-      inputValue: query,
+      inputValue: value,
     });
-
-    try {
-      const result = await searchSiteAction(query);
-
-      set({
-        siteOptions: result,
-        uiState: "typing",
-      });
-    } catch (e) {
-      set({ uiState: "error" });
-      console.error("조회 실패", e);
-    }
   },
 
   /**
-   * site 선택
+   * siteOptions 업데이트
+   * - TanStack Query 결과를 store에 반영
+   */
+  setSiteOptions: (options) => {
+    set({
+      siteOptions: options,
+    });
+  },
+
+  /**
+   * 사이트 선택
+   * - combobox에서 선택된 site 반영
+   * - input 값 동기화
    */
   selectSite: (site) => {
     set({
       selectedSite: site,
-      inputValue: site.url, // UX: 선택 시 입력값 동기화
-      uiState: "site_selected",
+      inputValue: site.url,
     });
   },
 
   /**
-   * feed discovery
+   * 구독 처리 시작 상태
    */
-  startDiscovery: async () => {
-    const site = get().selectedSite;
-
-    if (!site) {
-      set({ uiState: "error" });
-      return;
-    }
-
-    set({ uiState: "discovering" });
-
-    try {
-      // TODO: discovery API
-      const feed: FeedEndpoint | null = null;
-
-      if (feed) {
-        set({
-          feed,
-          uiState: "feed_found",
-        });
-      } else {
-        set({
-          uiState: "feed_not_supported",
-        });
-      }
-    } catch {
-      set({ uiState: "error" });
-    }
-  },
-
-  /**
-   * feed 성공
-   */
-  setFeedFound: (feed) => {
-    set({
-      feed,
-      uiState: "feed_found",
-    });
-  },
-
-  /**
-   * feed 없음
-   */
-  setFeedNotSupported: () => {
-    set({
-      uiState: "feed_not_supported",
-    });
-  },
-
-  /**
-   * subscribe 시작
-   */
-  startSubscribe: async () => {
+  setSubscribing: () => {
     set({ uiState: "subscribing" });
-
-    try {
-      // TODO: subscribe API
-    } catch {
-      set({ uiState: "error" });
-    }
   },
 
   /**
-   * subscribe 완료
+   * 구독 성공 상태
    */
   setSubscribed: () => {
     set({ uiState: "subscribed" });
   },
 
   /**
-   * 에러 처리
+   * 에러 상태 설정
    */
-  setError: (message?: string) => {
-    console.error(message);
+  setError: (message) => {
+    if (message) console.error(message);
     set({ uiState: "error" });
   },
 
   /**
-   * reset
+   * 전체 상태 초기화
    */
   reset: () => {
     set({
@@ -195,7 +161,6 @@ export const useFeedDiscoveryStore = create<FeedDiscoveryState>((set, get) => ({
       inputValue: "",
       siteOptions: [],
       selectedSite: null,
-      feed: null,
     });
   },
 }));

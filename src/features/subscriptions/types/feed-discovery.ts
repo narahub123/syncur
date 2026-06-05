@@ -3,16 +3,11 @@
  * subscription discovery workflow의 현재 단계
  */
 export type UIState =
-  | "idle" // 초기 상태, 아무 입력 없음
-  | "typing" // URL 입력 중
-  | "searching_site" // DB 또는 서버에서 site 검색 중
-  | "site_selected" // 사용자가 site 선택 완료
-  | "discovering" // feed endpoint 탐색 중 (crawler 실행)
-  | "feed_found" // 구독 가능한 feed endpoint 발견됨
-  | "feed_not_supported" // feed를 찾지 못함
-  | "subscribing" // 구독 요청 처리 중
-  | "subscribed" // 구독 완료
-  | "error"; // 에러 상태
+  | "idle" // 아무 입력 없음
+  | "subscribing" // 전체 처리 진행 중
+  | "subscribed" // 성공
+  | "not_supported" // RSS 없음 (실패 결과)
+  | "error"; // 시스템 에러
 
 /**
  * Feed endpoint type
