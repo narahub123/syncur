@@ -9,6 +9,10 @@ import { useFeedDiscoveryStore } from "../store/feedDiscovery";
 const SiteSubscriptionForm = () => {
   const options = useFeedDiscoveryStore((s) => s.siteOptions);
   const searchSite = useFeedDiscoveryStore((s) => s.searchSite);
+  const selectSite = useFeedDiscoveryStore((s) => s.selectSite);
+
+  const inputValue = useFeedDiscoveryStore((s) => s.inputValue);
+  const setInputValue = useFeedDiscoveryStore((s) => s.setInputValue);
 
   return (
     <div className="space-y-4 rounded-xl border border-gray-200 p-4">
@@ -18,7 +22,13 @@ const SiteSubscriptionForm = () => {
 
       {/* input + selection layer */}
       <div className="flex gap-3">
-        <SiteCombobox options={options} onSearch={searchSite} />
+        <SiteCombobox
+          options={options}
+          onSearch={searchSite}
+          onSelect={selectSite}
+          inputValue={inputValue}
+          setInputValue={setInputValue}
+        />
 
         <SubscribeButton />
       </div>

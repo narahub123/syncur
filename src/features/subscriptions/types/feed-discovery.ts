@@ -15,21 +15,6 @@ export type UIState =
   | "error"; // 에러 상태
 
 /**
- * WebSource
- * 사용자가 입력한 URL을 기반으로 식별된 사이트 엔티티
- *
- * 역할:
- * - URL 정규화 결과
- * - DB에 저장되는 기본 단위
- * - feed discovery의 시작점
- */
-export type WebSource = {
-  id: string; // 내부 식별자
-  name: string; // 사이트 이름 (예: Dev.to)
-  url: string; // canonical URL
-};
-
-/**
  * Feed endpoint type
  * 웹사이트에서 발견된 구독 가능한 데이터 소스 유형
  *

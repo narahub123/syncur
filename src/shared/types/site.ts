@@ -1,5 +1,5 @@
 export type Site = {
-  id: string;
+  _id: string;
 
   /**
    * 사용자가 구독한 원본 페이지 URL

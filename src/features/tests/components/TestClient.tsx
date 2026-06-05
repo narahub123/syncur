@@ -1,7 +1,6 @@
 "use client";
 
 import { Button } from "@/shared/components/ui/button";
-import { Combobox } from "@/shared/components/ui/combobox";
 import { Dropdown } from "@/shared/components/ui/Dropdown";
 import { Input } from "@/shared/components/ui/Input/Input";
 import { Modal } from "@/shared/components/ui/Modal";
@@ -14,12 +13,6 @@ const TestClient = () => {
   const [value, setValue] = useState("");
 
   const onClose = () => setIsOpen(false);
-
-  const options = [
-    { label: "Apple", value: "apple" },
-    { label: "Banana", value: "banana" },
-    { label: "Orange", value: "orange" },
-  ];
 
   return (
     <main className="bg-background text-foreground min-h-screen p-8">

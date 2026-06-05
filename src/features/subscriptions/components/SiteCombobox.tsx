@@ -9,7 +9,9 @@ import {
   ComboboxList,
 } from "@/shared/components/ui/combobox";
 
-import type { WebSource } from "../types/feed-discovery";
+import { Check, X } from "lucide-react";
+import SiteAvatar from "./SiteAvatar";
+import { SiteSearchDto } from "@/features/rss/site/dto/search-site";
 
 type SiteComboboxProps = {
   /**
@@ -20,7 +22,7 @@ type SiteComboboxProps = {
    * - server action 또는 React Query에서 가져온 결과
    * - 순수하게 "표시만" 담당
    */
-  options: WebSource[];
+  options: SiteSearchDto[];
 
   /**
    * 사용자가 입력한 검색어를 외부로 전달하는 트리거
@@ -31,50 +33,114 @@ type SiteComboboxProps = {
    * - debounce는 상위에서 처리하는 것이 권장됨
    */
   onSearch: (query: string) => void;
+
+  /**
+   * 사이트 선택 이벤트
+   *
+   * 역할:
+   * - UI는 선택만 전달
+   * - 실제 상태 변경 / discovery / subscribe는 외부에서 처리
+   */
+  onSelect: (site: SiteSearchDto) => void;
+
+  /**
+   * 입력값 (controlled input)
+   *
+   * 역할:
+   * - input 값 유지 (사라지는 문제 해결)
+   * - Combobox reset 방지
+   */
+  inputValue: string;
+
+  /**
+   * 입력값 업데이트
+   *
+   * 역할:
+   * - typing state 관리
+   */
+  setInputValue: (value: string) => void;
 };
 
-const SiteCombobox = ({ options, onSearch }: SiteComboboxProps) => {
+const SiteCombobox = ({
+  options,
+  onSearch,
+  onSelect,
+  inputValue,
+  setInputValue,
+}: SiteComboboxProps) => {
+  /**
+   * Combobox는 view layer
+   * 실제 상태는 외부(store)에서 관리
+   */
   const handleValueChange = (value: string | null) => {
     if (!value) return;
     onSearch(value);
   };
 
   return (
-    <Combobox
-      value=""
-      /**
-       * Combobox는 "view layer" 역할만 수행
-       * 상태를 직접 가지지 않고 외부 입력만 반영
-       */
-      onValueChange={handleValueChange}
-    >
-      {/* 사용자 입력 영역 (검색 트리거 역할) */}
+    <Combobox onValueChange={handleValueChange}>
+      {/* =========================
+          INPUT (controlled)
+         ========================= */}
       <ComboboxInput
+        value={inputValue}
         placeholder="사이트를 입력해주세요."
         className="flex-1 text-sm"
+        onChange={(e) => {
+          const value = e.target.value;
+
+          // 1. input 유지
+          setInputValue(value);
+
+          // 2. 검색 트리거
+          onSearch(value);
+        }}
+        onKeyDown={(e) => {
+          // Enter로 인한 reset / submit 방지
+          if (e.key === "Enter") {
+            e.preventDefault();
+          }
+        }}
       />
 
       <ComboboxContent>
-        {/* 검색 결과가 없을 때 표시 UI */}
-        <ComboboxEmpty>검색 결과가 없습니다.</ComboboxEmpty>
+        {/* 검색 결과 없음 */}
+        {options.length === 0 && (
+          <ComboboxEmpty>검색 결과가 없습니다.</ComboboxEmpty>
+        )}
 
-        {/* site 검색 결과 리스트 (pure render layer) */}
+        {/* =========================
+            LIST (pure render layer)
+           ========================= */}
         <ComboboxList>
           {options.map((site) => (
             <ComboboxItem
-              key={site.id}
+              key={site._id}
               value={site.url}
-              /**
-               * 선택 이벤트는 "state machine"으로 전달
-               * - 여기서는 상태 변경하지 않음
-               * - store or parent handler에서 처리
-               */
               onClick={() => {
-                // WebSource 선택 이벤트 전달
-                // 실제 상태 변경은 외부 (Zustand / action layer)
+                /**
+                 * 선택 이벤트:
+                 * - 상태 변경 없음
+                 * - store or parent에서 처리
+                 */
+                onSelect(site);
+
+                /**
+                 * UX 개선:
+                 * 선택 시 input도 동기화
+                 */
+                setInputValue(site.url);
               }}
             >
-              {site.name}
+              <div className="flex w-full items-center justify-between">
+                <div className="flex flex-1 items-center gap-2">
+                  <SiteAvatar site={site} />
+                  <span>{site.name}</span>
+                </div>
+                <span className="" aria-hidden>
+                  {site.feed_url ? <Check /> : <X />}
+                </span>
+              </div>
             </ComboboxItem>
           ))}
         </ComboboxList>

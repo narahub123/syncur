@@ -74,6 +74,7 @@ const siteSchema = new Schema<Site>(
        */
       updatedAt: "updated_at",
     },
+    versionKey: false,
   },
 );
 

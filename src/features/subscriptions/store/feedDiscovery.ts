@@ -1,55 +1,54 @@
 import { create } from "zustand";
-import type { UIState, WebSource, FeedEndpoint } from "../types/feed-discovery";
+import type { UIState, FeedEndpoint } from "../types/feed-discovery";
+import { searchSiteAction } from "../actions/searchSiteAction";
+import { SiteSearchDto } from "@/features/rss/site/dto/search-site";
 
 /**
  * FeedDiscoveryState
  *
  * 역할:
  * - URL 기반 사이트 검색 → feed discovery → subscription 전체 flow 관리
- * - UI 상태 머신의 단일 source of truth
+ * - UI 상태 머신 단일 source of truth
  */
 export type FeedDiscoveryState = {
-  /** 현재 UI 상태 (state machine 핵심 값) */
+  /* =========================
+   * UI STATE
+   * ========================= */
+
+  /** 현재 UI 상태 */
   uiState: UIState;
 
-  /** site 검색 결과 목록 */
-  siteOptions: WebSource[];
+  /** input 값 (controlled input 핵심) */
+  inputValue: string;
 
-  /** 사용자가 선택한 사이트 */
-  selectedSite: WebSource | null;
+  /** site 검색 결과 */
+  siteOptions: SiteSearchDto[];
 
-  /** 발견된 feed 정보 */
+  /** 선택된 site */
+  selectedSite: SiteSearchDto | null;
+
+  /** 발견된 feed */
   feed: FeedEndpoint | null;
 
   /* =========================
-   * ACTIONS (state transitions)
+   * ACTIONS
    * ========================= */
 
-  /** site 검색 API 호출 후 결과 저장 */
   searchSite: (query: string) => Promise<void>;
+  selectSite: (site: SiteSearchDto) => void;
 
-  /** site 선택 */
-  selectSite: (site: WebSource) => void;
-
-  /** feed discovery 시작 */
   startDiscovery: () => Promise<void>;
 
-  /** feed 발견 성공 */
   setFeedFound: (feed: FeedEndpoint) => void;
-
-  /** feed 미지원 */
   setFeedNotSupported: () => void;
 
-  /** 구독 시작 */
   startSubscribe: () => Promise<void>;
-
-  /** 구독 완료 */
   setSubscribed: () => void;
 
-  /** 에러 처리 */
-  setError: (message: string) => void;
+  setError: (message?: string) => void;
 
-  /** 상태 초기화 */
+  setInputValue: (value: string) => void;
+
   reset: () => void;
 };
 
@@ -57,28 +56,35 @@ export const useFeedDiscoveryStore = create<FeedDiscoveryState>((set, get) => ({
   /* =========================
    * INITIAL STATE
    * ========================= */
+
   uiState: "idle",
+  inputValue: "",
   siteOptions: [],
   selectedSite: null,
   feed: null,
 
   /* =========================
-   * ACTION IMPLEMENTATIONS
+   * ACTIONS
    * ========================= */
 
   /**
+   * 입력값 업데이트 (Combobox controlled 핵심)
+   */
+  setInputValue: (value) => {
+    set({ inputValue: value });
+  },
+
+  /**
    * site 검색
-   * - URL 입력 기반 site 후보 검색
-   * - server action 또는 API 연결 지점
    */
   searchSite: async (query) => {
-    set({ uiState: "searching_site" });
+    set({
+      uiState: "searching_site",
+      inputValue: query,
+    });
 
     try {
-      // TODO: 실제 server action 연결
-      // const result = await searchSiteAction(query);
-
-      const result: WebSource[] = []; // 임시 placeholder
+      const result = await searchSiteAction(query);
 
       set({
         siteOptions: result,
@@ -86,24 +92,23 @@ export const useFeedDiscoveryStore = create<FeedDiscoveryState>((set, get) => ({
       });
     } catch (e) {
       set({ uiState: "error" });
+      console.error("조회 실패", e);
     }
   },
 
   /**
    * site 선택
-   * - combobox에서 선택된 site 저장
-   * - 이후 discovery flow 트리거 대상
    */
   selectSite: (site) => {
     set({
       selectedSite: site,
+      inputValue: site.url, // UX: 선택 시 입력값 동기화
       uiState: "site_selected",
     });
   },
 
   /**
-   * feed discovery 시작
-   * - 선택된 site 기반으로 feed 탐색
+   * feed discovery
    */
   startDiscovery: async () => {
     const site = get().selectedSite;
@@ -116,9 +121,7 @@ export const useFeedDiscoveryStore = create<FeedDiscoveryState>((set, get) => ({
     set({ uiState: "discovering" });
 
     try {
-      // TODO: discoverySite API 연결
-      // const feed = await discoverySite(site.url);
-
+      // TODO: discovery API
       const feed: FeedEndpoint | null = null;
 
       if (feed) {
@@ -131,13 +134,13 @@ export const useFeedDiscoveryStore = create<FeedDiscoveryState>((set, get) => ({
           uiState: "feed_not_supported",
         });
       }
-    } catch (e) {
+    } catch {
       set({ uiState: "error" });
     }
   },
 
   /**
-   * feed 발견 성공 처리
+   * feed 성공
    */
   setFeedFound: (feed) => {
     set({
@@ -147,7 +150,7 @@ export const useFeedDiscoveryStore = create<FeedDiscoveryState>((set, get) => ({
   },
 
   /**
-   * feed 미지원 처리
+   * feed 없음
    */
   setFeedNotSupported: () => {
     set({
@@ -156,21 +159,20 @@ export const useFeedDiscoveryStore = create<FeedDiscoveryState>((set, get) => ({
   },
 
   /**
-   * 구독 시작
+   * subscribe 시작
    */
   startSubscribe: async () => {
     set({ uiState: "subscribing" });
 
     try {
-      // TODO: subscribe API 연결
-      // await subscribeFeed(get().feed)
-    } catch (e) {
+      // TODO: subscribe API
+    } catch {
       set({ uiState: "error" });
     }
   },
 
   /**
-   * 구독 완료
+   * subscribe 완료
    */
   setSubscribed: () => {
     set({ uiState: "subscribed" });
@@ -179,16 +181,18 @@ export const useFeedDiscoveryStore = create<FeedDiscoveryState>((set, get) => ({
   /**
    * 에러 처리
    */
-  setError: () => {
+  setError: (message?: string) => {
+    console.error(message);
     set({ uiState: "error" });
   },
 
   /**
-   * 전체 상태 초기화
+   * reset
    */
   reset: () => {
     set({
       uiState: "idle",
+      inputValue: "",
       siteOptions: [],
       selectedSite: null,
       feed: null,
