@@ -1,48 +1,41 @@
 "use client";
 
 import { Button } from "@/shared/components/ui/button";
-import { useFeedDiscoveryStore } from "../store/feedDiscovery";
 import { LoaderCircle } from "lucide-react";
 import { FEED_STATUS_A11Y } from "../constants/feed-discovery";
-import { subscribeController } from "../controllers/subscribeController";
+import { useFeedDiscoveryStore } from "../store/feedDiscovery";
+import { useSubscribeMutation } from "@/features/subscriptions/hooks/useSubscribeMutation";
 
+/**
+ * 구독 버튼
+ * - 선택된 사이트를 구독
+ */
 const SubscribeButton = ({ isFetching }: { isFetching: boolean }) => {
   const uiState = useFeedDiscoveryStore((s) => s.uiState);
   const selectedSite = useFeedDiscoveryStore((s) => s.selectedSite);
-  const inputValue = useFeedDiscoveryStore((s) => s.inputValue);
 
-  const isLoading = uiState === "subscribing" || isFetching;
+  const subscribeMutation = useSubscribeMutation();
 
-  /**
-   * 버튼 활성 조건
-   * - feed 존재
-   * - feed_found 상태
-   * - 로딩 아님
-   */
-  const isDisabled =
-    isLoading || (!!selectedSite && !selectedSite.canSubscribe) || !inputValue;
+  // 로딩 상태
+  const isLoading =
+    uiState === "subscribing" || isFetching || subscribeMutation.isPending;
 
-  const handleClick = async () => {
+  // 버튼 비활성 조건
+  const isDisabled = isLoading || !selectedSite?.canSubscribe;
+
+  // 클릭 처리
+  const handleClick = () => {
+    if (!selectedSite?.siteId) return;
     if (isDisabled) return;
 
-    try {
-      await subscribeController();
-    } catch (e) {
-      useFeedDiscoveryStore.getState().setError("subscribe failed");
-      console.error("구독 실패", e);
-    }
+    subscribeMutation.mutate(selectedSite.siteId);
   };
 
   return (
-    <Button
-      onClick={handleClick}
-      disabled={isDisabled}
-      aria-busy={isLoading}
-      variant="default"
-    >
+    <Button onClick={handleClick} disabled={isDisabled} aria-busy={isLoading}>
       {isLoading ? (
         <>
-          <LoaderCircle size={12} className="animate-spin" aria-hidden="true" />
+          <LoaderCircle size={14} className="animate-spin" />
           <span className="sr-only">{FEED_STATUS_A11Y.subscribing}</span>
         </>
       ) : (

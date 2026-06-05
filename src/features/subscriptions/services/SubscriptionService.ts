@@ -16,7 +16,7 @@ type CreateSubscriptionInput = {
  * 신규 구독이면 created 반환
  */
 type CreateSubscriptionResult =
-  | { status: "created" }
+  | { status: "subscribed" }
   | { status: "already_subscribed" };
 
 /**
@@ -70,7 +70,7 @@ export class SubscriptionService {
     await this.repository.create(userId, siteId);
 
     return {
-      status: "created",
+      status: "subscribed",
     };
   }
 }
