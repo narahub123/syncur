@@ -4,6 +4,7 @@ import { SiteModel } from "../model/Site";
 import { CreateSiteDto } from "../dto/siteDto";
 import { escapeRegExp } from "@/shared/utils/regex";
 import { SiteDiscoveryResult } from "../../discovery";
+import { Types } from "mongoose";
 
 /**
  * Site Repository
@@ -102,5 +103,21 @@ export class SiteRepository {
         returnDocument: "after",
       },
     );
+  }
+
+  /**
+   * 여러 siteId로 Site 목록 조회
+   * - subscription join 최적화용
+   * - IN query 기반 batch fetch
+   */
+
+  async findByIds(siteIds: string[]): Promise<Site[]> {
+    if (!siteIds.length) return [];
+
+    const objectIds = siteIds.map((id) => new Types.ObjectId(id));
+
+    return SiteModel.find({
+      _id: { $in: objectIds },
+    });
   }
 }

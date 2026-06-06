@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { subscribeAction } from "../actions/subscribeAction";
 import { useSiteSubscriptionStore } from "../store/siteSubscriptionStore";
+import { subscriptionQueryKey } from "../queries/subscriptionQueryKey";
 
 /**
  * 구독 mutation 훅
@@ -49,7 +50,7 @@ export function useSubscribeMutation() {
       }
 
       queryClient.invalidateQueries({
-        queryKey: ["site-search"],
+        queryKey: subscriptionQueryKey.all,
       });
 
       if (!selectedSite) return;

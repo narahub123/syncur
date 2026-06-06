@@ -1,16 +1,18 @@
-import { SubscriptionViewType } from "../../mocks/subscription-mock";
+import { SubscriptionListDto } from "../../dto/subscriptionDto";
 import SiteAvatar from "../SiteAvatar";
 
 type Props = {
-  item: SubscriptionViewType;
+  item: SubscriptionListDto;
 };
 
 const SubscriptionSiteCard = ({ item }: Props) => {
   const { favicon_url, siteName } = item;
-  const site = {};
+
+  console.log(item);
+
   return (
     <div className="flex items-center gap-1">
-      <SiteAvatar site={{ favicon_url, name: siteName }} />
+      <SiteAvatar site={{ favicon_url: favicon_url ?? "", name: siteName }} />
       <span className="text-sm">{siteName}</span>
     </div>
   );

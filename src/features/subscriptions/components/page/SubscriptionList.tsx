@@ -1,8 +1,8 @@
-import { SubscriptionViewType } from "../../mocks/subscription-mock";
+import { SubscriptionListDto } from "../../dto/subscriptionDto";
 import SubscriptionItem from "./SubscriptionItem";
 
 type Props = {
-  subscriptions: SubscriptionViewType[];
+  subscriptions: SubscriptionListDto[];
 };
 
 const SubscriptionList = ({ subscriptions }: Props) => {

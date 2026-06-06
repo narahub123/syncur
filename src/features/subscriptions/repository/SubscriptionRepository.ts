@@ -65,4 +65,29 @@ export class SubscriptionRepository {
   async findByUserId(userId: string): Promise<Subscription[]> {
     return SubscriptionModel.find({ userId }).lean();
   }
+
+  /**
+   * 사용자-사이트 구독 관계 삭제
+   *
+   * @description
+   * 특정 userId와 siteId를 기준으로 Subscription 문서를 1건 삭제한다.
+   * 사용자의 특정 사이트 구독 상태를 해제하는 데 사용된다.
+   *
+   * @layer
+   * Repository
+   *
+   * @database_operation
+   * DELETE (deleteOne)
+   *
+   * @param userId - 사용자 ID
+   * @param siteId - 사이트 ID
+   *
+   * @returns MongoDB deleteOne 결과 (deletedCount 포함)
+   */
+  async deleteByUserAndSite(userId: string, siteId: string) {
+    return SubscriptionModel.deleteOne({
+      userId,
+      siteId,
+    });
+  }
 }
