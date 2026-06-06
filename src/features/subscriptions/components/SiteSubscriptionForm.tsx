@@ -8,9 +8,15 @@ import { useSiteSubscriptionStore } from "../store/siteSubscriptionStore";
 
 import { useSiteSearch } from "@/features/rss/site/hooks/useSiteSearch";
 import { useDebounce } from "@/shared/hooks/useDebounce";
+import { SiteContextDTO } from "@/features/rss/site/dto/siteDto";
 
 const SiteSubscriptionForm = () => {
   const selectSite = useSiteSubscriptionStore((s) => s.selectSite);
+  const setNotSupported = useSiteSubscriptionStore((s) => s.setNotSupported);
+  const setAlreadySubscribed = useSiteSubscriptionStore(
+    (s) => s.setAlreadySubscribed,
+  );
+  const setIdle = useSiteSubscriptionStore((s) => s.setIdle);
 
   const inputValue = useSiteSubscriptionStore((s) => s.inputValue);
   const setInputValue = useSiteSubscriptionStore((s) => s.setInputValue);
@@ -18,6 +24,23 @@ const SiteSubscriptionForm = () => {
   const debouncedInput = useDebounce(inputValue, 300);
 
   const { data: options, isFetching } = useSiteSearch(debouncedInput);
+
+  const handleSelectSite = (site: SiteContextDTO) => {
+    console.log("사이트 정보", site)
+    selectSite(site);
+
+    if (!site.rssAvailable) {
+      setNotSupported();
+      return;
+    }
+
+    if (site.isSubscribed) {
+      setAlreadySubscribed();
+      return;
+    }
+
+    setIdle();
+  };
 
   return (
     <div className="space-y-4 rounded-xl border border-gray-200 p-4">
@@ -28,7 +51,7 @@ const SiteSubscriptionForm = () => {
         <SiteCombobox
           options={options ?? []}
           onSearch={() => {}}
-          onSelect={selectSite}
+          onSelect={handleSelectSite}
           inputValue={inputValue}
           setInputValue={setInputValue}
           isLoading={isFetching}

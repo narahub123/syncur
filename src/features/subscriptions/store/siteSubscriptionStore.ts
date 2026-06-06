@@ -63,10 +63,12 @@ type SiteSubscriptionStoreState = {
    */
   selectSite: (site: SiteContextDTO) => void;
 
+  setIdle: () => void;
+
   /**
    * 구독 진행 상태로 전환
    */
-  setSubscribing: () => void;
+  setProcessing: () => void;
 
   /**
    * 구독 성공 상태로 전환
@@ -141,11 +143,15 @@ export const useSiteSubscriptionStore = create<SiteSubscriptionStoreState>(
       });
     },
 
+    setIdle: () => {
+      set({ status: "idle" });
+    },
+
     /**
      * 구독 처리 시작 상태
      */
-    setSubscribing: () => {
-      set({ status: "subscribing" });
+    setProcessing: () => {
+      set({ status: "processing" });
     },
 
     /**

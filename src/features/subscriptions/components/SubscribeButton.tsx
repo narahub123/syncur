@@ -11,14 +11,12 @@ import { useSubscribeMutation } from "@/features/subscriptions/hooks/useSubscrib
  * - 선택된 사이트를 구독
  */
 const SubscribeButton = ({ isFetching }: { isFetching: boolean }) => {
-  const uiState = useSiteSubscriptionStore((s) => s.status);
   const selectedSite = useSiteSubscriptionStore((s) => s.selectedSite);
 
   const subscribeMutation = useSubscribeMutation();
 
   // 로딩 상태
-  const isLoading =
-    uiState === "subscribing" || isFetching || subscribeMutation.isPending;
+  const isLoading = isFetching || subscribeMutation.isPending;
 
   // 버튼 비활성 조건
   const isDisabled = isLoading || !selectedSite?.canSubscribe;
@@ -32,12 +30,17 @@ const SubscribeButton = ({ isFetching }: { isFetching: boolean }) => {
   };
 
   return (
-    <Button onClick={handleClick} disabled={isDisabled} aria-busy={isLoading}>
+    <Button
+      onClick={handleClick}
+      disabled={isDisabled}
+      aria-busy={isLoading}
+      className="w-18"
+    >
       {isLoading ? (
         <>
           <LoaderCircle size={14} className="animate-spin" />
           <span className="sr-only">
-            {SITE_SUBSCRIPTION_STATUS_A11Y.subscribing}
+            {SITE_SUBSCRIPTION_STATUS_A11Y.processing}
           </span>
         </>
       ) : (

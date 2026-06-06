@@ -19,11 +19,11 @@ export function getSiteStatus(site: {
   canSubscribe: boolean;
   isSubscribed: boolean;
 }): SubscriptionStatus {
-  // 구독 자체가 불가능한 사이트
-  if (!site.canSubscribe) return "not_supported";
-
   // 이미 구독 중인 사이트
   if (site.isSubscribed) return "subscribed";
+
+  // 구독 자체가 불가능한 사이트
+  if (!site.canSubscribe) return "not_supported";
 
   // 기본적으로 구독 가능한 상태
   return "available";
