@@ -145,7 +145,12 @@ const SiteCombobox = ({
                   >
                     <div className="flex w-full items-center justify-between">
                       <div className="flex flex-1 items-center gap-2">
-                        <SiteAvatar site={site} />
+                        <SiteAvatar
+                          site={{
+                            favicon_url: site.favicon_url ?? "",
+                            name: site.name,
+                          }}
+                        />
                         <span className="text-xs">{site.name}</span>
                       </div>
                       <SubscriptionStatusBadge status={getSiteStatus(site)} />
