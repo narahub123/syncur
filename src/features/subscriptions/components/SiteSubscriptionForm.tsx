@@ -21,9 +21,7 @@ const SiteSubscriptionForm = () => {
 
   return (
     <div className="space-y-4 rounded-xl border border-gray-200 p-4">
-      <h3 className="text-sm font-medium">
-        사이트 주소를 입력해서 구독해보세요
-      </h3>
+      <h3 className="h-6 text-sm font-medium">관심 사이트를 등록하세요</h3>
 
       {/* input + selection layer */}
       <div className="flex gap-3">

@@ -24,15 +24,12 @@ const StatusIndicator = () => {
   // 접근성용 메시지 (screen reader)
   const a11yMessage = FEED_STATUS_A11Y[uiState];
 
-  // idle 상태는 UI 노출 최소화
-  if (uiState === "idle") return null;
-
   return (
     <div
       role="status"
       aria-live="polite"
       aria-atomic="true"
-      className="flex flex-col gap-1 px-2"
+      className="flex h-6 flex-col gap-1 px-2"
     >
       {/* 사용자 UI 메시지 */}
       <p

@@ -8,9 +8,11 @@ import {
   ComboboxList,
 } from "@/shared/components/ui/combobox";
 
-import { Check, Circle, LoaderCircle, X } from "lucide-react";
+import { LoaderCircle } from "lucide-react";
 import SiteAvatar from "./SiteAvatar";
 import { SiteContextDTO } from "@/features/rss/site/dto/siteDto";
+import { SubscriptionStatusBadge } from "./SubscriptionStatusBadge";
+import { getSiteStatus } from "../domain/getSiteStatus";
 
 type SiteComboboxProps = {
   /**
@@ -80,6 +82,21 @@ const SiteCombobox = ({
     onSearch(value);
   };
 
+  const handleClick = (site: SiteContextDTO) => {
+    /**
+     * 선택 이벤트:
+     * - 상태 변경 없음
+     * - store or parent에서 처리
+     */
+    onSelect(site);
+
+    /**
+     * UX 개선:
+     * 선택 시 input도 동기화
+     */
+    setInputValue(site.url);
+  };
+
   return (
     <Combobox onValueChange={handleValueChange}>
       {/* =========================
@@ -87,8 +104,8 @@ const SiteCombobox = ({
          ========================= */}
       <ComboboxInput
         value={inputValue}
-        placeholder="사이트를 입력해주세요."
-        className="flex-1 text-sm"
+        placeholder="관심 사이트를 등록하세요"
+        className="flex-1"
         onChange={(e) => {
           const value = e.target.value;
 
@@ -119,55 +136,23 @@ const SiteCombobox = ({
             )}
             {!isLoading &&
               options.length > 0 &&
-              options.map((site) => (
-                <ComboboxItem
-                  key={site.siteId}
-                  value={site.url}
-                  onClick={() => {
-                    /**
-                     * 선택 이벤트:
-                     * - 상태 변경 없음
-                     * - store or parent에서 처리
-                     */
-                    onSelect(site);
-
-                    /**
-                     * UX 개선:
-                     * 선택 시 input도 동기화
-                     */
-                    setInputValue(site.url);
-                  }}
-                >
-                  <div className="flex w-full items-center justify-between">
-                    <div className="flex flex-1 items-center gap-2">
-                      <SiteAvatar site={site} />
-                      <span className="text-xs">{site.name}</span>
+              options.map((site) => {
+                return (
+                  <ComboboxItem
+                    key={site.siteId}
+                    value={site.url}
+                    onClick={() => handleClick(site)}
+                  >
+                    <div className="flex w-full items-center justify-between">
+                      <div className="flex flex-1 items-center gap-2">
+                        <SiteAvatar site={site} />
+                        <span className="text-xs">{site.name}</span>
+                      </div>
+                      <SubscriptionStatusBadge status={getSiteStatus(site)} />
                     </div>
-                    <span
-                      className=""
-                      aria-hidden="true"
-                      title={`구독 ${site.canSubscribe ? "가능" : "불가"}`}
-                    >
-                      {site.canSubscribe && site.isSubscribed ? (
-                        <div className="flex items-center gap-1 text-xs text-blue-400">
-                          <span>구독 가능</span>
-                          <Circle />
-                        </div>
-                      ) : site.canSubscribe && !site.isSubscribed ? (
-                        <div className="flex items-center gap-1 text-xs text-blue-400">
-                          <span>구독중</span>
-                          <Check />
-                        </div>
-                      ) : (
-                        <div className="flex items-center gap-1 text-xs text-red-400">
-                          <span>구독 불가</span>
-                          <X />
-                        </div>
-                      )}
-                    </span>
-                  </div>
-                </ComboboxItem>
-              ))}
+                  </ComboboxItem>
+                );
+              })}
           </ComboboxList>
         </ComboboxContent>
       )}
