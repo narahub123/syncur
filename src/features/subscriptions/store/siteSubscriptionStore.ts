@@ -1,9 +1,9 @@
 import { create } from "zustand";
 import type { SiteContextDTO } from "@/features/rss/site/dto/siteDto";
-import { UIState } from "../types/feed-discovery";
+import { SiteSubscriptionState } from "../types/site-subscription-status";
 
 /**
- * FeedDiscoveryState
+ * SiteSubscriptionStoreState
  *
  * 역할:
  * - 사용자의 URL 입력 → 사이트 후보 탐색 → 사이트 선택 → 구독까지의 UI 흐름 관리
@@ -13,7 +13,7 @@ import { UIState } from "../types/feed-discovery";
  * - RSS 탐색, subscription 생성 등 비즈니스 로직은 절대 포함하지 않음
  * - store는 UI 상태 저장소 역할만 수행
  */
-type FeedDiscoveryState = {
+type SiteSubscriptionStoreState = {
   /* =========================
    * STATE
    * ========================= */
@@ -22,7 +22,7 @@ type FeedDiscoveryState = {
    * 현재 UI 상태
    * - 화면이 어떤 단계인지 결정하는 최소 상태 머신
    */
-  uiState: UIState;
+  status: SiteSubscriptionState;
 
   /**
    * 사용자 입력값 (controlled input)
@@ -94,97 +94,99 @@ type FeedDiscoveryState = {
   reset: () => void;
 };
 
-export const useFeedDiscoveryStore = create<FeedDiscoveryState>((set) => ({
-  /* =========================
-   * INITIAL STATE
-   * ========================= */
+export const useSiteSubscriptionStore = create<SiteSubscriptionStoreState>(
+  (set) => ({
+    /* =========================
+     * INITIAL STATE
+     * ========================= */
 
-  uiState: "idle",
-  inputValue: "",
-  siteOptions: [],
-  selectedSite: null,
+    status: "idle",
+    inputValue: "",
+    siteOptions: [],
+    selectedSite: null,
 
-  /* =========================
-   * ACTIONS
-   * ========================= */
+    /* =========================
+     * ACTIONS
+     * ========================= */
 
-  /**
-   * input 값 변경
-   * - controlled input 업데이트만 담당
-   */
-  setInputValue: (value) => {
-    set({
-      inputValue: value,
-    });
-  },
+    /**
+     * input 값 변경
+     * - controlled input 업데이트만 담당
+     */
+    setInputValue: (value) => {
+      set({
+        inputValue: value,
+      });
+    },
 
-  /**
-   * siteOptions 업데이트
-   * - TanStack Query 결과를 store에 반영
-   */
-  setSiteOptions: (options) => {
-    set({
-      siteOptions: options,
-    });
-  },
+    /**
+     * siteOptions 업데이트
+     * - TanStack Query 결과를 store에 반영
+     */
+    setSiteOptions: (options) => {
+      set({
+        siteOptions: options,
+      });
+    },
 
-  /**
-   * 사이트 선택
-   * - combobox에서 선택된 site 반영
-   * - input 값 동기화
-   */
-  selectSite: (site) => {
-    set({
-      selectedSite: site,
-      inputValue: site.url,
-    });
-  },
+    /**
+     * 사이트 선택
+     * - combobox에서 선택된 site 반영
+     * - input 값 동기화
+     */
+    selectSite: (site) => {
+      set({
+        selectedSite: site,
+        inputValue: site.url,
+      });
+    },
 
-  /**
-   * 구독 처리 시작 상태
-   */
-  setSubscribing: () => {
-    set({ uiState: "subscribing" });
-  },
+    /**
+     * 구독 처리 시작 상태
+     */
+    setSubscribing: () => {
+      set({ status: "subscribing" });
+    },
 
-  /**
-   * 구독 성공 상태
-   */
-  setSubscribed: () => {
-    set({ uiState: "subscribed" });
-  },
+    /**
+     * 구독 성공 상태
+     */
+    setSubscribed: () => {
+      set({ status: "subscribed" });
+    },
 
-  /**
-   *
-   */
-  setAlreadySubscribed: () => {
-    set({ uiState: "already_subscribed" });
-  },
+    /**
+     *
+     */
+    setAlreadySubscribed: () => {
+      set({ status: "already_subscribed" });
+    },
 
-  /**
-   *
-   */
-  setNotSupported: () => {
-    set({ uiState: "not_supported" });
-  },
+    /**
+     *
+     */
+    setNotSupported: () => {
+      set({ status: "not_supported" });
+    },
 
-  /**
-   * 에러 상태 설정
-   */
-  setError: (message) => {
-    if (message) console.error(message);
-    set({ uiState: "error" });
-  },
+    /**
+     * 에러 상태 설정
+     */
+    setError: (message) => {
+      if (message) console.error(message);
+      set({ status: "error" });
+    },
 
-  /**
-   * 전체 상태 초기화
-   */
-  reset: () => {
-    set({
-      uiState: "idle",
-      inputValue: "",
-      siteOptions: [],
-      selectedSite: null,
-    });
-  },
-}));
+    /**
+     * 전체 상태 초기화
+     */
+    reset: () => {
+      set({
+        status: "idle",
+        inputValue: "",
+        siteOptions: [],
+        selectedSite: null,
+      });
+    },
+  }),
+);

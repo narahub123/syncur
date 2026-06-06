@@ -1,8 +1,8 @@
 /**
- * UI 상태 머신
- * subscription discovery workflow의 현재 단계
+ * 상태 머신
+ * SiteSubscriptionForm의 상태 머지
  */
-export type UIState =
+export type SiteSubscriptionState =
   | "idle" // 아무 입력 없음
   | "subscribing" // 전체 처리 진행 중
   | "subscribed" // 성공

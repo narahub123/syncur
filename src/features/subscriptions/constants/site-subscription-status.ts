@@ -1,4 +1,4 @@
-import { UIState } from "../types/feed-discovery";
+import { SiteSubscriptionState } from "../types/site-subscription-status";
 
 /**
  * UI 상태별 스크린리더(A11y) 전용 문구 매핑
@@ -8,7 +8,10 @@ import { UIState } from "../types/feed-discovery";
  * - aria-live / role=status와 함께 사용
  * - UI 의미를 짧게 전달
  */
-export const FEED_STATUS_A11Y: Record<UIState, string> = {
+export const SITE_SUBSCRIPTION_STATUS_A11Y: Record<
+  SiteSubscriptionState,
+  string
+> = {
   idle: "대기 상태",
   subscribing: "구독 처리 중",
   subscribed: "구독 완료",
@@ -24,7 +27,10 @@ export const FEED_STATUS_A11Y: Record<UIState, string> = {
  * - 화면에 보여지는 상태 메시지 정의
  * - StatusIndicator 등 UI 공통 메시지 표준화
  */
-export const FEED_STATUS_MESSAGE: Record<UIState, string> = {
+export const SITE_SUBSCRIPTION_STATUS_MESSAGE: Record<
+  SiteSubscriptionState,
+  string
+> = {
   idle: "",
   subscribing: "구독을 처리하고 있습니다",
   subscribed: "구독이 완료되었습니다",

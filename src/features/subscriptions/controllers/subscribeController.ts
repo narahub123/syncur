@@ -1,18 +1,18 @@
 import { subscribeAction } from "../actions/subscribeAction";
-import { useFeedDiscoveryStore } from "../store/feedDiscovery";
+import { useSiteSubscriptionStore } from "../store/siteSubscriptionStore";
 import { normalizeInputUrl } from "@/features/rss/discovery/utils/normalizeInputUrl";
 import { discoverRSS } from "@/features/rss/api/discoverRss";
 import { saveSiteAction } from "@/features/rss/site/actions/saveSiteAction";
 
 export async function subscribeController() {
-  const { selectedSite, inputValue } = useFeedDiscoveryStore.getState();
+  const { selectedSite, inputValue } = useSiteSubscriptionStore.getState();
 
   if (!selectedSite && !inputValue) {
-    useFeedDiscoveryStore.getState().setError("no site selected");
+    useSiteSubscriptionStore.getState().setError("no site selected");
     return;
   }
 
-  useFeedDiscoveryStore.getState().setSubscribing();
+  useSiteSubscriptionStore.getState().setSubscribing();
 
   try {
     /**
@@ -22,9 +22,9 @@ export async function subscribeController() {
       const result = await subscribeAction(selectedSite.siteId);
 
       if (result.status === "already_subscribed") {
-        useFeedDiscoveryStore.getState().setAlreadySubscribed();
+        useSiteSubscriptionStore.getState().setAlreadySubscribed();
       } else {
-        useFeedDiscoveryStore.getState().setSubscribed();
+        useSiteSubscriptionStore.getState().setSubscribed();
       }
 
       return;
@@ -40,15 +40,15 @@ export async function subscribeController() {
     const savedSite = await saveSiteAction(result.site);
 
     if (result.type !== "found") {
-      useFeedDiscoveryStore.getState().setNotSupported();
+      useSiteSubscriptionStore.getState().setNotSupported();
       return;
     }
 
     await subscribeAction(savedSite._id);
 
-    useFeedDiscoveryStore.getState().setSubscribed();
+    useSiteSubscriptionStore.getState().setSubscribed();
   } catch (e) {
     console.error("구독 실패", e);
-    useFeedDiscoveryStore.getState().setError("subscribe failed");
+    useSiteSubscriptionStore.getState().setError("subscribe failed");
   }
 }

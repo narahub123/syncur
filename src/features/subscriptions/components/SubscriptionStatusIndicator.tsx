@@ -1,28 +1,28 @@
 "use client";
 
-import { useFeedDiscoveryStore } from "../store/feedDiscovery";
+import { useSiteSubscriptionStore } from "../store/siteSubscriptionStore";
 import {
-  FEED_STATUS_MESSAGE,
-  FEED_STATUS_A11Y,
-} from "../constants/feed-discovery";
+  SITE_SUBSCRIPTION_STATUS_MESSAGE,
+  SITE_SUBSCRIPTION_STATUS_A11Y,
+} from "../constants/site-subscription-status";
 import { cn } from "@/shared/utils/cn";
 
 /**
- * StatusIndicator
+ * SubscriptionStatusIndicator
  *
  * 역할:
  * - UIState를 사용자 메시지로 변환하여 표시
  * - 접근성(aria-live) 메시지 제공
  * - 상태 변화에 따른 UX 피드백 중앙 집중 처리
  */
-const StatusIndicator = () => {
-  const uiState = useFeedDiscoveryStore((s) => s.uiState);
+const SubscriptionStatusIndicator = () => {
+  const uiState = useSiteSubscriptionStore((s) => s.status);
 
   // 현재 상태에 대한 사용자 메시지
-  const message = FEED_STATUS_MESSAGE[uiState];
+  const message = SITE_SUBSCRIPTION_STATUS_MESSAGE[uiState];
 
   // 접근성용 메시지 (screen reader)
-  const a11yMessage = FEED_STATUS_A11Y[uiState];
+  const a11yMessage = SITE_SUBSCRIPTION_STATUS_A11Y[uiState];
 
   return (
     <div
@@ -49,4 +49,4 @@ const StatusIndicator = () => {
   );
 };
 
-export default StatusIndicator;
+export default SubscriptionStatusIndicator;

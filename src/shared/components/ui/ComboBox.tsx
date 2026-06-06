@@ -5,11 +5,9 @@ import { Combobox as ComboboxPrimitive } from "@base-ui/react";
 
 import {
   InputGroup,
-  InputGroupAddon,
-  InputGroupButton,
   InputGroupInput,
 } from "@/shared/components/ui/input-group";
-import { ChevronDownIcon, XIcon, CheckIcon } from "lucide-react";
+import { ChevronDownIcon, XIcon } from "lucide-react";
 import { cn } from "@/shared/utils/cn";
 import { Button } from "./button";
 
@@ -36,25 +34,10 @@ function ComboboxTrigger({
   );
 }
 
-function ComboboxClear({ className, ...props }: ComboboxPrimitive.Clear.Props) {
-  return (
-    <ComboboxPrimitive.Clear
-      data-slot="combobox-clear"
-      render={<InputGroupButton variant="ghost" size="icon-xs" />}
-      className={cn(className)}
-      {...props}
-    >
-      <XIcon className="pointer-events-none" />
-    </ComboboxPrimitive.Clear>
-  );
-}
-
 function ComboboxInput({
   className,
   children,
   disabled = false,
-  showTrigger = true,
-  showClear = false,
   ...props
 }: ComboboxPrimitive.Input.Props & {
   showTrigger?: boolean;

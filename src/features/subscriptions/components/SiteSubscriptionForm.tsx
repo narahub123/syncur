@@ -2,18 +2,18 @@
 
 import SiteCombobox from "./SiteCombobox";
 import SubscribeButton from "./SubscribeButton";
-import StatusIndicator from "./StatusIndicator";
+import SubscriptionStatusIndicator from "./SubscriptionStatusIndicator";
 
-import { useFeedDiscoveryStore } from "../store/feedDiscovery";
+import { useSiteSubscriptionStore } from "../store/siteSubscriptionStore";
 
 import { useSiteSearch } from "@/features/rss/site/hooks/useSiteSearch";
 import { useDebounce } from "@/shared/hooks/useDebounce";
 
 const SiteSubscriptionForm = () => {
-  const selectSite = useFeedDiscoveryStore((s) => s.selectSite);
+  const selectSite = useSiteSubscriptionStore((s) => s.selectSite);
 
-  const inputValue = useFeedDiscoveryStore((s) => s.inputValue);
-  const setInputValue = useFeedDiscoveryStore((s) => s.setInputValue);
+  const inputValue = useSiteSubscriptionStore((s) => s.inputValue);
+  const setInputValue = useSiteSubscriptionStore((s) => s.setInputValue);
 
   const debouncedInput = useDebounce(inputValue, 300);
 
@@ -38,7 +38,7 @@ const SiteSubscriptionForm = () => {
       </div>
 
       {/* state feedback layer */}
-      <StatusIndicator />
+      <SubscriptionStatusIndicator />
     </div>
   );
 };

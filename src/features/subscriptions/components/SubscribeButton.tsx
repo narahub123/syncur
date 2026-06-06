@@ -2,8 +2,8 @@
 
 import { Button } from "@/shared/components/ui/button";
 import { LoaderCircle } from "lucide-react";
-import { FEED_STATUS_A11Y } from "../constants/feed-discovery";
-import { useFeedDiscoveryStore } from "../store/feedDiscovery";
+import { SITE_SUBSCRIPTION_STATUS_A11Y } from "../constants/site-subscription-status";
+import { useSiteSubscriptionStore } from "../store/siteSubscriptionStore";
 import { useSubscribeMutation } from "@/features/subscriptions/hooks/useSubscribeMutation";
 
 /**
@@ -11,8 +11,8 @@ import { useSubscribeMutation } from "@/features/subscriptions/hooks/useSubscrib
  * - 선택된 사이트를 구독
  */
 const SubscribeButton = ({ isFetching }: { isFetching: boolean }) => {
-  const uiState = useFeedDiscoveryStore((s) => s.uiState);
-  const selectedSite = useFeedDiscoveryStore((s) => s.selectedSite);
+  const uiState = useSiteSubscriptionStore((s) => s.status);
+  const selectedSite = useSiteSubscriptionStore((s) => s.selectedSite);
 
   const subscribeMutation = useSubscribeMutation();
 
@@ -36,7 +36,9 @@ const SubscribeButton = ({ isFetching }: { isFetching: boolean }) => {
       {isLoading ? (
         <>
           <LoaderCircle size={14} className="animate-spin" />
-          <span className="sr-only">{FEED_STATUS_A11Y.subscribing}</span>
+          <span className="sr-only">
+            {SITE_SUBSCRIPTION_STATUS_A11Y.subscribing}
+          </span>
         </>
       ) : (
         "구독하기"
