@@ -1,16 +1,17 @@
 import { parseStringPromise } from "xml2js";
-import type { FeedItem } from "@/shared/types/feed";
-import { RawRssItem } from "./types";
+import { ParsedFeedItem, RawRssItem } from "./types";
 
 /**
- * RSS / Atom XML → FeedItem[] 변환
+ * RSS / Atom XML → ParsedFeedItem[] 변환
  *
  * 역할:
  * - RSS / Atom 통합 처리
  * - 구조 normalize
  * - Syncur 내부 표준 포맷으로 변환
  */
-export async function parseAndNormalizeFeed(xml: string): Promise<FeedItem[]> {
+export async function parseAndNormalizeFeed(
+  xml: string,
+): Promise<ParsedFeedItem[]> {
   const raw = await parseStringPromise(xml, {
     explicitArray: false,
     trim: true,
@@ -41,9 +42,9 @@ export async function parseAndNormalizeFeed(xml: string): Promise<FeedItem[]> {
 }
 
 /**
- * RSS 2.0 → FeedItem 변환
+ * RSS 2.0 → ParsedFeedItem 변환
  */
-function normalizeRss(items: RawRssItem | RawRssItem[]): FeedItem[] {
+function normalizeRss(items: RawRssItem | RawRssItem[]): ParsedFeedItem[] {
   const list = Array.isArray(items) ? items : [items];
 
   return list.map((item) => ({
@@ -54,9 +55,9 @@ function normalizeRss(items: RawRssItem | RawRssItem[]): FeedItem[] {
 }
 
 /**
- * Atom → FeedItem 변환
+ * Atom → ParsedFeedItem 변환
  */
-function normalizeAtom(entries: unknown): FeedItem[] {
+function normalizeAtom(entries: unknown): ParsedFeedItem[] {
   const list = Array.isArray(entries) ? entries : [entries];
 
   return list

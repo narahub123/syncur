@@ -1,4 +1,4 @@
-import type { FeedItem } from "@/shared/types/feed";
+import { ParsedFeedItem } from "../parser/types";
 
 /**
  * RSS Feed scoring engine
@@ -7,7 +7,7 @@ import type { FeedItem } from "@/shared/types/feed";
  * - 여러 RSS 후보 중 "가장 신뢰할 수 있는 feed" 선택
  * - 구조 안정성 + 접근성 + 품질 기반 점수화
  */
-export function scoreFeeds(feedUrl: string, feed: FeedItem[]): number {
+export function scoreFeeds(feedUrl: string, feed: ParsedFeedItem[]): number {
   let score = 0;
 
   /**

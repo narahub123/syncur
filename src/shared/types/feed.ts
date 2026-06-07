@@ -1,39 +1,28 @@
 export type FeedItem = {
-  /**
-   * 글 제목
-   * - RSS / Atom title 통합
-   * - HTML entity 제거된 정제된 값
-   */
-  title: string;
+  _id: string;
 
-  /**
-   * 원문 링크
-   * - 클릭 이동용 canonical URL
-   * - 상대경로 → 절대경로 변환 필수
-   */
+  feedId: string;
+
+  guid?: string | null;
+
   link: string;
 
-  /**
-   * 게시 날짜
-   * - RSS: pubDate
-   * - Atom: published / updated
-   * - 없으면 undefined
-   */
-  publishedAt?: Date;
+  title: string;
 
-  /**
-   * 선택 정보 (확장용)
-   * - content snippet
-   * - summary
-   * - description
-   */
-  summary?: string;
+  description?: string | null;
 
-  /**
-   * source feed URL
-   * - 어떤 feed에서 왔는지 추적용
-   */
-  sourceFeedUrl?: string;
+  content?: string | null;
+
+  author?: string | null;
+
+  publishedAt?: Date | null;
+
+  categories: string[];
+
+  hash: string;
+
+  createdAt: Date;
+  updatedAt: Date;
 };
 
 export type FeedStauts = "active" | "disabled";

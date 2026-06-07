@@ -3,6 +3,7 @@
 import InterestSelectionModal from "@/features/interests/components/InterestSelectionModal";
 import SiteSubscriptionForm from "@/features/subscriptions/components/SiteSubscriptionForm";
 import { useState } from "react";
+import { useMyFeedItems } from "../hooks/useMyFeedItems";
 
 type FeedClientProps = {
   isFirstLogin: boolean;
@@ -11,12 +12,19 @@ type FeedClientProps = {
 const FeedClient = ({ isFirstLogin }: FeedClientProps) => {
   const [isOpen, setIsOpen] = useState(isFirstLogin);
 
+  const { data, isLoading, error } = useMyFeedItems();
+
+  const feedItems = data?.data ?? [];
+
+  console.log("목록", feedItems);
   return (
     <div>
       <InterestSelectionModal open={isOpen} onClose={() => setIsOpen(false)} />
-      <section className="p-4">
-        <SiteSubscriptionForm />
-      </section>
+      {feedItems.length === 0 && (
+        <section className="p-4">
+          <SiteSubscriptionForm />
+        </section>
+      )}
     </div>
   );
 };

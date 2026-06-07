@@ -5,7 +5,6 @@ import { CreateSiteDto } from "../dto/siteDto";
 import { escapeRegExp } from "@/shared/utils/regex";
 import { SiteDiscoveryResult } from "../../discovery";
 import { Types } from "mongoose";
-import { FeedModel } from "@/features/feeds/model/feed";
 
 /**
  * Site Repository

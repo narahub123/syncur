@@ -21,3 +21,9 @@ export type RawAtomEntry = {
   published?: string;
   date?: string;
 };
+
+export type ParsedFeedItem = {
+  title: string;
+  link: string;
+  publishedAt?: Date;
+};
