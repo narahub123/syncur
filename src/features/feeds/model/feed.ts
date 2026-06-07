@@ -122,7 +122,6 @@ const FeedSchema = new Schema<FeedDocument>(
     categories: {
       type: [String],
       default: [],
-      index: true,
     },
   },
   {
@@ -135,6 +134,7 @@ const FeedSchema = new Schema<FeedDocument>(
  * Index
  */
 FeedSchema.index({ status: 1, lastFetchedAt: 1 });
+FeedSchema.index({ categories: 1 });
 
 export const FeedModel =
   mongoose.models.Feed || mongoose.model<FeedDocument>("Feed", FeedSchema);

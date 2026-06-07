@@ -144,7 +144,6 @@ const FeedItemSchema = new Schema<FeedItemDocument>(
     categories: {
       type: [String],
       default: [],
-      index: true,
     },
 
     hash: {
