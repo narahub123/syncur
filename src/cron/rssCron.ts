@@ -4,15 +4,21 @@ import { FeedModel } from "@/features/feeds/model/feed";
 import { runFeedIngestion } from "@/ingestion/rss/runFeedIngestion";
 import dotenv from "dotenv";
 import { RSS_CONFIG } from "@/ingestion/rss/rss-config";
+import { runRecovery } from "@/ingestion/rss/runRecovery";
 
 dotenv.config({ path: ".env.local" });
 
 /**
  * RSS Cron Entry
  *
- * - 10분마다 실행
- * - active feed만 처리
- * - ingestion pipeline 호출만 담당
+ * === 전체 구조 ===
+ * 1. recovery (disabled → active 복구 시도)
+ * 2. ingestion (active feed 처리)
+ *
+ * === 설계 철학 ===
+ * - recovery는 "복구 레이어"
+ * - ingestion은 "데이터 수집 레이어"
+ * - 둘은 독립이지만 같은 cycle에서 연결됨
  */
 async function runCron() {
   await mongoose.connect(process.env.MONGODB_URI as string);
@@ -20,6 +26,18 @@ async function runCron() {
   let isRunning = false;
 
   cron.schedule(RSS_CONFIG.CRON_SCHEDULE, async () => {
+    /**
+     * 0. Recovery 단계 (선행 실행)
+     *
+     * - disabled 상태 feed 중 복구 가능한 feed를 먼저 활성화 시도
+     * - ingestion cron 이전에 실행하여 "살아날 feed"를 먼저 복원
+     *
+     * 이유:
+     * - recovery 성공 feed는 이번 cycle에서 바로 ingestion 대상이 될 수 있음
+     * - ingestion과 recovery는 독립된 lifecycle이지만 같은 cycle에서 연결됨
+     */
+    await runRecovery();
+
     /**
      * cron 중복 실행 방지 플래그
      * - 이전 실행이 끝나기 전에 다시 실행되는 것을 방지
@@ -39,16 +57,18 @@ async function runCron() {
        * 1. 처리 대상 feed 조회
        *
        * 조건:
-       * - status = active → 정상 동작 feed만
-       * - lastFetchedAt 기준 필터:
-       *   → 10분 이내에 이미 처리된 feed는 제외
+       * - status = active → 정상 동작 feed만 처리
+       * - errorCount < threshold → 과도 실패 feed 제외
+       * - lastFetchedAt 기준 throttling → 과도한 fetch 방지
        *
        * 목적:
-       * - 불필요한 RSS fetch 방지
-       * - 외부 RSS 서버 부하 감소
+       * - RSS 서버 부하 최소화
+       * - 동일 feed 중복 fetch 방지
+       * - 안정적인 ingestion cycle 유지
        */
       const feeds = await FeedModel.find({
         status: "active",
+        errorCount: { $lt: RSS_CONFIG.ERROR_THRESHOLD },
         $or: [
           { lastFetchedAt: null },
           {

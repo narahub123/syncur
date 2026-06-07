@@ -28,3 +28,19 @@ export type RSSItem = {
  * RSS/Atom XML 구조는 스키마가 존재하지 않는 JSON-like 구조
  */
 export type XMLNode = Record<string, unknown>;
+
+export type RSSFailureType =
+  | "TEMPORARY" // retry + 누적
+  | "PERMANENT" // 즉시 중단/disabled 후보
+  | "PARSE"; // 데이터 문제
+
+export const INGESTION_RESULT = {
+  SUCCESS: "success",
+  ERROR: "error",
+  PARSE_ERROR: "parse_error",
+  SKIPPED_DISABLED: "skipped_disabled",
+  DISABLED_TRIGGERED: "disabled_triggered",
+} as const;
+
+export type IngestionResult =
+  (typeof INGESTION_RESULT)[keyof typeof INGESTION_RESULT];

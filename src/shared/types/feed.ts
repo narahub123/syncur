@@ -36,7 +36,7 @@ export type FeedItem = {
   sourceFeedUrl?: string;
 };
 
-export type FeedStauts = "active" | "error" | "disabled";
+export type FeedStauts = "active" | "disabled";
 
 export type Feed = {
   id: string;

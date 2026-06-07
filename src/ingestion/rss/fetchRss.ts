@@ -2,54 +2,96 @@ import axios from "axios";
 import { RSS_CONFIG } from "./rss-config";
 
 /**
- * RSS XML fetch layer
- *
- * === 역할 ===
- * RSS URL → raw XML string 획득
- *
- * === 특징 ===
- * - AbortController 기반 timeout 처리
- * - HTTP header 표준화
- * - RSS 서버 안정성 고려
+ * retry 가능한 에러인지 판단
+ */
+function isRetryableError(err: unknown): boolean {
+  if (!axios.isAxiosError(err)) return true;
+
+  const code = err.code as string | undefined;
+  const status = err.response?.status;
+
+  if (
+    code &&
+    (RSS_CONFIG.RETRYABLE_ERRORS as readonly string[]).includes(code)
+  ) {
+    return true;
+  }
+
+  if (status && status >= 500) {
+    return true;
+  }
+
+  return false;
+}
+
+/**
+ * sleep util (backoff용)
+ */
+function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+/**
+ * RSS XML fetch layer (with retry/backoff)
  */
 export async function fetchRSS(feedUrl: string): Promise<string> {
-  const controller = new AbortController();
+  let lastError: unknown;
 
-  const timeout = setTimeout(() => {
-    controller.abort();
-  }, RSS_CONFIG.RSS_FETCH_TIMEOUT);
+  for (let attempt = 0; attempt < RSS_CONFIG.MAX_RETRY_COUNT; attempt++) {
+    const controller = new AbortController();
 
-  try {
-    const res = await axios.get(feedUrl, {
-      signal: controller.signal,
-      headers: {
-        "User-Agent": RSS_CONFIG.RSS_USER_AGENT,
-        Accept: RSS_CONFIG.RSS_ACCEPT,
-      },
-    });
+    const timeout = setTimeout(() => {
+      controller.abort();
+    }, RSS_CONFIG.RSS_FETCH_TIMEOUT);
 
-    return res.data;
-  } catch (err: unknown) {
-    /**
-     * Axios error classification
-     * → ingestion layer에서 정책 처리 가능하도록 분류
-     */
-    if (axios.isAxiosError(err)) {
-      if (err.code === "ERR_CANCELED") {
-        throw new Error(`RSS_FETCH_TIMEOUT: ${feedUrl}`);
+    try {
+      const res = await axios.get(feedUrl, {
+        signal: controller.signal,
+        headers: {
+          "User-Agent": RSS_CONFIG.RSS_USER_AGENT,
+          Accept: RSS_CONFIG.RSS_ACCEPT,
+        },
+      });
+
+      return res.data;
+    } catch (err: unknown) {
+      lastError = err;
+
+      // retry 불가능한 에러는 즉시 종료
+      if (!isRetryableError(err)) {
+        break;
       }
 
-      if (err.response) {
-        throw new Error(`RSS_HTTP_ERROR_${err.response.status}: ${feedUrl}`);
+      // 마지막 시도면 break
+      if (attempt === RSS_CONFIG.MAX_RETRY_COUNT - 1) {
+        break;
       }
 
-      if (err.code === "ENOTFOUND") {
-        throw new Error(`RSS_DNS_ERROR: ${feedUrl}`);
-      }
+      // exponential backoff
+      const delay = RSS_CONFIG.RETRY_BACKOFF_BASE_MS * Math.pow(2, attempt);
+
+      await sleep(delay);
+    } finally {
+      clearTimeout(timeout);
+    }
+  }
+
+  // 에러 표준화
+  if (axios.isAxiosError(lastError)) {
+    if (lastError.code === "ERR_CANCELED") {
+      throw new Error(`RSS_FETCH_TIMEOUT: ${feedUrl}`);
     }
 
-    throw new Error(`RSS_UNKNOWN_ERROR: ${feedUrl}`);
-  } finally {
-    clearTimeout(timeout);
+    if (lastError.response) {
+      throw new Error(
+        `RSS_HTTP_ERROR_${lastError.response.status}: ${feedUrl}`,
+      );
+    }
+
+    if (lastError.code === "ENOTFOUND") {
+      throw new Error(`RSS_DNS_ERROR: ${feedUrl}`);
+    }
   }
+
+  throw new Error(`RSS_UNKNOWN_ERROR: ${feedUrl}`);
 }
