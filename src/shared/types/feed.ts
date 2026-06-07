@@ -9,13 +9,11 @@ export type FeedItem = {
 
   title: string;
 
-  description?: string | null;
-
-  content?: string | null;
+  description: string;
 
   author?: string | null;
 
-  publishedAt?: Date | null;
+  publishedAt: string | null;
 
   categories: string[];
 

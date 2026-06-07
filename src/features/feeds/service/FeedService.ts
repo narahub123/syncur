@@ -66,7 +66,7 @@ export class FeedService {
       ...item,
       _id: item._id.toString(),
       feedId: item.feedId.toString(),
-      publishedAt: item.publishedAt ? item.publishedAt.toISOString() : null,
+      publishedAt: item.publishedAt ? item.publishedAt : null,
     }));
   }
 }

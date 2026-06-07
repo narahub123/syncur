@@ -4,6 +4,7 @@ import InterestSelectionModal from "@/features/interests/components/InterestSele
 import SiteSubscriptionForm from "@/features/subscriptions/components/SiteSubscriptionForm";
 import { useState } from "react";
 import { useMyFeedItems } from "../hooks/useMyFeedItems";
+import FeedList from "./FeedList";
 
 type FeedClientProps = {
   isFirstLogin: boolean;
@@ -25,6 +26,7 @@ const FeedClient = ({ isFirstLogin }: FeedClientProps) => {
           <SiteSubscriptionForm />
         </section>
       )}
+      {feedItems.length > 0 && <FeedList items={feedItems} />}
     </div>
   );
 };
