@@ -1,10 +1,15 @@
+import { FeedItemMetaDto } from "@/features/feeds/dto/feedDto";
 import FeedItemMoreMenu from "./FeedItemMoreMenu";
 import FeedSourceCard from "./FeedSourceCard";
 
-const FeedItemHeader = () => {
+type Props = {
+  meta: FeedItemMetaDto;
+};
+
+const FeedItemHeader = ({ meta }: Props) => {
   return (
     <div className="flex items-center justify-between">
-      <FeedSourceCard />
+      <FeedSourceCard meta={meta} />
       <FeedItemMoreMenu />
     </div>
   );

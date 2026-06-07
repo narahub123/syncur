@@ -3,6 +3,8 @@ import { feedRepository } from "../repository/FeedRepository.instance";
 import { Feed } from "@/shared/types/feed";
 import { subscriptionRepository } from "@/features/subscriptions/repository/SubscriptionRepository.instance";
 import { feedItemRepository } from "@/features/feed-items/respository/FeedItemRespository.instance";
+import { siteRepository } from "@/features/rss/site/repository/SiteRepository.instance";
+import { FeedItemResponse } from "../dto/feedDto";
 
 export class FeedService {
   async ensureFeed(site: Site): Promise<Feed | null> {
@@ -23,7 +25,7 @@ export class FeedService {
     return feed;
   }
 
-  async getMyFeedItems(userId: string) {
+  async getMyFeedItems(userId: string): Promise<FeedItemResponse[]> {
     // 1. 구독 목록
     const subscriptions = await subscriptionRepository.findByUserId(userId);
 
@@ -41,6 +43,16 @@ export class FeedService {
     );
 
     const feedIds = [...subscribedMap.keys()];
+
+    const feeds = await feedRepository.findByIds(feedIds);
+
+    const siteIds = [...new Set(feeds.map((f) => f.siteId.toString()))];
+
+    const sites = await siteRepository.findByIds(siteIds);
+
+    const siteMap = new Map(sites.map((s) => [s._id.toString(), s]));
+
+    const feedMap = new Map(feeds.map((f) => [f._id.toString(), f]));
 
     // 3. feedItem 조회
     const items = await feedItemRepository.findByFeedIds(feedIds);
@@ -62,11 +74,33 @@ export class FeedService {
         new Date(a.publishedAt ?? 0).getTime(),
     );
 
-    return filtered.map((item) => ({
-      ...item,
-      _id: item._id.toString(),
-      feedId: item.feedId.toString(),
-      publishedAt: item.publishedAt ? item.publishedAt : null,
-    }));
+    return filtered.map((item) => {
+      const feed = feedMap.get(item.feedId.toString());
+      if (!feed) throw new Error("Feed missing");
+
+      const site = siteMap.get(feed.siteId.toString());
+      if (!site) throw new Error("Site missing");
+
+      return {
+        meta: {
+          site: {
+            _id: site._id.toString(),
+            url: site.url,
+            favicon_url: site.favicon_url,
+            name: site.name,
+            feed_url: site.feed_url,
+          },
+          publishedAt: item.publishedAt ?? "",
+          feedItemId: item._id.toString(),
+        },
+        content: {
+          _id: item._id.toString(),
+          title: item.title,
+          description: item.description,
+          link: item.link,
+        },
+        categories: item.categories ?? [],
+      };
+    });
   }
 }

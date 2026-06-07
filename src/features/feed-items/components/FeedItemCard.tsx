@@ -1,17 +1,20 @@
-import { FeedItem } from "@/shared/types/feed";
 import FeedItemHeader from "./FeedItemHeader";
 import FeeditemActionBar from "./FeeditemActionBar";
-import FeedContent from "./FeedContent";
+import FeedItemContent from "./FeedItemContent";
+import { FeedItemResponse } from "@/features/feeds/dto/feedDto";
+import FeedItemCategories from "./FeedItemCategories";
 
 type Props = {
-  item: FeedItem;
+  item: FeedItemResponse;
 };
 
 const FeedItemCard = ({ item }: Props) => {
+  const { meta, content, categories } = item;
   return (
-    <li className="border-b border-gray-200 p-2">
-      <FeedItemHeader />
-      <FeedContent item={item} />
+    <li className="border-b border-gray-200 p-4">
+      <FeedItemHeader meta={meta} />
+      <FeedItemContent item={content} />
+      <FeedItemCategories categories={categories} />
       <FeeditemActionBar />
     </li>
   );

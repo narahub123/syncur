@@ -1,15 +1,15 @@
 import FeedItemCard from "@/features/feed-items/components/FeedItemCard";
-import type { FeedItem } from "@/shared/types/feed";
+import { FeedItemResponse } from "../dto/feedDto";
 
 type Props = {
-  items: FeedItem[];
+  items: FeedItemResponse[];
 };
 
 const FeedList = ({ items }: Props) => {
   return (
     <ul>
       {items.map((item) => (
-        <FeedItemCard key={item._id} item={item} />
+        <FeedItemCard key={item.content._id} item={item} />
       ))}
     </ul>
   );
