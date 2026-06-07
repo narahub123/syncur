@@ -13,8 +13,7 @@ export type RSSItem = {
   guid?: string | null;
   link: string;
   title: string;
-  description?: string | null;
-  content?: string | null;
+  description: string;
   author?: string | null;
   publishedAt?: Date | null;
   categories: string[];

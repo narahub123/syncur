@@ -40,20 +40,12 @@ export interface FeedItemDocument extends Document {
   title: string;
 
   /**
-   * 요약 설명 (optional)
+   * 요약 설명
    *
    * - RSS description / summary field
    * - 짧은 preview 데이터
    */
-  description?: string;
-
-  /**
-   * 본문 콘텐츠 (optional)
-   *
-   * - RSS content:encoded 또는 full text
-   * - description보다 상세한 원문 데이터
-   */
-  content?: string;
+  description: string;
 
   /**
    * 작성자 정보 (optional)
@@ -124,12 +116,8 @@ const FeedItemSchema = new Schema<FeedItemDocument>(
 
     description: {
       type: String,
-      default: null,
-    },
-
-    content: {
-      type: String,
-      default: null,
+      required: true,
+      default: "",
     },
 
     author: {

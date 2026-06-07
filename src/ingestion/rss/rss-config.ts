@@ -87,4 +87,13 @@ export const RSS_CONFIG = {
    * - 운영 안정화 이후 feed 성격에 따라 조정 가능
    */
   RECOVERY_COOLDOWN_MS: 30 * 60 * 1000,
+
+  /**
+   * Feed description 최대 길이
+   *
+   * - RSS description이 없을 경우 content에서 생성
+   * - 피드 카드 preview 용도로 사용
+   * - 과도하게 긴 본문 저장 방지
+   */
+  DESCRIPTION_MAX_LENGTH: 200,
 } as const;

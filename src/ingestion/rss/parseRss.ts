@@ -1,16 +1,7 @@
 import { XMLParser } from "fast-xml-parser";
 import { RSSItem, XMLNode } from "./types";
-
-/**
- * 안전한 string 변환 helper
- *
- * === 이유 ===
- * XML parser 결과는 string이 아닐 수도 있음 (object/array 혼재)
- */
-function getString(value: unknown): string | undefined {
-  if (typeof value === "string") return value;
-  return undefined;
-}
+import { createDescriptionFromContent } from "./helpers/createDescriptionFromContent";
+import { getString } from "./helpers/getString";
 
 /**
  * RSS/Atom XML → normalized RSSItem[]
@@ -39,13 +30,23 @@ export function parseRSS(xml: string): RSSItem[] {
   const normalized = Array.isArray(items) ? items : [items];
 
   return normalized.map((item: XMLNode): RSSItem => {
-    // guid는 RSS/Atom마다 위치가 다름
     const guid = (item.guid as XMLNode)?.["#text"] ?? item.guid ?? item.id;
+
+    const rawContent =
+      getString((item as XMLNode)["content:encoded"]) ??
+      getString((item.content as XMLNode)?.["#text"]) ??
+      getString(item.content) ??
+      null;
+
+    const description =
+      getString(item.description) ??
+      getString(item.summary) ??
+      createDescriptionFromContent(rawContent) ??
+      "";
 
     return {
       guid: typeof guid === "string" ? guid : null,
 
-      // Atom은 link가 attribute 형태일 수 있음
       link:
         getString((item.link as XMLNode)?.["@_href"]) ??
         getString(item.link) ??
@@ -53,13 +54,7 @@ export function parseRSS(xml: string): RSSItem[] {
 
       title: getString(item.title) ?? "",
 
-      description:
-        getString(item.description) ?? getString(item.summary) ?? null,
-
-      content:
-        getString((item as XMLNode)["content:encoded"]) ??
-        getString(item.content) ??
-        null,
+      description,
 
       author:
         getString((item.author as XMLNode)?.name) ??

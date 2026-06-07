@@ -36,7 +36,6 @@ export async function upsertFeedItems(feedId: string, items: RSSItem[]) {
       link: item.link,
       title: item.title,
       description: item.description,
-      content: item.content,
       author: item.author,
       publishedAt: item.publishedAt,
       categories: item.categories,
