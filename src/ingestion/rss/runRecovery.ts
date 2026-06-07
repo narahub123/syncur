@@ -19,16 +19,42 @@ export async function runRecovery() {
   for (const feed of feeds) {
     try {
       /**
-       * 2. lightweight test fetch
-       * - 전체 ingestion 아님
-       * - "살아있는지만 확인"
+       * 2. lightweight fetch (캐싱 + retry 포함)
+       * - full ingestion 아님
        */
-      const xml = await fetchRSS(feed.feedUrl);
+      const result = await fetchRSS(feed);
+
+      /**
+       * 3. NOT_MODIFIED → 살아있는 feed로 판단 가능
+       */
+      if (result.type === "NOT_MODIFIED") {
+        await FeedModel.updateOne(
+          { _id: feed._id },
+          {
+            $set: {
+              status: RSS_CONFIG.STATUS.ACTIVE,
+              errorCount: 0,
+              lastFetchedAt: new Date(),
+            },
+            $unset: {
+              disabledAt: 1,
+            },
+          },
+        );
+
+        console.log(`[RECOVERY] revived (cached): ${feed.feedUrl}`);
+        continue;
+      }
+
+      /**
+       * 4. OK → 실제 RSS 확인
+       */
+      const xml = result.xml;
 
       parseRSS(xml);
 
       /**
-       * 3. 성공 → active 복구
+       * 5. 성공 → active 복구
        */
       await FeedModel.updateOne(
         { _id: feed._id },
@@ -47,8 +73,7 @@ export async function runRecovery() {
       console.log(`[RECOVERY] revived: ${feed.feedUrl}`);
     } catch (err) {
       /**
-       * 4. 실패 → disabled 유지
-       * - cooldown reset 안 함 (시간 계속 흐르게)
+       * 6. 실패 → disabled 유지 + cooldown 갱신
        */
       await FeedModel.updateOne(
         { _id: feed._id },
@@ -59,7 +84,7 @@ export async function runRecovery() {
         },
       );
 
-      console.log(`[RECOVERY FAILED] ${feed.feedUrl}`);
+      console.log(`[RECOVERY FAILED] ${feed.feedUrl}`, err);
     }
   }
 }

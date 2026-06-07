@@ -42,7 +42,18 @@ export async function runFeedIngestion(feed: FeedDocument) {
      * 1. RSS Fetch (retry 포함)
      * - 네트워크 안정성은 fetchRSS 내부에서 처리
      */
-    const xml = await fetchRSS(feed.feedUrl);
+    const result = await fetchRSS(feed);
+
+    if (result.type === "NOT_MODIFIED") {
+      return {
+        feedId,
+        status: INGESTION_RESULT.SKIPPED_CACHE,
+      };
+    }
+
+    const xml = result.xml;
+    const etag = result.etag;
+    const lastModified = result.lastModified;
 
     /**
      * 2. XML Parse → normalized items
@@ -67,6 +78,9 @@ export async function runFeedIngestion(feed: FeedDocument) {
         $set: {
           lastFetchedAt: new Date(),
           errorCount: 0,
+
+          ...(etag && { etag }),
+          ...(lastModified && { lastModified }),
         },
       },
     );
@@ -101,7 +115,9 @@ export async function runFeedIngestion(feed: FeedDocument) {
      * - 모든 failure type 공통 적용
      * - errorCount가 threshold 초과 시에만 disabled
      */
-    if (updated && updated.errorCount >= RSS_CONFIG.ERROR_THRESHOLD) {
+    const errorCount = updated?.errorCount ?? 0;
+
+    if (errorCount >= RSS_CONFIG.ERROR_THRESHOLD) {
       await FeedModel.updateOne(
         { _id: feed._id },
         {
@@ -115,7 +131,7 @@ export async function runFeedIngestion(feed: FeedDocument) {
         feedId,
         status: INGESTION_RESULT.DISABLED_TRIGGERED,
         type,
-        errorCount: updated.errorCount,
+        errorCount: updated.errorCount ?? 0,
       };
     }
 
@@ -128,7 +144,7 @@ export async function runFeedIngestion(feed: FeedDocument) {
         feedId,
         status: INGESTION_RESULT.PARSE_ERROR,
         type,
-        errorCount: updated?.errorCount,
+        errorCount: updated?.errorCount ?? 0,
       };
     }
 
@@ -139,7 +155,7 @@ export async function runFeedIngestion(feed: FeedDocument) {
       feedId,
       status: INGESTION_RESULT.ERROR,
       type,
-      errorCount: updated?.errorCount,
+      errorCount: updated?.errorCount ?? 0,
     };
   }
 }

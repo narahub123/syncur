@@ -40,6 +40,7 @@ export const INGESTION_RESULT = {
   PARSE_ERROR: "parse_error",
   SKIPPED_DISABLED: "skipped_disabled",
   DISABLED_TRIGGERED: "disabled_triggered",
+  SKIPPED_CACHE: "skipped_cache",
 } as const;
 
 export type IngestionResult =
