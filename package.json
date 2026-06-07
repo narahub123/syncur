@@ -11,7 +11,8 @@
     "type-check": "tsc --noEmit",
     "format": "prettier . --write",
     "format:check": "prettier . --check",
-    "prepare": "husky"
+    "prepare": "husky",
+    "rss:cron": "tsx src/cron/rssCron.ts"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx}": [
