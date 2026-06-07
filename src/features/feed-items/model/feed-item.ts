@@ -87,7 +87,8 @@ export interface FeedItemDocument extends Document {
    * 중복 제거용 해시값
    *
    * - guid가 없을 때 fallback dedup 키
-   * - 보통 link + title + publishedAt 기반 생성
+   * - RSS에서는 link를 canonical key로 사용
+   * - 동일 feed 내 item uniqueness 기준
    */
   hash: string;
 
@@ -148,7 +149,7 @@ const FeedItemSchema = new Schema<FeedItemDocument>(
 
     hash: {
       type: String,
-      required: true,
+      required: true, // fallback dedup key (link 기반)
     },
   },
   {

@@ -6,16 +6,17 @@
  * "외부 데이터 → 내부 DB"로 들어오는 전체 파이프라인을 검증하는 스크립트
  *
  * === 구조 ===
- * fetch → parse → normalize → DB insert
+ * fetch → parse → normalize → upsert(sync)
  *
  * === 특징 ===
  * - 단일 feed 기준 (multi-feed 아님)
  * - cron 없음
  * - queue 없음
- * - dedup 없음 (중복 허용 상태)
+ * - idempotent ingestion (dedup 적용)
  *
  * === 목적 ===
- * ingestion pipeline이 실제로 동작하는지 "최소 단위 검증"
+ * RSS feed 데이터를 DB와 동기화하는
+ * 최소 ingestion pipeline 검증
  */
 
 import { FeedItemModel } from "../features/feed-items/model/feed-item";
@@ -176,39 +177,96 @@ function parseRSS(xml: string): RSSItem[] {
 }
 
 /**
- * FeedItem DB insert layer
+ * FeedItem DB upsert layer
  *
  * === 역할 ===
- * normalized RSSItem → MongoDB 저장
+ * normalized RSSItem → MongoDB 저장 (idempotent ingestion)
  *
  * === 현재 상태 ===
- * - dedup 없음 (중복 허용)
- * - upsert 없음
- * - 단순 insertMany
+ * - dedup 적용 (guid / hash 기반 upsert)
+ * - bulkWrite 기반 저장
+ * - 동일 데이터 재실행 시 결과 동일 (idempotent)
+ *
+ * === 특징 ===
+ * - insertMany 제거됨
+ * - updateOne → bulkWrite upsert 구조
+ * - cron 재실행에도 안전
+ *
+ * === 의미 ===
+ * 이 함수는 "insert"가 아니라
+ * RSS feed와 DB를 동기화(sync)하는 ingestion layer이다
  *
  * === 이후 개선 포인트 ===
- * - guid 기반 unique 처리
- * - hash fallback dedup
+ * - batch grouping (성능 최적화)
+ * - retry/backoff 정책
+ * - ETag 기반 fetch optimization
  */
-async function insertFeedItems(feedId: string, items: RSSItem[]) {
-  const docs = items.map((item) => ({
-    feedId,
-    guid: item.guid,
-    link: item.link,
-    title: item.title,
-    description: item.description,
-    content: item.content,
-    author: item.author,
-    publishedAt: item.publishedAt,
-    categories: item.categories,
+async function upsertFeedItems(feedId: string, items: RSSItem[]) {
+  const operations = items.map((item) => {
+    const hash = item.link;
 
-    // fallback dedup key (현재는 사용 안함)
-    hash: `${item.link}-${item.title}-${item.publishedAt}`,
-  }));
+    const doc = {
+      feedId,
+      guid: item.guid ?? null,
+      link: item.link,
+      title: item.title,
+      description: item.description,
+      content: item.content,
+      author: item.author,
+      publishedAt: item.publishedAt,
+      categories: item.categories,
+      hash,
+    };
 
-  await FeedItemModel.insertMany(docs);
+    /**
+     * 1) guid 기반 upsert
+     */
+    if (item.guid) {
+      return {
+        updateOne: {
+          filter: {
+            feedId,
+            guid: item.guid,
+          },
+          update: {
+            $setOnInsert: doc,
+          },
+          upsert: true,
+        },
+      };
+    }
 
-  console.log(`Inserted ${docs.length} items`);
+    /**
+     * 2) fallback: hash 기반 upsert
+     */
+    return {
+      updateOne: {
+        filter: {
+          feedId,
+          hash,
+        },
+        update: {
+          $setOnInsert: doc,
+        },
+        upsert: true,
+      },
+    };
+  });
+
+  /**
+   * retry-safe bulkWrite 옵션
+   */
+  const result = await FeedItemModel.bulkWrite(operations, {
+    ordered: false, // 중요: 하나 실패해도 계속 진행
+  });
+
+  console.log("RSS ingestion result:", {
+    upserted: result.upsertedCount,
+    modified: result.modifiedCount,
+    matched: result.matchedCount,
+  });
+
+  return result;
 }
 
 /**
@@ -219,10 +277,11 @@ async function insertFeedItems(feedId: string, items: RSSItem[]) {
  * 2. Feed 확보 (없으면 생성)
  * 3. RSS fetch
  * 4. XML parse → normalize
- * 5. DB insert
+ * 5. DB upsert (idempotent sync)
  *
  * === 목적 ===
- * ingestion pipeline end-to-end 검증
+ * RSS ingestion pipeline end-to-end 검증
+ * (재실행해도 결과가 동일해야 함)
  */
 async function run() {
   await mongoose.connect(process.env.MONGODB_URI as string);
@@ -265,7 +324,7 @@ async function run() {
    * STEP 3: Insert
    * MongoDB 저장
    */
-  await insertFeedItems(feed._id.toString(), items);
+  await upsertFeedItems(feed._id.toString(), items);
 
   console.log("DONE");
 
