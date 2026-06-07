@@ -1,5 +1,5 @@
 import { UserFeedInteractionDTO } from "../dtos/userFeedInteractionDTO";
-import { UserFeedInteractionDocument } from "../models/user-interaction";
+import { UserFeedInteractionDocument } from "../models/user-feed-interaction";
 
 export function toUserFeedInteractionDTO(
   doc: UserFeedInteractionDocument,

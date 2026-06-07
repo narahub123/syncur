@@ -5,6 +5,8 @@ import { subscriptionRepository } from "@/features/subscriptions/repository/Subs
 import { feedItemRepository } from "@/features/feed-items/respositories/FeedItemRespository.instance";
 import { siteRepository } from "@/features/rss/site/repository/SiteRepository.instance";
 import { FeedItemResponse } from "../dto/feedDto";
+import { userFeedInteractionRepository } from "@/features/feed-interaction/repositories/UserFeedInteractionRepository.instance";
+import { feedItemStatsRepository } from "@/features/feed-items/respositories/FeedItemStatsRepository.instance";
 
 export class FeedService {
   async ensureFeed(site: Site): Promise<Feed | null> {
@@ -74,6 +76,24 @@ export class FeedService {
         new Date(a.publishedAt ?? 0).getTime(),
     );
 
+    const feedItemIds = items.map((i) => i._id.toString());
+
+    const interactions =
+      await userFeedInteractionRepository.findByUserAndFeedIds(
+        userId,
+        feedItemIds,
+      );
+
+    const interactionMap = new Map(
+      interactions.map((i) => [i.feedItemId.toString(), i]),
+    );
+
+    const statsList = await feedItemStatsRepository.findByFeedIds(feedItemIds);
+
+    const statsMap = new Map(
+      statsList.map((s) => [s.feedItemId.toString(), s]),
+    );
+
     return filtered.map((item) => {
       const feed = feedMap.get(item.feedId.toString());
       if (!feed) throw new Error("Feed missing");
@@ -81,6 +101,11 @@ export class FeedService {
       const site = siteMap.get(feed.siteId.toString());
       if (!site) throw new Error("Site missing");
 
+      const interaction = interactionMap.get(item._id.toString());
+      const stats = statsMap.get(item._id.toString());
+
+      console.log(item._id.toString());
+      console.log(statsMap.keys());
       return {
         meta: {
           site: {
@@ -93,13 +118,44 @@ export class FeedService {
           publishedAt: item.publishedAt ?? "",
           feedItemId: item._id.toString(),
         },
+
         content: {
           _id: item._id.toString(),
           title: item.title,
           description: item.description,
           link: item.link,
         },
+
         categories: item.categories ?? [],
+
+        interaction: {
+          hasLiked: interaction?.hasLiked ?? false,
+          hasBookmarked: interaction?.hasBookmarked ?? false,
+          isHidden: interaction?.isHidden ?? false,
+
+          hasContentClicked: interaction?.hasContentClicked ?? false,
+          hasSourceClicked: interaction?.hasSourceClicked ?? false,
+
+          lastInteractedAt:
+            interaction?.lastInteractedAt?.toISOString() ?? null,
+          lastContentClickedAt:
+            interaction?.lastContentClickedAt?.toISOString() ?? null,
+          lastSourceClickedAt:
+            interaction?.lastSourceClickedAt?.toISOString() ?? null,
+          lastLikedAt: interaction?.lastLikedAt?.toISOString() ?? null,
+          lastBookmarkedAt:
+            interaction?.lastBookmarkedAt?.toISOString() ?? null,
+          hiddenAt: interaction?.hiddenAt?.toISOString() ?? null,
+        },
+
+        stats: {
+          contentClickCount: stats?.contentClickCount ?? 0,
+          sourceClickCount: stats?.sourceClickCount ?? 0,
+          likeCount: stats?.likeCount ?? 0,
+          bookmarkCount: stats?.bookmarkCount ?? 0,
+          shareCount: stats?.shareCount ?? 0,
+          lastInteractedAt: stats?.lastInteractedAt?.toISOString() ?? null,
+        },
       };
     });
   }

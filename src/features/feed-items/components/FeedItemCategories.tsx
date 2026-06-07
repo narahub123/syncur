@@ -3,7 +3,13 @@ type Props = {
 };
 
 const FeedItemCategories = ({ categories }: Props) => {
-  return <div></div>;
+  return (
+    <ul>
+      {categories.map((category) => (
+        <li key={category}>{category}</li>
+      ))}
+    </ul>
+  );
 };
 
 export default FeedItemCategories;
