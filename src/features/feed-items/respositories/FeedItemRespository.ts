@@ -1,5 +1,5 @@
 import { FeedItem } from "@/shared/types/feed";
-import { FeedItemModel } from "../model/feed-item";
+import { FeedItemModel } from "../models/feed-item";
 
 export class FeedItemRespository {
   async findByFeedIds(feedIds: string[]): Promise<FeedItem[]> {

@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 import dotenv from "dotenv";
 import { FeedModel } from "@/features/feeds/model/feed";
-import { FeedItemModel } from "@/features/feed-items/model/feed-item";
+import { FeedItemModel } from "@/features/feed-items/models/feed-item";
 import { fetchRSS } from "@/ingestion/rss/fetchRss";
 import { parseRSS } from "@/ingestion/rss/parseRss";
 import { upsertFeedItems } from "@/ingestion/rss/upsertFeedItems";

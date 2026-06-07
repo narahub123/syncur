@@ -2,7 +2,7 @@ import { Site } from "@/shared/types/site";
 import { feedRepository } from "../repository/FeedRepository.instance";
 import { Feed } from "@/shared/types/feed";
 import { subscriptionRepository } from "@/features/subscriptions/repository/SubscriptionRepository.instance";
-import { feedItemRepository } from "@/features/feed-items/respository/FeedItemRespository.instance";
+import { feedItemRepository } from "@/features/feed-items/respositories/FeedItemRespository.instance";
 import { siteRepository } from "@/features/rss/site/repository/SiteRepository.instance";
 import { FeedItemResponse } from "../dto/feedDto";
 

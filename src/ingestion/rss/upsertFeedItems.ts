@@ -1,4 +1,4 @@
-import { FeedItemModel } from "@/features/feed-items/model/feed-item";
+import { FeedItemModel } from "@/features/feed-items/models/feed-item";
 import { RSSItem } from "./types";
 
 /**
