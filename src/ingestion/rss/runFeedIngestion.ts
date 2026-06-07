@@ -39,6 +39,10 @@ export async function runFeedIngestion(feed: FeedDocument) {
 
     /**
      * 4. 성공 상태 업데이트
+     *
+     * - RSS 정상 fetch + parse + upsert 완료
+     * - 상태를 active로 복구
+     * - errorCount 초기화 (연속 실패 기록 제거)
      */
     await FeedModel.updateOne(
       { _id: feed._id },
@@ -58,7 +62,11 @@ export async function runFeedIngestion(feed: FeedDocument) {
     };
   } catch (err) {
     /**
-     * 5. 실패 처리
+     * 5. 실패 상태 처리
+     *
+     * - errorCount 증가
+     * - 상태를 error로 변경
+     * - 연속 실패 누적 관리
      */
     const updatedFeed = await FeedModel.findByIdAndUpdate(
       feed._id,
@@ -70,7 +78,10 @@ export async function runFeedIngestion(feed: FeedDocument) {
     );
 
     /**
-     * 6. 실패 threshold 처리 (disable)
+     * 6. disable 정책
+     *
+     * - 연속 실패가 threshold를 넘으면
+     *   더 이상 cron 대상에서 제외
      */
     if (updatedFeed && updatedFeed.errorCount >= 5) {
       await FeedModel.updateOne(
