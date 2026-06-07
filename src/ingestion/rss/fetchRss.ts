@@ -1,5 +1,5 @@
 import axios from "axios";
-import { RSS_ACCEPT, RSS_FETCH_TIMEOUT, RSS_USER_AGENT } from "./rss-config";
+import { RSS_CONFIG } from "./rss-config";
 
 /**
  * RSS XML fetch layer
@@ -17,14 +17,14 @@ export async function fetchRSS(feedUrl: string): Promise<string> {
 
   const timeout = setTimeout(() => {
     controller.abort();
-  }, RSS_FETCH_TIMEOUT);
+  }, RSS_CONFIG.RSS_FETCH_TIMEOUT);
 
   try {
     const res = await axios.get(feedUrl, {
       signal: controller.signal,
       headers: {
-        "User-Agent": RSS_USER_AGENT,
-        Accept: RSS_ACCEPT,
+        "User-Agent": RSS_CONFIG.RSS_USER_AGENT,
+        Accept: RSS_CONFIG.RSS_ACCEPT,
       },
     });
 

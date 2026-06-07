@@ -2,6 +2,7 @@ import { FeedDocument, FeedModel } from "@/features/feeds/model/feed";
 import { fetchRSS } from "@/ingestion/rss/fetchRss";
 import { parseRSS } from "@/ingestion/rss/parseRss";
 import { upsertFeedItems } from "@/ingestion/rss/upsertFeedItems";
+import { RSS_CONFIG } from "./rss-config";
 
 /**
  * RSS Feed ingestion unit
@@ -49,7 +50,7 @@ export async function runFeedIngestion(feed: FeedDocument) {
       {
         $set: {
           lastFetchedAt: new Date(),
-          status: "active",
+          status: RSS_CONFIG.STATUS.ACTIVE,
           errorCount: 0,
         },
       },
@@ -72,7 +73,7 @@ export async function runFeedIngestion(feed: FeedDocument) {
       feed._id,
       {
         $inc: { errorCount: 1 },
-        $set: { status: "error" },
+        $set: { status: RSS_CONFIG.STATUS.ERROR },
       },
       { new: true },
     );
@@ -83,11 +84,11 @@ export async function runFeedIngestion(feed: FeedDocument) {
      * - 연속 실패가 threshold를 넘으면
      *   더 이상 cron 대상에서 제외
      */
-    if (updatedFeed && updatedFeed.errorCount >= 5) {
+    if (updatedFeed && updatedFeed.errorCount >= RSS_CONFIG.ERROR_THRESHOLD) {
       await FeedModel.updateOne(
         { _id: feed._id },
         {
-          $set: { status: "disabled" },
+          $set: { status: RSS_CONFIG.STATUS.DISABLED },
         },
       );
     }
