@@ -6,7 +6,7 @@ import { subscriptionRepository } from "../repository/SubscriptionRepository.ins
  */
 type CreateSubscriptionInput = {
   userId: string;
-  siteId: string;
+  feedId: string;
 };
 
 /**
@@ -17,12 +17,12 @@ type CreateSubscriptionInput = {
 export async function createSubscriptionService(
   input: CreateSubscriptionInput,
 ) {
-  const { userId, siteId } = input;
+  const { userId, feedId } = input;
 
   /**
    * 1. 이미 해당 user가 site를 구독 중인지 확인
    */
-  const exists = await subscriptionRepository.find(userId, siteId);
+  const exists = await subscriptionRepository.find(userId, feedId);
 
   /**
    * 2. 존재하면 기존 데이터 반환 (중복 생성 방지)
@@ -34,5 +34,5 @@ export async function createSubscriptionService(
   /**
    * 3. 없으면 새 구독 생성
    */
-  return await subscriptionRepository.create(userId, siteId);
+  return await subscriptionRepository.create(userId, feedId);
 }

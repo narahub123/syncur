@@ -5,6 +5,7 @@ import { CreateSiteDto } from "../dto/siteDto";
 import { escapeRegExp } from "@/shared/utils/regex";
 import { SiteDiscoveryResult } from "../../discovery";
 import { Types } from "mongoose";
+import { FeedModel } from "@/features/feeds/model/feed";
 
 /**
  * Site Repository
@@ -119,5 +120,18 @@ export class SiteRepository {
     return SiteModel.find({
       _id: { $in: objectIds },
     });
+  }
+
+  /**
+   * FeedId 배열로 Site 조회
+   *
+   * @param sitedIds Feed ObjectId 문자열 배열
+   *
+   * @returns Site 목록
+   */
+  async findBySiteIds(siteIds: string[]) {
+    return SiteModel.find({
+      _id: { $in: siteIds },
+    }).lean();
   }
 }

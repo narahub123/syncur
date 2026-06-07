@@ -1,17 +1,17 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { subscribeAction } from "../actions/subscribeAction";
 import { unsubscribeAction } from "../actions/unsubscribeAction";
 
 export function useSubscriptionToggleMutation() {
   return useMutation({
-    mutationFn: async (params: { siteId: string; isSubscribed: boolean }) => {
-      const { siteId, isSubscribed } = params;
+    mutationFn: async (params: { feedId: string; isSubscribed: boolean }) => {
+      const { feedId, isSubscribed } = params;
 
       if (isSubscribed) {
-        return unsubscribeAction(siteId);
+        return unsubscribeAction(feedId);
       }
 
-      return subscribeAction(siteId);
+      return subscribeAction(feedId);
     },
 
     onSuccess: () => {},

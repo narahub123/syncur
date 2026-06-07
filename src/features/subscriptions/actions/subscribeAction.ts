@@ -8,8 +8,8 @@ import { subscriptionService } from "../services/SubscriptionService.instance";
  * - DB에 존재하는 site를 user subscription으로 연결하는 server action
  * - 인증 + 서비스 브릿지 역할
  */
-export async function subscribeAction(siteId: string) {
-  if (!siteId) {
+export async function subscribeAction(feedId: string) {
+  if (!feedId) {
     throw new Error("siteId is required");
   }
 
@@ -26,6 +26,6 @@ export async function subscribeAction(siteId: string) {
 
   return await subscriptionService.create({
     userId,
-    siteId,
+    feedId,
   });
 }

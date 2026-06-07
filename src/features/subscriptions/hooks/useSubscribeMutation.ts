@@ -35,7 +35,7 @@ export function useSubscribeMutation() {
     /**
      * 실제 서버 호출
      */
-    mutationFn: (siteId: string) => subscribeAction(siteId),
+    mutationFn: (feedId: string) => subscribeAction(feedId),
 
     /**
      * 성공 처리

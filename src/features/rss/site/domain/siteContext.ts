@@ -1,5 +1,6 @@
 import { Site } from "@/shared/types/site";
 import { SiteContextDTO } from "../dto/siteDto";
+import { Feed } from "@/shared/types/feed";
 
 /**
  * Context 생성 입력 데이터
@@ -11,6 +12,7 @@ import { SiteContextDTO } from "../dto/siteDto";
 export type SiteContextInput = {
   site: Site;
   subscriptionExists: boolean;
+  feed: Feed | null;
 };
 
 /**
@@ -26,7 +28,7 @@ export type SiteContextInput = {
  * - 오직 계산만 수행
  */
 export function buildSiteContext(input: SiteContextInput): SiteContextDTO {
-  const { site, subscriptionExists } = input;
+  const { site, subscriptionExists, feed } = input;
 
   /**
    * RSS 사용 가능 여부
@@ -57,6 +59,7 @@ export function buildSiteContext(input: SiteContextInput): SiteContextDTO {
    */
   return {
     siteId: site._id.toString(),
+    feedId: feed?.id.toString(),
     url: site.url,
     name: site.name,
     favicon_url: site.favicon_url,

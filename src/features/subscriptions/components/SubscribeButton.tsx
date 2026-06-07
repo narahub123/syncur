@@ -23,10 +23,10 @@ const SubscribeButton = ({ isFetching }: { isFetching: boolean }) => {
 
   // 클릭 처리
   const handleClick = () => {
-    if (!selectedSite?.siteId) return;
+    if (!selectedSite?.feedId) return;
     if (isDisabled) return;
 
-    subscribeMutation.mutate(selectedSite.siteId);
+    subscribeMutation.mutate(selectedSite.feedId);
   };
 
   return (

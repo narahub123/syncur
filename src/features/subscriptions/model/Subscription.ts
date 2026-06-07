@@ -7,7 +7,6 @@ import mongoose, { Schema, Document, Types } from "mongoose";
 export interface SubscriptionDocument extends Document {
   userId: Types.ObjectId;
   feedId: Types.ObjectId;
-  siteId: Types.ObjectId; // legacy
   createdAt: Date;
   updatedAt: Date;
 }
@@ -30,12 +29,6 @@ const SubscriptionSchema = new Schema<SubscriptionDocument>(
     feedId: {
       type: Schema.Types.ObjectId,
       ref: "Feed",
-      required: true,
-    },
-
-    siteId: {
-      type: Schema.Types.ObjectId,
-      ref: "Site",
       required: true,
     },
   },

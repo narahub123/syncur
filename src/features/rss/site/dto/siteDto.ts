@@ -35,6 +35,7 @@ export type CreateSiteDto = {
 
 export type SiteContextDTO = {
   siteId: string;
+  feedId: string | undefined;
   url: string;
   name: string;
   favicon_url: string | null;

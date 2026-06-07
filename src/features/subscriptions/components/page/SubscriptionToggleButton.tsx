@@ -6,17 +6,17 @@ import { useSubscriptionToggleMutation } from "../../hooks/useSubscriptionToggle
 import { LoaderCircle } from "lucide-react";
 
 type Props = {
-  siteId: string;
+  feedId: string;
 };
 
-const SubscriptionToggleButton = ({ siteId }: Props) => {
+const SubscriptionToggleButton = ({ feedId }: Props) => {
   const [isSubscribed, setIsSubscribed] = useState(true);
 
   const toggleMutation = useSubscriptionToggleMutation();
 
   const handleClick = () => {
     toggleMutation.mutate({
-      siteId,
+      feedId,
       isSubscribed,
     });
     setIsSubscribed(!isSubscribed);

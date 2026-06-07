@@ -1,6 +1,8 @@
 export type SubscriptionListDto = {
   subscriptionId: string;
-  siteId: string;
+
+  feedId: string;
+
   siteName: string;
   siteUrl: string;
   favicon_url: string | null;

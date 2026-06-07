@@ -10,7 +10,7 @@ const SubscriptionItem = ({ item }: Props) => {
   return (
     <li className="flex items-center justify-between p-2">
       <SubscriptionSiteCard item={item} />
-      <SubscriptionToggleButton siteId={item.siteId} />
+      <SubscriptionToggleButton feedId={item.feedId} />
     </li>
   );
 };

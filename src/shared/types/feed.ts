@@ -35,3 +35,21 @@ export type FeedItem = {
    */
   sourceFeedUrl?: string;
 };
+
+export type FeedStauts = "active" | "error" | "disabled";
+
+export type Feed = {
+  id: string;
+  siteId: string;
+  feedUrl: string;
+
+  status: FeedStauts;
+
+  errorCount: number;
+
+  categories: string[];
+
+  lastFetchedAt?: string;
+  etag?: string;
+  lastModified?: string;
+};
