@@ -1,3 +1,3 @@
-import { SiteRepository } from "../repository/SiteRepository";
+import { SiteRepository } from "./SiteRepository";
 
 export const siteRepository = new SiteRepository();

@@ -3,6 +3,8 @@ export type Subscription = {
 
   userId: string;
 
+  feedId: string;
+
   siteId: string;
 
   createdAt: Date;

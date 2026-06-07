@@ -1,4 +1,4 @@
-import type { Subscription } from "@/shared/types/subacription";
+import type { Subscription } from "@/shared/types/subscription";
 import { SubscriptionModel } from "../model/Subscription";
 
 /**

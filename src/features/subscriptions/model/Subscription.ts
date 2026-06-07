@@ -2,11 +2,12 @@ import mongoose, { Schema, Document, Types } from "mongoose";
 
 /**
  * Subscription Document
- * - user ↔ site 관계 테이블
+ * - user ↔ feed 관계 테이블
  */
 export interface SubscriptionDocument extends Document {
   userId: Types.ObjectId;
-  siteId: Types.ObjectId;
+  feedId: Types.ObjectId;
+  siteId: Types.ObjectId; // legacy
   createdAt: Date;
   updatedAt: Date;
 }
@@ -25,6 +26,13 @@ const SubscriptionSchema = new Schema<SubscriptionDocument>(
     /**
      * 구독 대상 Site
      */
+
+    feedId: {
+      type: Schema.Types.ObjectId,
+      ref: "Feed",
+      required: true,
+    },
+
     siteId: {
       type: Schema.Types.ObjectId,
       ref: "Site",
@@ -38,9 +46,9 @@ const SubscriptionSchema = new Schema<SubscriptionDocument>(
 );
 
 /**
- * 동일 사용자가 같은 Site를 중복 구독하지 못하게 제한
+ * 동일 유저 중복 구독 방지 (핵심)
  */
-SubscriptionSchema.index({ userId: 1, siteId: 1 }, { unique: true });
+SubscriptionSchema.index({ userId: 1, feedId: 1 }, { unique: true });
 
 /**
  * Model export (hot reload 대응)
