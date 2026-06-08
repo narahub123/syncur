@@ -5,6 +5,7 @@ import SiteSubscriptionForm from "@/features/subscriptions/components/SiteSubscr
 import { useState } from "react";
 import { useMyFeedItems } from "../hooks/useMyFeedItems";
 import FeedList from "./FeedList";
+import { FeedItemSkeleton } from "@/shared/components/common/FeedItemSkeleton";
 
 type FeedClientProps = {
   isFirstLogin: boolean;
@@ -20,12 +21,19 @@ const FeedClient = ({ isFirstLogin }: FeedClientProps) => {
   return (
     <div>
       <InterestSelectionModal open={isOpen} onClose={() => setIsOpen(false)} />
-      {feedItems.length === 0 && (
+      {isLoading && (
+        <div>
+          {[1, 2, 3].map((idx) => (
+            <FeedItemSkeleton key={`feed-skeletion-${idx}`} />
+          ))}
+        </div>
+      )}
+      {!isLoading && feedItems.length === 0 && (
         <section className="p-4">
           <SiteSubscriptionForm />
         </section>
       )}
-      {feedItems.length > 0 && <FeedList items={feedItems} />}
+      {!isLoading && feedItems.length > 0 && <FeedList items={feedItems} />}
     </div>
   );
 };
