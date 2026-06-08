@@ -12,13 +12,15 @@ export const ROUTES = {
   LOGIN: "/login",
 
   FEED: "/feed",
+  RECOMMENDATION: "/recommendation",
+  POPULAR: "/popular",
 
   SETTINGS: "/settings",
   SETTINGS_PROFILE: "/settings/profile",
   SETTINGS_INTERESTS: "/settings/interests",
   SETTINGS_APPEARANCE: "/settings/appearance",
   SETTINGS_SUBSCRIPTIONS: "/settings/subscriptions",
-  
+
   LIKES: "/likes",
   BOOKMARKS: "/bookmarks",
   HIDDEN: "/hidden",

@@ -17,7 +17,6 @@ const FeedClient = ({ isFirstLogin }: FeedClientProps) => {
 
   const feedItems = data?.data ?? [];
 
-  console.log("목록", feedItems);
   return (
     <div>
       <InterestSelectionModal open={isOpen} onClose={() => setIsOpen(false)} />

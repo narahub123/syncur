@@ -1,3 +1,4 @@
+import FeedTabs from "@/features/feeds/components/FeedTabs";
 import LeftSidebar from "@/shared/components/layout/LeftSidebar";
 import Main from "@/shared/components/layout/Main";
 import RightSidebar from "@/shared/components/layout/RightSidebar";
@@ -12,7 +13,10 @@ export default async function layout({
   return (
     <div className="flex min-h-screen w-full">
       <LeftSidebar />
-      <Main>{children}</Main>
+      <Main>
+        <FeedTabs />
+        {children}
+      </Main>
       <RightSidebar />
     </div>
   );
