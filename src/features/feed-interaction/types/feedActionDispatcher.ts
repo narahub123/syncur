@@ -5,10 +5,13 @@
  * 동일하게 참조하는 단일 Source of Truth
  */
 
-export type FeedAction =
-  | "LIKE"
-  | "BOOKMARK"
-  | "SHARE"
-  | "CONTENT_CLICK"
-  | "SOURCE_CLICK"
-  | "HIDE";
+export const FEED_ACTION = {
+  LIKE: "LIKE",
+  BOOKMARK: "BOOKMARK",
+  SHARE: "SHARE",
+  CONTENT_CLICK: "CONTENT_CLICK",
+  SOURCE_CLICK: "SOURCE_CLICK",
+  HIDE: "HIDE",
+} as const;
+
+export type FeedAction = (typeof FEED_ACTION)[keyof typeof FEED_ACTION];

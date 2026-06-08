@@ -10,8 +10,9 @@ type Props = {
 
 const FeedItemCard = ({ item }: Props) => {
   const { meta, content, categories, interaction, stats } = item;
+
   return (
-    <li className="border-b border-gray-200 px-4">
+    <li className="border-b border-gray-200 px-4 pt-4">
       <FeedItemHeader meta={meta} />
       <FeedItemContent item={content} />
       <FeedItemCategories categories={categories} />

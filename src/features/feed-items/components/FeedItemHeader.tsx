@@ -8,9 +8,9 @@ type Props = {
 
 const FeedItemHeader = ({ meta }: Props) => {
   return (
-    <div className="flex items-center justify-between">
+    <div className="mb-3 flex items-center justify-between">
       <FeedSourceCard meta={meta} />
-      <FeedItemMoreMenu />
+      <FeedItemMoreMenu feedItemId={meta.feedItemId} />
     </div>
   );
 };

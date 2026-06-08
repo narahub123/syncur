@@ -5,7 +5,10 @@ import {
   FeedItemInteractionDto,
   FeedItemStatsDto,
 } from "@/features/feeds/dto/feedDto";
-import { FeedAction } from "@/features/feed-interaction/types/feedActionDispatcher";
+import {
+  FEED_ACTION,
+  FeedAction,
+} from "@/features/feed-interaction/types/feedActionDispatcher";
 
 const FeeditemActionBar = ({
   feedItemId,
@@ -17,20 +20,20 @@ const FeeditemActionBar = ({
   interaction: FeedItemInteractionDto;
 }) => {
   const { bookmarkCount, likeCount, shareCount } = stats;
-  const { hasBookmarked, hasLiked,  } = interaction;
+  const { hasBookmarked, hasLiked } = interaction;
 
   const mutation = useFeedAction(feedItemId);
 
   const count = (action: FeedAction) =>
-    action === "BOOKMARK"
+    action === FEED_ACTION.BOOKMARK
       ? bookmarkCount
-      : action === "LIKE"
+      : action === FEED_ACTION.LIKE
         ? likeCount
         : shareCount;
 
   const isFilled = (action: FeedAction) => {
-    if (action === "LIKE") return hasLiked;
-    if (action === "BOOKMARK") return hasBookmarked;
+    if (action === FEED_ACTION.LIKE) return hasLiked;
+    if (action === FEED_ACTION.BOOKMARK) return hasBookmarked;
     return false;
   };
 
@@ -38,14 +41,15 @@ const FeeditemActionBar = ({
     if (!filled) return "text-gray-400";
 
     switch (action) {
-      case "LIKE":
+      case FEED_ACTION.LIKE:
         return "text-red-500";
-      case "BOOKMARK":
+      case FEED_ACTION.BOOKMARK:
         return "text-blue-500";
       default:
         return "text-gray-400";
     }
   };
+
   return (
     <div className="flex items-center">
       {feedActions.map((action) => {
@@ -54,9 +58,8 @@ const FeeditemActionBar = ({
         return (
           <Button
             key={action.action}
-            className="flex h-12 flex-1 cursor-pointer justify-center"
+            className="flex h-12 flex-1 cursor-pointer items-center justify-center gap-2"
             variant="ghost"
-            size="icon-lg"
             title={action.title}
             onClick={() => mutation.mutate(action.action)}
           >
@@ -64,7 +67,11 @@ const FeeditemActionBar = ({
               fill={filled ? "currentColor" : "none"}
               className={`${filled ? "stroke-none" : ""} ${getColor(action.action, filled)}`}
             />
-            <span>{count(action.action)}</span>
+            <span
+              className={`text-md ${isFilled(action.action) ? getColor(action.action, filled) : "text-gray-500"}`}
+            >
+              {count(action.action)}
+            </span>
           </Button>
         );
       })}

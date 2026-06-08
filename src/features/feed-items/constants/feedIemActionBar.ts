@@ -1,26 +1,24 @@
 import { Bookmark, Heart, Share2 } from "lucide-react";
 import { FeedActionUI } from "../types/feedItemActionBar";
+import { FEED_ACTION } from "@/features/feed-interaction/types/feedActionDispatcher";
 
 export const feedActions: FeedActionUI[] = [
   {
-    type: "LIKE",
+    action: FEED_ACTION.LIKE,
     icon: Heart,
     title: "좋아요",
-    action: "LIKE",
     isToggle: true,
   },
   {
-    type: "BOOKMARK",
+    action: FEED_ACTION.BOOKMARK,
     icon: Bookmark,
     title: "북마크",
-    action: "BOOKMARK",
     isToggle: true,
   },
   {
-    type: "SHARE",
+    action: FEED_ACTION.SHARE,
     icon: Share2,
-    title: "Share",
-    action: "SHARE",
+    title: "공유",
     isToggle: false,
   },
 ];

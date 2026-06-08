@@ -2,7 +2,6 @@ import { FeedAction } from "@/features/feed-interaction/types/feedActionDispatch
 import { LucideIcon } from "lucide-react";
 
 export type FeedActionUI = {
-  type: "LIKE" | "BOOKMARK" | "SHARE";
   icon: LucideIcon;
   title: string;
 
