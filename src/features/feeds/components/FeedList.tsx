@@ -9,7 +9,7 @@ const FeedList = ({ items }: Props) => {
   return (
     <ul>
       {items.map((item) => (
-        <FeedItemCard key={item.content._id} item={item} />
+        <FeedItemCard key={item.content.feedItemId} item={item} />
       ))}
     </ul>
   );

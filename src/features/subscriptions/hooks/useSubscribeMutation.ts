@@ -53,6 +53,11 @@ export function useSubscribeMutation() {
         queryKey: subscriptionQueryKey.all,
       });
 
+      // 2. feed 재조회
+      queryClient.invalidateQueries({
+        queryKey: ["my-feed-items"],
+      });
+
       if (!selectedSite) return;
 
       const updatedSite = {

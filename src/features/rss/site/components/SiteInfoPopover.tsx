@@ -12,11 +12,12 @@ import { MouseEvent, useState } from "react";
 type Props = {
   site: SiteDto;
   onClick: (e: MouseEvent<HTMLAnchorElement>) => void;
+  feedId: string;
 };
 
-export function SiteInfoPopover({ site, onClick }: Props) {
+export function SiteInfoPopover({ site, onClick, feedId }: Props) {
   const [open, setOpen] = useState(false);
-  const { favicon_url, name, url, _id } = site;
+  const { favicon_url, name, url } = site;
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -63,7 +64,7 @@ export function SiteInfoPopover({ site, onClick }: Props) {
             </Link>
           </div>
 
-          <SubscriptionToggleButton feedId={_id} />
+          <SubscriptionToggleButton feedId={feedId} />
         </div>
       </PopoverContent>
     </Popover>

@@ -8,7 +8,7 @@ import {
 import { useSubscriptionToggleMutation } from "@/features/subscriptions/hooks/useSubscriptionToggleMutation";
 import { Dropdown } from "@/shared/components/ui/Dropdown";
 import { MoreVertical } from "lucide-react";
-import { useState } from "react";
+import { MouseEvent, useState } from "react";
 
 type Props = {
   feedItemId: string;
@@ -25,12 +25,13 @@ type FeedItemDefaultMenuItemType = {
 type FeedItemDestructiveMenuItemType = {
   id: string;
   label: string;
-  onClick: () => void;
+  onClick: (e: MouseEvent<HTMLButtonElement>) => void;
 };
 
 const FeedItemMoreMenu = ({ feedItemId, feedId }: Props) => {
   const [isSubscribed, setIsSubscribed] = useState(true);
   const mutation = useFeedAction(feedItemId);
+  const { mutate } = useSubscriptionToggleMutation();
   const defaultMenuItems: FeedItemDefaultMenuItemType[] = [
     {
       id: "hide",
@@ -40,7 +41,8 @@ const FeedItemMoreMenu = ({ feedItemId, feedId }: Props) => {
     },
   ];
 
-  const leaveLabel = isSubscribed ? "구독 해제" : "구독 추가";
+  const leaveLabel = isSubscribed ? "구독해제" : "구독하기";
+
   const destructiveMenuItems: FeedItemDestructiveMenuItemType[] = [
     {
       id: "leave",
@@ -53,12 +55,10 @@ const FeedItemMoreMenu = ({ feedItemId, feedId }: Props) => {
     mutation.mutate(action);
   }
 
-  const toggleMutation = useSubscriptionToggleMutation();
-
   function handleUnsubscribeClick() {
-    toggleMutation.mutate({
-      feedId,
+    mutate({
       isSubscribed,
+      feedId,
     });
     setIsSubscribed(!isSubscribed);
   }
@@ -79,7 +79,7 @@ const FeedItemMoreMenu = ({ feedItemId, feedId }: Props) => {
         ))}
         <Dropdown.Separator />
         {destructiveMenuItems.map((item) => (
-          <Dropdown.Item key={item.id} onClick={() => item.onClick()}>
+          <Dropdown.Item key={item.id} onClick={(e) => item.onClick(e)}>
             {item.label}
           </Dropdown.Item>
         ))}

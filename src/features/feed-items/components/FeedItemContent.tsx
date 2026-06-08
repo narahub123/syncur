@@ -9,8 +9,8 @@ type Props = {
 };
 
 const FeedItemContent = ({ item }: Props) => {
-  const { title, description, link, _id } = item;
-  const mutation = useFeedAction(_id);
+  const { title, description, link, feedItemId } = item;
+  const mutation = useFeedAction(feedItemId);
 
   const handleClick = (e: MouseEvent<HTMLAnchorElement>) => {
     e.preventDefault();

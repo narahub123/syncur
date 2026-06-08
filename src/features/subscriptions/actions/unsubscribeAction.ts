@@ -18,12 +18,12 @@ import { subscriptionService } from "../services/SubscriptionService.instance";
  *
  * @flow
  * Client
- *   → unsubscribeAction(siteId)
+ *   → unsubscribeAction(feedId)
  *   → auth()로 사용자 인증 확인
  *   → SubscriptionService.unsubscribe
  *   → Repository → DB delete
  *
- * @param siteId - 구독 해제 대상 사이트 ID
+ * @param feedId - 구독 해제 대상 사이트 ID
  *
  * @throws
  * UNAUTHORIZED - 로그인되지 않은 경우
@@ -31,12 +31,13 @@ import { subscriptionService } from "../services/SubscriptionService.instance";
  * @returns
  * 삭제 결과 (Service → Repository 반환값)
  */
-export const unsubscribeAction = async (siteId: string) => {
+export const unsubscribeAction = async (feedId: string) => {
   const session = await auth();
 
   if (!session?.user?.id) {
     throw new Error("UNAUTHORIZED");
   }
 
-  return subscriptionService.unsubscribe(session.user.id, siteId);
+  console.log("피드id", feedId);
+  return subscriptionService.unsubscribe(session.user.id, feedId);
 };

@@ -5,7 +5,6 @@ import { CreateSiteDto } from "../dto/siteDto";
 import { escapeRegExp } from "@/shared/utils/regex";
 import { SiteDiscoveryResult } from "../../discovery";
 import { Types } from "mongoose";
-import { SiteDto } from "@/features/feeds/dto/feedDto";
 
 /**
  * Site Repository
@@ -112,7 +111,7 @@ export class SiteRepository {
    * - IN query 기반 batch fetch
    */
 
-  async findByIds(siteIds: string[]): Promise<SiteDto[]> {
+  async findByIds(siteIds: string[]): Promise<Site[]> {
     if (!siteIds.length) return [];
 
     const objectIds = siteIds.map((id) => new Types.ObjectId(id));

@@ -1,5 +1,5 @@
 export type SiteDto = {
-  _id: string;
+  siteId: string;
   url: string;
   name: string;
   favicon_url: string | null;
@@ -10,10 +10,11 @@ export type FeedItemMetaDto = {
   site: SiteDto;
   publishedAt: string;
   feedItemId: string;
+  feedId: string;
 };
 
 export type FeedItemContentDto = {
-  _id: string;
+  feedItemId: string;
   title: string;
   description: string;
   link: string;

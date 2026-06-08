@@ -7,6 +7,7 @@ import { siteRepository } from "@/features/rss/site/repository/SiteRepository.in
 import { FeedItemResponse } from "../dto/feedDto";
 import { userFeedInteractionRepository } from "@/features/feed-interaction/repositories/UserFeedInteractionRepository.instance";
 import { feedItemStatsRepository } from "@/features/feed-items/respositories/FeedItemStatsRepository.instance";
+import { feedCondition } from "../utils/feedCondition";
 
 export class FeedService {
   async ensureFeed(site: Site): Promise<Feed | null> {
@@ -66,7 +67,7 @@ export class FeedService {
       const subscribedAt = subscribedMap.get(item.feedId.toString());
       if (!subscribedAt) return false;
 
-      return new Date(item.publishedAt).getTime() > subscribedAt.getTime();
+      return feedCondition(item, subscribedMap, 1);
     });
 
     // 5. 최신순 정렬
@@ -109,18 +110,19 @@ export class FeedService {
       return {
         meta: {
           site: {
-            _id: site._id.toString(),
+            siteId: site._id.toString(),
             url: site.url,
             favicon_url: site.favicon_url,
             name: site.name,
             feed_url: site.feed_url,
           },
+          feedId: feed._id.toString(),
           publishedAt: item.publishedAt ?? "",
           feedItemId: item._id.toString(),
         },
 
         content: {
-          _id: item._id.toString(),
+          feedItemId: item._id.toString(),
           title: item.title,
           description: item.description,
           link: item.link,

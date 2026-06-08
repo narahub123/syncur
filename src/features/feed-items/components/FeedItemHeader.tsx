@@ -10,7 +10,7 @@ const FeedItemHeader = ({ meta }: Props) => {
   return (
     <div className="mb-3 flex items-center justify-between">
       <FeedSourceCard meta={meta} />
-      <FeedItemMoreMenu feedItemId={meta.feedItemId} feedId={meta.site._id} />
+      <FeedItemMoreMenu feedItemId={meta.feedItemId} feedId={meta.feedId} />
     </div>
   );
 };

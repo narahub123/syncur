@@ -13,7 +13,5 @@ export function useSubscriptionToggleMutation() {
 
       return subscribeAction(feedId);
     },
-
-    onSuccess: () => {},
   });
 }

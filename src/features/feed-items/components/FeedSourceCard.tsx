@@ -26,7 +26,7 @@ const FeedSourceCard = ({ meta }: Props) => {
 
   return (
     <div className="flex items-center gap-1">
-      <SiteInfoPopover site={site} onClick={handleClick} />
+      <SiteInfoPopover site={site} onClick={handleClick} feedId={meta.feedId} />
       <span title={full} className="text-xs">
         {display}
       </span>
