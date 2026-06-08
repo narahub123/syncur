@@ -1,6 +1,12 @@
 "use client";
 
-import { Dropdown } from "@/shared/components/ui/Dropdown";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/shared/components/ui/dropdown-menu";
+
 import UserMenu from "./UserMenu";
 import { signOut } from "next-auth/react";
 import { ROUTES } from "@/shared/constants/routes";
@@ -12,6 +18,7 @@ const UserMenuDropdown = () => {
   const handleSettingClick = () => {
     router.push(ROUTES.SETTINGS);
   };
+
   const handleLogoutClick = async () => {
     try {
       await signOut({ redirectTo: ROUTES.HOME });
@@ -20,23 +27,29 @@ const UserMenuDropdown = () => {
     }
   };
 
-  const userMenu = [
-    { name: "로그아웃", onClick: handleLogoutClick },
-    { name: "설정 열기", onClick: handleSettingClick },
-  ];
   return (
-    <Dropdown.Root placement="right-start">
-      <Dropdown.Trigger>
-        <UserMenu />
-      </Dropdown.Trigger>
-      <Dropdown.Content>
-        {userMenu.map((item) => (
-          <Dropdown.Item key={item.name} onClick={item.onClick}>
-            {item.name}
-          </Dropdown.Item>
-        ))}
-      </Dropdown.Content>
-    </Dropdown.Root>
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <button>
+          <UserMenu />
+        </button>
+      </DropdownMenuTrigger>
+
+      <DropdownMenuContent
+        align="start"
+        side="right"
+        alignOffset={-10}
+        sideOffset={2}
+      >
+        <DropdownMenuItem onClick={handleSettingClick}>
+          설정 열기
+        </DropdownMenuItem>
+
+        <DropdownMenuItem variant="destructive" onClick={handleLogoutClick}>
+          로그아웃
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 };
 

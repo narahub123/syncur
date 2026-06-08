@@ -11,7 +11,7 @@ import SiteSubscriptionForm from "@/features/subscriptions/components/SiteSubscr
 const SiteSubscriptionDialog = () => {
   return (
     <Dialog>
-      <DialogTrigger asChild className="hover:bg-accent">
+      <DialogTrigger asChild className="hover:bg-accent m-2 cursor-pointer">
         <SiteSubscriptionTrigger />
       </DialogTrigger>
 

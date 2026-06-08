@@ -1,90 +1,66 @@
 "use client";
 
-import { useFeedAction } from "@/features/feed-interaction/hooks/useFeedAction";
-import {
-  FEED_ACTION,
-  FeedAction,
-} from "@/features/feed-interaction/types/feedActionDispatcher";
-import { useSubscriptionToggleMutation } from "@/features/subscriptions/hooks/useSubscriptionToggleMutation";
-import { Dropdown } from "@/shared/components/ui/Dropdown";
+import { useState } from "react";
 import { MoreVertical } from "lucide-react";
-import { MouseEvent, useState } from "react";
+
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+} from "@/shared/components/ui/dropdown-menu";
+
+import { useFeedAction } from "@/features/feed-interaction/hooks/useFeedAction";
+import { FEED_ACTION } from "@/features/feed-interaction/types/feedActionDispatcher";
+
+import { useSubscriptionToggleMutation } from "@/features/subscriptions/hooks/useSubscriptionToggleMutation";
 
 type Props = {
   feedItemId: string;
   feedId: string;
 };
 
-type FeedItemDefaultMenuItemType = {
-  id: string;
-  label: string;
-  onClick: (action: FeedAction) => void;
-  action: FeedAction;
-};
-
-type FeedItemDestructiveMenuItemType = {
-  id: string;
-  label: string;
-  onClick: (e: MouseEvent<HTMLButtonElement>) => void;
-};
-
 const FeedItemMoreMenu = ({ feedItemId, feedId }: Props) => {
   const [isSubscribed, setIsSubscribed] = useState(true);
-  const mutation = useFeedAction(feedItemId);
-  const { mutate } = useSubscriptionToggleMutation();
-  const defaultMenuItems: FeedItemDefaultMenuItemType[] = [
-    {
-      id: "hide",
-      label: "숨기기",
-      onClick: handleHideClick,
-      action: FEED_ACTION.HIDE,
-    },
-  ];
 
-  const leaveLabel = isSubscribed ? "구독해제" : "구독하기";
+  const feedActionMutation = useFeedAction(feedItemId);
+  const subscriptionMutation = useSubscriptionToggleMutation();
 
-  const destructiveMenuItems: FeedItemDestructiveMenuItemType[] = [
-    {
-      id: "leave",
-      label: leaveLabel,
-      onClick: handleUnsubscribeClick,
-    },
-  ];
+  const handleHide = () => {
+    feedActionMutation.mutate(FEED_ACTION.HIDE);
+  };
 
-  function handleHideClick(action: FeedAction) {
-    mutation.mutate(action);
-  }
-
-  function handleUnsubscribeClick() {
-    mutate({
+  const handleToggleSubscription = () => {
+    subscriptionMutation.mutate({
       isSubscribed,
       feedId,
     });
-    setIsSubscribed(!isSubscribed);
-  }
+
+    setIsSubscribed((prev) => !prev);
+  };
 
   return (
-    <Dropdown.Root>
-      <Dropdown.Trigger className="rounded-full">
-        <MoreVertical size={20} />
-      </Dropdown.Trigger>
-      <Dropdown.Content isBgOn={false}>
-        {defaultMenuItems.map((item) => (
-          <Dropdown.Item
-            key={item.id}
-            onClick={() => item.onClick(item.action)}
-          >
-            {item.label}
-          </Dropdown.Item>
-        ))}
-        <Dropdown.Separator />
-        {destructiveMenuItems.map((item) => (
-          <Dropdown.Item key={item.id} onClick={(e) => item.onClick(e)}>
-            {item.label}
-          </Dropdown.Item>
-        ))}
-      </Dropdown.Content>
-    </Dropdown.Root>
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <button className="hover:bg-accent rounded-full p-1">
+          <MoreVertical size={20} />
+        </button>
+      </DropdownMenuTrigger>
+
+      <DropdownMenuContent sideOffset={6} align="end">
+        <DropdownMenuItem onClick={handleHide}>숨기기</DropdownMenuItem>
+
+        <DropdownMenuSeparator />
+
+        <DropdownMenuItem
+          onClick={handleToggleSubscription}
+          variant={isSubscribed ? "destructive" : "default"}
+        >
+          {isSubscribed ? "구독 해제" : "구독하기"}
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 };
 

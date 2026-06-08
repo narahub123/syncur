@@ -1,6 +1,6 @@
 "use client";
 
-import InterestSelectionModal from "@/features/interests/components/InterestSelectionModal";
+import InterestSelectionDialog from "@/features/interests/components/InterestSelectionDialog";
 import SiteSubscriptionForm from "@/features/subscriptions/components/SiteSubscriptionForm";
 import { useState } from "react";
 import { useMyFeedItems } from "../hooks/useMyFeedItems";
@@ -20,7 +20,7 @@ const FeedClient = ({ isFirstLogin }: FeedClientProps) => {
 
   return (
     <div>
-      <InterestSelectionModal open={isOpen} onClose={() => setIsOpen(false)} />
+      <InterestSelectionDialog open={isOpen} onClose={() => setIsOpen(false)} />
       {isLoading && (
         <div>
           {[1, 2, 3].map((idx) => (
