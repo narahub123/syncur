@@ -4,7 +4,7 @@ type Props = {
 
 const FeedItemCategories = ({ categories }: Props) => {
   return (
-    <ul>
+    <ul className="px-4">
       {categories.map((category) => (
         <li key={category}>{category}</li>
       ))}

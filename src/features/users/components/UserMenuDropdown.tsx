@@ -30,7 +30,7 @@ const UserMenuDropdown = () => {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <button>
+        <button className="hover:bg-accent">
           <UserMenu />
         </button>
       </DropdownMenuTrigger>

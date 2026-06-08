@@ -43,7 +43,10 @@ const FeedItemMoreMenu = ({ feedItemId, feedId }: Props) => {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <button className="hover:bg-accent rounded-full p-1">
+        <button
+          className="hover:bg-accent focus-visible:bg-accent cursor-pointer rounded-full p-1"
+          title="더보기 열기"
+        >
           <MoreVertical size={20} />
         </button>
       </DropdownMenuTrigger>

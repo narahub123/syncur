@@ -29,7 +29,7 @@ export function SiteInfoPopover({ site, onClick, feedId }: Props) {
         >
           <Link
             href={url}
-            className="flex items-center gap-1"
+            className="hover:bg-accent focus-visible:bg-accent flex items-center gap-1 px-2 py-1"
             target="_blank"
             onClick={onClick}
           >
@@ -51,9 +51,10 @@ export function SiteInfoPopover({ site, onClick, feedId }: Props) {
           <div className="flex items-center gap-2">
             <Link
               href={url}
-              className="flex items-center gap-1"
+              className="hover:bg-accent focus-visible:bg-accent flex items-center gap-1 px-2 py-1"
               target="_blank"
               onClick={onClick}
+              title={`${site.name}로 이동하기`}
             >
               <img
                 src={favicon_url ?? ""}

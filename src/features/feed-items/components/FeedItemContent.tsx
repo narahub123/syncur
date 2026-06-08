@@ -21,8 +21,13 @@ const FeedItemContent = ({ item }: Props) => {
   };
 
   return (
-    <Link href={link} target="_blank" onClick={handleClick}>
-      <div className="mt-3 mb-1 space-y-1">
+    <Link
+      href={link}
+      target="_blank"
+      onClick={handleClick}
+      className="focus-visible:bg-accent hover:bg-accent mt-2 block pt-1 pb-1"
+    >
+      <div className="mt-3 mb-1 space-y-1 px-4">
         <p className="text-md line-clamp-1 font-medium">{title}</p>
         <p className="text-md line-clamp-3 break-after-all">{description}</p>
       </div>

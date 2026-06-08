@@ -58,7 +58,7 @@ const FeeditemActionBar = ({
         return (
           <Button
             key={action.action}
-            className="flex h-12 flex-1 cursor-pointer items-center justify-center gap-2"
+            className="focus-visible:bg-accent flex h-12 flex-1 cursor-pointer items-center justify-center gap-2 rounded-none"
             variant="ghost"
             title={action.title}
             onClick={() => mutation.mutate(action.action)}
