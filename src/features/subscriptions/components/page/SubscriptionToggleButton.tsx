@@ -24,7 +24,7 @@ const SubscriptionToggleButton = ({ feedId }: Props) => {
 
   return (
     <Button
-      className="text-xs"
+      className="cursor-pointer text-xs"
       onClick={handleClick}
       disabled={toggleMutation.isPending}
     >

@@ -3,15 +3,17 @@
 import { KeyboardEvent, ReactNode, useEffect, useRef } from "react";
 
 import { useDropdown } from "./DropdownRoot";
+import { cn } from "@/shared/utils/cn";
 
 type Props = {
+  isBgOn?: boolean;
   children: ReactNode;
 };
 
 const FOCUSABLE_SELECTOR =
   'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
-const DropdownContent = ({ children }: Props) => {
+const DropdownContent = ({ isBgOn = true, children }: Props) => {
   const { open, close, focusTrigger, setFloatingRef, floatingStyles } =
     useDropdown();
 
@@ -73,7 +75,7 @@ const DropdownContent = ({ children }: Props) => {
         type="button"
         tabIndex={-1}
         aria-label="드롭다운 닫기"
-        className="bg-overlay fixed inset-0 z-40"
+        className={cn("fixed inset-0 z-40", `${isBgOn ? "bg-overlay" : ""}`)}
         onClick={close}
       />
 
