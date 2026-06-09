@@ -98,4 +98,34 @@ export class UserFeedInteractionRepository {
       },
     }).lean();
   }
+
+  /**
+   * 북마크 목록 커서 조회
+   *
+   * @description
+   * 마지막 북마크 시각(lastBookmarkedAt)을 기준으로
+   * 다음 페이지를 조회한다.
+   */
+  async findBookmarkedByUserId(
+    userId: string | Types.ObjectId,
+    limit: number,
+    cursor?: string,
+  ): Promise<UserFeedInteractionLean[]> {
+    return UserFeedInteractionModel.find({
+      userId: toObjectId(userId),
+      hasBookmarked: true,
+
+      ...(cursor && {
+        lastBookmarkedAt: {
+          $lt: new Date(cursor),
+        },
+      }),
+    })
+      .sort({
+        lastBookmarkedAt: -1,
+      })
+      .limit(limit)
+      .lean()
+      .exec();
+  }
 }

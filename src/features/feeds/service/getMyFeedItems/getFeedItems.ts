@@ -1,7 +1,7 @@
 import { FeedResponse } from "../../dto/feedDto";
 import { isSubscribedFeedItemVisible } from "./isSubscribedFeedItemVisible";
 import { userFeedInteractionRepository } from "@/features/feed-interaction/repositories/UserFeedInteractionRepository.instance";
-import { feedItemStatsRepository } from "@/features/feed-items/respositories/FeedItemStatsRepository.instance";
+import { feedItemStatsRepository } from "@/features/feed-items/repositories/FeedItemStatsRepository.instance";
 import { loadFeedContext } from "./loadFeedContext";
 import { paginateFeedItems } from "./paginateFeedItems";
 import { mapFeedItemToDto } from "./feedItemDtoMapper";

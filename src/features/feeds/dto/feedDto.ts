@@ -54,7 +54,8 @@ type FeedState =
   | "EMPTY_FEED"
   | "HAS_DATA"
   | "UNAUTHORIZED"
-  | "FEED_FETCH_FAILED";
+  | "FEED_FETCH_FAILED"
+  | "BOOKMARK_FETCH_FAILED";
 
 /**
  * Feed 비즈니스 상태 정의

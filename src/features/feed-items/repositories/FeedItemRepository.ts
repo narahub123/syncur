@@ -13,7 +13,7 @@ import { FeedItemLean } from "@/shared/types/domain-leans";
  * - lean 기반 read-only 조회
  * - 비즈니스 로직 포함 금지
  */
-export class FeedItemRespository {
+export class FeedItemRepository {
   /**
    * feedIds 기준 FeedItem 목록 조회
    *
@@ -29,5 +29,23 @@ export class FeedItemRespository {
         $in: feedIds.map((id) => toObjectId(id)),
       },
     }).lean();
+  }
+
+  /**
+   * FeedItem id 목록 조회
+   *
+   * @description
+   * 여러 FeedItem을 한번에 조회한다.
+   */
+  async findByIds(
+    feedItemIds: (string | Types.ObjectId)[],
+  ): Promise<FeedItemLean[]> {
+    return FeedItemModel.find({
+      _id: {
+        $in: feedItemIds.map((id) => toObjectId(id)),
+      },
+    })
+      .lean()
+      .exec();
   }
 }

@@ -1,0 +1,32 @@
+import FeeditemActionBar from "@/features/feed-items/components/FeeditemActionBar";
+import FeedItemCategories from "@/features/feed-items/components/FeedItemCategories";
+import FeedItemContent from "@/features/feed-items/components/FeedItemContent";
+import { FeedItemResponse } from "@/features/feeds/dto/feedDto";
+import BookmarkHeader from "./BookmarkHeader";
+
+type Props = {
+  bookmark: FeedItemResponse;
+};
+
+const BookmarkCard = ({ bookmark }: Props) => {
+  const { meta, content, categories, interaction, stats } = bookmark;
+
+  const bookmarkMeta: BookmarkMetaDto = {
+    bookmarkedAt: interaction.lastBookmarkedAt,
+  };
+
+  return (
+    <li className="border-b border-gray-200 pt-4">
+      <BookmarkHeader meta={meta} bookmarkMeta={bookmarkMeta} />
+      <FeedItemContent item={content} />
+      <FeedItemCategories categories={categories} />
+      <FeeditemActionBar
+        feedItemId={meta.feedItemId}
+        stats={stats}
+        interaction={interaction}
+      />
+    </li>
+  );
+};
+
+export default BookmarkCard;

@@ -1,4 +1,4 @@
-import { FeedItemStatsRepository } from "../respositories/FeedItemStatsRepository";
+import { FeedItemStatsRepository } from "../repositories/FeedItemStatsRepository";
 
 /**
  * FeedItemStats Service
