@@ -30,8 +30,13 @@ export class FeedRepository {
    * - Site당 Feed는 1개만 존재하도록 설계됨
    * - 없으면 null 반환
    */
-  async findBySiteId(siteId: string): Promise<Feed | null> {
-    const doc = await FeedModel.findOne({ siteId });
+
+  async findBySiteId(siteId: string | Types.ObjectId): Promise<Feed | null> {
+    const objectId =
+      typeof siteId === "string" ? new Types.ObjectId(siteId) : siteId;
+
+    const doc = await FeedModel.findOne({ siteId: objectId });
+
     return doc ? toFeed(doc) : null;
   }
 

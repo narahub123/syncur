@@ -1,10 +1,10 @@
-import { Site } from "@/shared/types/site";
 import { feedRepository } from "../repository/FeedRepository.instance";
 import { Feed } from "@/shared/types/feed";
 import { getFeedItems } from "./getMyFeedItems/getFeedItems";
+import { SiteLean } from "@/shared/types/domain-leans";
 
 export class FeedService {
-  async ensureFeed(site: Site): Promise<Feed | null> {
+  async ensureFeed(site: SiteLean): Promise<Feed | null> {
     if (!site?.feed_url) return null;
 
     let feed = await feedRepository.findBySiteId(site._id);

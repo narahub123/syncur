@@ -1,15 +1,8 @@
+import { FeedItemSiteDto } from "@/features/rss/site/dto/siteDto";
 import { CursorPaginationResponse } from "@/shared/types/pagination";
 
-export type SiteDto = {
-  siteId: string;
-  url: string;
-  name: string;
-  favicon_url: string | null;
-  feed_url: string | null;
-};
-
 export type FeedItemMetaDto = {
-  site: SiteDto;
+  site: FeedItemSiteDto;
   publishedAt: string;
   feedItemId: string;
   feedId: string;

@@ -1,7 +1,7 @@
-import { Site } from "@/shared/types/site";
-import { CreateSiteDto } from "../dto/siteDto";
+import { CreateSiteDto, SiteDto } from "../dto/siteDto";
 import { SiteRepository } from "../repository/SiteRepository";
 import { normalizeSiteIdentity } from "../utils/normalizeSiteIdentity";
+import { toSiteDto } from "../mappers/toSiteDto";
 
 export class SiteService {
   private readonly siteRepository: SiteRepository;
@@ -45,13 +45,13 @@ export class SiteService {
    * RSS 탐색(discovery)은 수행하지 않는다.
    * create는 전달받은 Site 데이터만 저장한다.
    */
-  async create(siteData: CreateSiteDto): Promise<Site> {
+  async create(siteData: CreateSiteDto): Promise<SiteDto> {
     const existingSite = await this.siteRepository.findByUrl(siteData.url);
 
     if (existingSite) {
-      return existingSite;
+      return toSiteDto(existingSite);
     }
 
-    return this.siteRepository.create(siteData);
+    return toSiteDto(await this.siteRepository.create(siteData));
   }
 }

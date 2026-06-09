@@ -26,6 +26,14 @@ export type SiteSearchDto = {
   feed_url: string | null;
 };
 
+export type FeedItemSiteDto = {
+  siteId: string;
+  url: string;
+  name: string;
+  favicon_url: string | null;
+  feed_url: string | null;
+};
+
 export type CreateSiteDto = {
   url: string;
   name: string;
@@ -43,4 +51,23 @@ export type SiteContextDTO = {
   rssAvailable: boolean;
   isSubscribed: boolean;
   canSubscribe: boolean;
+};
+
+/**
+ * Site Client DTO
+ *
+ * - Client Component로 전달 가능한 순수 객체
+ * - ObjectId / Date 모두 string으로 변환
+ */
+export type SiteDto = {
+  _id: string;
+
+  url: string;
+  name: string;
+
+  favicon_url: string | null;
+  feed_url: string | null;
+
+  createdAt: string;
+  updatedAt: string;
 };

@@ -1,10 +1,10 @@
-import { Site } from "@/shared/types/site";
 import { SITE_SEARCH_LIMIT } from "../constants/site";
 import { SiteModel } from "../model/Site";
 import { CreateSiteDto } from "../dto/siteDto";
 import { escapeRegExp } from "@/shared/utils/regex";
 import { SiteDiscoveryResult } from "../../discovery";
 import { Types } from "mongoose";
+import { SiteLean } from "@/shared/types/domain-leans";
 
 /**
  * Site Repository
@@ -28,21 +28,21 @@ export class SiteRepository {
    * - lean()을 사용하여 Mongoose Document 오버헤드 제거
    * - 검색/필터링 로직은 Service 계층에서 처리
    */
-  async findAll(limit = SITE_SEARCH_LIMIT): Promise<Site[]> {
+  async findAll(limit = SITE_SEARCH_LIMIT): Promise<SiteLean[]> {
     return SiteModel.find().limit(limit).lean();
   }
 
   /**
    * URL 기준 Site 조회
    */
-  async findByUrl(url: string): Promise<Site | null> {
+  async findByUrl(url: string): Promise<SiteLean | null> {
     return SiteModel.findOne({ url }).lean();
   }
 
   /**
    * Site 생성
    */
-  async create(data: CreateSiteDto): Promise<Site> {
+  async create(data: CreateSiteDto): Promise<SiteLean> {
     const doc = await SiteModel.create(data);
     return doc.toObject();
   }
@@ -51,7 +51,7 @@ export class SiteRepository {
    * normalizedUrl 기준으로 site 후보 검색
    * (debounce 기반 검색 대응 → 여러 결과 가능)
    */
-  async search(normalizedUrl: string): Promise<Site[]> {
+  async search(normalizedUrl: string): Promise<SiteLean[]> {
     return SiteModel.find({
       url: {
         $regex: escapeRegExp(normalizedUrl),
@@ -65,7 +65,7 @@ export class SiteRepository {
    *
    * @param discovered - RSS discovery 결과
    */
-  async upsert(discovered: SiteDiscoveryResult): Promise<Site> {
+  async upsert(discovered: SiteDiscoveryResult): Promise<SiteLean> {
     const { url, name, favicon_url, feed_url } = discovered;
 
     /**
@@ -111,7 +111,7 @@ export class SiteRepository {
    * - IN query 기반 batch fetch
    */
 
-  async findByIds(siteIds: string[]): Promise<Site[]> {
+  async findByIds(siteIds: string[]): Promise<SiteLean[]> {
     if (!siteIds.length) return [];
 
     const objectIds = siteIds.map((id) => new Types.ObjectId(id));
@@ -128,7 +128,7 @@ export class SiteRepository {
    *
    * @returns Site 목록
    */
-  async findBySiteIds(siteIds: Types.ObjectId[]) {
+  async findBySiteIds(siteIds: Types.ObjectId[]): Promise<SiteLean[]> {
     return SiteModel.find({
       _id: { $in: siteIds },
     }).lean();

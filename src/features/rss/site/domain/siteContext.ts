@@ -1,6 +1,6 @@
-import { Site } from "@/shared/types/site";
 import { SiteContextDTO } from "../dto/siteDto";
 import { Feed } from "@/shared/types/feed";
+import { SiteLean } from "@/shared/types/domain-leans";
 
 /**
  * Context 생성 입력 데이터
@@ -10,7 +10,7 @@ import { Feed } from "@/shared/types/feed";
  * 👉 이 단계는 "조회 결과를 판단 가능한 형태로 변환"하기 위한 중간 데이터
  */
 export type SiteContextInput = {
-  site: Site;
+  site: SiteLean;
   subscriptionExists: boolean;
   feed: Feed | null;
 };

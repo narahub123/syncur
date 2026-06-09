@@ -1,4 +1,3 @@
-import { SiteDto } from "@/features/feeds/dto/feedDto";
 import SubscriptionToggleButton from "@/features/subscriptions/components/page/SubscriptionToggleButton";
 
 import {
@@ -8,9 +7,10 @@ import {
 } from "@/shared/components/ui/popover";
 import Link from "next/link";
 import { MouseEvent, useState } from "react";
+import { FeedItemSiteDto } from "../dto/siteDto";
 
 type Props = {
-  site: SiteDto;
+  site: FeedItemSiteDto;
   onClick: (e: MouseEvent<HTMLAnchorElement>) => void;
   feedId: string;
 };
