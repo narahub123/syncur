@@ -5,9 +5,9 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/shared/components/ui/popover";
-import Link from "next/link";
 import { MouseEvent, useState } from "react";
 import { FeedItemSiteDto } from "../dto/siteDto";
+import SiteLinkCard from "./SiteLinkCard";
 
 type Props = {
   site: FeedItemSiteDto;
@@ -17,7 +17,6 @@ type Props = {
 
 export function SiteInfoPopover({ site, onClick, feedId }: Props) {
   const [open, setOpen] = useState(false);
-  const { favicon_url, name, url } = site;
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -27,19 +26,7 @@ export function SiteInfoPopover({ site, onClick, feedId }: Props) {
           onMouseEnter={() => setOpen(true)}
           onMouseLeave={() => setOpen(false)}
         >
-          <Link
-            href={url}
-            className="hover:bg-accent focus-visible:bg-accent flex items-center gap-1 px-2 py-1"
-            target="_blank"
-            onClick={onClick}
-          >
-            <img
-              src={favicon_url ?? ""}
-              alt=""
-              className={"h-8 w-8 rounded-full object-contain"}
-            />
-            <span className="text-sm font-medium">{name}</span>
-          </Link>
+          <SiteLinkCard site={site} onClick={onClick} />
         </div>
       </PopoverTrigger>
 
@@ -48,21 +35,8 @@ export function SiteInfoPopover({ site, onClick, feedId }: Props) {
         onMouseLeave={() => setOpen(false)}
       >
         <div className="flex flex-col gap-2">
-          <div className="flex items-center gap-2">
-            <Link
-              href={url}
-              className="hover:bg-accent focus-visible:bg-accent flex items-center gap-1 px-2 py-1"
-              target="_blank"
-              onClick={onClick}
-              title={`${site.name}로 이동하기`}
-            >
-              <img
-                src={favicon_url ?? ""}
-                alt=""
-                className={"h-8 w-8 rounded-full object-contain"}
-              />
-              <span className="text-sm font-medium">{name}</span>
-            </Link>
+          <div className="flex flex-1 items-center justify-center gap-2">
+            <SiteLinkCard site={site} onClick={onClick} />
           </div>
 
           <SubscriptionToggleButton feedId={feedId} />

@@ -9,7 +9,7 @@ import {
 } from "@/shared/components/ui/combobox";
 
 import { LoaderCircle } from "lucide-react";
-import SiteAvatar from "./SiteAvatar";
+import SiteAvatar from "../../rss/site/components/SiteAvatar";
 import { SiteContextDTO } from "@/features/rss/site/dto/siteDto";
 import { SubscriptionStatusBadge } from "./SubscriptionStatusBadge";
 import { getSiteStatus } from "../domain/getSiteStatus";
@@ -146,10 +146,8 @@ const SiteCombobox = ({
                     <div className="flex w-full items-center justify-between">
                       <div className="flex flex-1 items-center gap-2">
                         <SiteAvatar
-                          site={{
-                            favicon_url: site.favicon_url ?? "",
-                            name: site.name,
-                          }}
+                          favicon_url={site.favicon_url}
+                          name={site.name}
                         />
                         <span className="text-xs">{site.name}</span>
                       </div>
