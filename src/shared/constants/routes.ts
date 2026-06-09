@@ -14,6 +14,8 @@ export const ROUTES = {
   FEED: "/feed",
   RECOMMENDATION: "/recommendation",
   POPULAR: "/popular",
+  LIKES: "/likes",
+  BOOKMARKS: "/bookmarks",
 
   SETTINGS: "/settings",
   SETTINGS_PROFILE: "/settings/profile",
@@ -21,8 +23,6 @@ export const ROUTES = {
   SETTINGS_APPEARANCE: "/settings/appearance",
   SETTINGS_SUBSCRIPTIONS: "/settings/subscriptions",
 
-  LIKES: "/likes",
-  BOOKMARKS: "/bookmarks",
   HIDDEN: "/hidden",
 } as const;
 
