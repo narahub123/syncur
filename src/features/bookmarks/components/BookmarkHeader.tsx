@@ -13,7 +13,11 @@ const BookmarkHeader = ({ meta, bookmarkMeta }: Props) => {
     <div className="flex items-center justify-between px-4">
       <FeedSourceCard meta={meta} />
       <BookmarkMetadata bookmarkMeta={bookmarkMeta} />
-      <FeedItemMoreMenu feedItemId={meta.feedItemId} feedId={meta.feedId} />
+      <FeedItemMoreMenu
+        feedItemId={meta.feedItemId}
+        feedId={meta.feedId}
+        context="bookmark"
+      />
     </div>
   );
 };

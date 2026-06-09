@@ -1,28 +1,23 @@
 "use client";
 
 import { useState } from "react";
-import { MoreVertical } from "lucide-react";
-
-import {
-  DropdownMenu,
-  DropdownMenuTrigger,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-} from "@/shared/components/ui/dropdown-menu";
-
 import { useFeedAction } from "@/features/feed-interaction/hooks/useFeedAction";
 import { FEED_ACTION } from "@/features/feed-interaction/types/feedActionDispatcher";
-
 import { useSubscriptionToggleMutation } from "@/features/subscriptions/hooks/useSubscriptionToggleMutation";
+import { createFeedItemActions } from "../context/createFeedItemActions";
+import { MoreMenu } from "@/shared/components/common/MoreMenu/MoreMenu";
+import CollectionDialog from "@/features/bookmarks/components/CollectionDialog";
 
 type Props = {
   feedItemId: string;
   feedId: string;
+  context: "feed" | "bookmark";
 };
 
-const FeedItemMoreMenu = ({ feedItemId, feedId }: Props) => {
+const FeedItemMoreMenu = ({ feedItemId, feedId, context }: Props) => {
   const [isSubscribed, setIsSubscribed] = useState(true);
+  const [collections, setCollections] = useState<string[]>([]);
+  const [isCollectionDialogOpen, setIsCollectionDialogOpen] = useState(false);
 
   const feedActionMutation = useFeedAction(feedItemId);
   const subscriptionMutation = useSubscriptionToggleMutation();
@@ -40,30 +35,25 @@ const FeedItemMoreMenu = ({ feedItemId, feedId }: Props) => {
     setIsSubscribed((prev) => !prev);
   };
 
+  const hasCollections = collections.length !== 0;
+
+  const actions = createFeedItemActions({
+    isSubscribed,
+    hasCollections,
+    onHide: handleHide,
+    onToggleSubscription: handleToggleSubscription,
+    context,
+    onOpenCollectionModal: () => setIsCollectionDialogOpen(true),
+  });
+
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <button
-          className="hover:bg-accent focus-visible:bg-accent cursor-pointer rounded-full p-1"
-          title="더보기 열기"
-        >
-          <MoreVertical size={20} />
-        </button>
-      </DropdownMenuTrigger>
-
-      <DropdownMenuContent sideOffset={6} align="end">
-        <DropdownMenuItem onClick={handleHide}>숨기기</DropdownMenuItem>
-
-        <DropdownMenuSeparator />
-
-        <DropdownMenuItem
-          onClick={handleToggleSubscription}
-          variant={isSubscribed ? "destructive" : "default"}
-        >
-          {isSubscribed ? "구독 해제" : "구독하기"}
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+    <>
+      <CollectionDialog
+        open={isCollectionDialogOpen}
+        onClose={() => setIsCollectionDialogOpen(false)}
+      />
+      <MoreMenu actions={actions} />
+    </>
   );
 };
 
