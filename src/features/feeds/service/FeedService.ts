@@ -1,6 +1,6 @@
 import { Site } from "@/shared/types/site";
 import { feedRepository } from "../repository/FeedRepository.instance";
-import { Feed } from "@/shared/types/feed";
+import { Feed, FeedItem } from "@/shared/types/feed";
 import { subscriptionRepository } from "@/features/subscriptions/repository/SubscriptionRepository.instance";
 import { feedItemRepository } from "@/features/feed-items/respositories/FeedItemRespository.instance";
 import { siteRepository } from "@/features/rss/site/repository/SiteRepository.instance";
@@ -30,11 +30,11 @@ export class FeedService {
   }
 
   async getMyFeedItems(userId: string, cursor?: string): Promise<FeedResponse> {
-    // 1. 사용자 구독 목록 조회
-    // - 해당 사용자가 구독한 feed 목록 기반으로 피드 생성
+    // =========================
+    // 1. 구독 목록 조회
+    // =========================
     const subscriptions = await subscriptionRepository.findByUserId(userId);
 
-    // 구독이 없는 경우: 피드 생성 자체가 불가능
     if (!subscriptions.length) {
       return {
         items: [],
@@ -44,8 +44,9 @@ export class FeedService {
       };
     }
 
-    // 2. feedId → subscribedAt 매핑
-    // - 각 feed를 언제 구독했는지 기준으로 필터링/정렬에 활용
+    // =========================
+    // 2. subscription map (feedId → subscribedAt)
+    // =========================
     const subscribedMap = new Map(
       subscriptions
         .map((s) => {
@@ -57,66 +58,83 @@ export class FeedService {
 
     const feedIds = [...subscribedMap.keys()];
 
-    // 3. feed / site 데이터 조회 (join 역할)
+    // =========================
+    // 3. feed / site 조회
+    // =========================
     const feeds = await feedRepository.findByIds(feedIds);
 
-    const siteIds = [...new Set(feeds.map((f) => f.siteId.toString()))];
+    const sites = await siteRepository.findByIds([
+      ...new Set(feeds.map((f) => f.siteId.toString())),
+    ]);
 
-    const sites = await siteRepository.findByIds(siteIds);
-
-    // 빠른 lookup을 위한 map 구성
-    const siteMap = new Map(sites.map((s) => [s._id.toString(), s]));
     const feedMap = new Map(feeds.map((f) => [f._id.toString(), f]));
+    const siteMap = new Map(sites.map((s) => [s._id.toString(), s]));
 
-    // 4. feed item 조회 (전체 raw 데이터)
+    // =========================
+    // 4. feed items 조회
+    // =========================
     const items = await feedItemRepository.findByFeedIds(feedIds);
 
+    /**
+     * item 시간 통일 함수
+     * - publishedAt 우선
+     * - 없으면 createdAt 사용
+     */
+    const getItemTime = (item: FeedItem): number =>
+      new Date(item.publishedAt ?? item.createdAt ?? 0).getTime();
+
+    /**
+     * cursor도 동일 기준으로 통일
+     */
+    const parseCursorTime = (cursor?: string): number | null =>
+      cursor ? new Date(cursor).getTime() : null;
+
+    // =========================
     // 5. 필터링
-    // - 구독 이후 생성된 feed item만 유지
+    // =========================
     const filtered = items.filter((item) => {
-      if (!item.publishedAt) return false;
-
-      const subscribedAt = subscribedMap.get(item.feedId.toString());
-      if (!subscribedAt) return false;
-
       return feedCondition(item, subscribedMap, 1);
     });
 
-    // 6. 최신순 정렬 (feed timeline 기준)
-    filtered.sort(
-      (a, b) =>
-        new Date(b.publishedAt ?? 0).getTime() -
-        new Date(a.publishedAt ?? 0).getTime(),
-    );
+    // =========================
+    // 6. 정렬 (최신순)
+    // =========================
+    filtered.sort((a, b) => {
+      return getItemTime(b) - getItemTime(a);
+    });
 
-    // 7. cursor 기반 pagination 시작 index 계산
-    // - cursor는 마지막으로 본 publishedAt 기준
-    const startIndex = cursor
-      ? filtered.findIndex(
-          (item) => new Date(item.publishedAt!).toISOString() === cursor,
-        ) + 1
+    // =========================
+    // 7. cursor 기반 pagination
+    // =========================
+    const cursorTime = parseCursorTime(cursor);
+
+    const startIndex = cursorTime
+      ? filtered.findIndex((item) => getItemTime(item) < cursorTime) + 1
       : 0;
 
-    // 8. 페이지 단위 데이터 slicing
     const pagedItems = filtered.slice(
       startIndex,
       startIndex + FEED_CONFIG.FEED_PAGINATION_LIMIT,
     );
 
-    // 9. nextCursor 계산
-    // - 현재 페이지의 마지막 item 기준으로 다음 cursor 생성
+    // =========================
+    // 8. nextCursor
+    // =========================
     const lastItem = pagedItems[pagedItems.length - 1];
 
     const nextCursor = lastItem
-      ? new Date(lastItem.publishedAt!).toISOString()
+      ? new Date(getItemTime(lastItem)).toISOString()
       : null;
 
-    // 10. hasNext 계산
-    // - 전체 데이터 대비 아직 남아있는지 여부
+    // =========================
+    // 9. hasNext
+    // =========================
     const hasNext =
       startIndex + FEED_CONFIG.FEED_PAGINATION_LIMIT < filtered.length;
 
-    // 11. interaction 데이터 조회 (유저 행동 정보)
+    // =========================
+    // 10. interaction 조회
+    // =========================
     const feedItemIds = pagedItems.map((i) => i._id.toString());
 
     const interactions =
@@ -129,14 +147,18 @@ export class FeedService {
       interactions.map((i) => [i.feedItemId.toString(), i]),
     );
 
-    // 12. stats 데이터 조회 (집계 정보)
+    // =========================
+    // 11. stats 조회
+    // =========================
     const statsList = await feedItemStatsRepository.findByFeedIds(feedItemIds);
 
     const statsMap = new Map(
       statsList.map((s) => [s.feedItemId.toString(), s]),
     );
 
-    // 13. 최종 DTO 매핑
+    // =========================
+    // 12. DTO 변환
+    // =========================
     const result = pagedItems.map((item) => {
       const feed = feedMap.get(item.feedId.toString());
       if (!feed) throw new Error("Feed missing");
@@ -157,7 +179,7 @@ export class FeedService {
             feed_url: site.feed_url,
           },
           feedId: feed._id.toString(),
-          publishedAt: item.publishedAt ?? "",
+          publishedAt: item.publishedAt ?? item.createdAt.toISOString(),
           feedItemId: item._id.toString(),
         },
 
@@ -201,7 +223,9 @@ export class FeedService {
       };
     });
 
-    // 14. 최종 응답 반환
+    // =========================
+    // 13. response
+    // =========================
     return {
       items: result,
       nextCursor,
