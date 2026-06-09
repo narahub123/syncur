@@ -37,6 +37,6 @@ export type Feed = {
   categories: string[];
 
   lastFetchedAt?: string;
-  etag?: string;
-  lastModified?: string;
+  etag: string | null;
+  lastModified: string | null;
 };

@@ -1,10 +1,10 @@
 import {
+  FeedItemLean,
   FeedItemStatsLean,
   FeedLean,
   SiteLean,
   UserFeedInteractionLean,
 } from "@/shared/types/domain-leans";
-import { FeedItem } from "@/shared/types/feed";
 
 /**
  * FeedItem + 관련 Map 데이터를 기반으로
@@ -16,7 +16,7 @@ import { FeedItem } from "@/shared/types/feed";
  * - 오직 "형태 변환"만 수행
  */
 export function mapFeedItemToDto(params: {
-  item: FeedItem;
+  item: FeedItemLean;
 
   feedMap: Map<string, FeedLean>;
   siteMap: Map<string, SiteLean>;
@@ -54,7 +54,8 @@ export function mapFeedItemToDto(params: {
         feed_url: site.feed_url,
       },
       feedId: feed._id.toString(),
-      publishedAt: item.publishedAt ?? item.createdAt.toISOString(),
+      publishedAt:
+        item.publishedAt?.toISOString() ?? item.createdAt.toISOString(),
       feedItemId: item._id.toString(),
     },
 

@@ -1,8 +1,7 @@
-import { Feed } from "@/shared/types/feed";
 import { FeedModel } from "../model/feed";
-import { toFeed } from "../mapper/toFeed";
 import { Types } from "mongoose";
 import { FeedLean } from "@/shared/types/domain-leans";
+import { toObjectId } from "@/shared/utils/toObjectId";
 
 /**
  * FeedRepository
@@ -31,13 +30,12 @@ export class FeedRepository {
    * - 없으면 null 반환
    */
 
-  async findBySiteId(siteId: string | Types.ObjectId): Promise<Feed | null> {
-    const objectId =
-      typeof siteId === "string" ? new Types.ObjectId(siteId) : siteId;
-
-    const doc = await FeedModel.findOne({ siteId: objectId });
-
-    return doc ? toFeed(doc) : null;
+  async findBySiteId(
+    siteId: string | Types.ObjectId,
+  ): Promise<FeedLean | null> {
+    return await FeedModel.findOne({ siteId: toObjectId(siteId) })
+      .lean()
+      .exec();
   }
 
   /**
@@ -57,21 +55,21 @@ export class FeedRepository {
    * - idempotency 보장은 Repository가 아닌 Service 책임
    */
   async create(data: {
-    siteId: string;
+    siteId: string | Types.ObjectId;
     feedUrl: string;
     status?: "active" | "error" | "disabled";
     errorCount?: number;
     categories?: string[];
-  }): Promise<Feed> {
+  }): Promise<FeedLean | null> {
     const doc = await FeedModel.create({
-      siteId: data.siteId,
+      siteId: toObjectId(data.siteId),
       feedUrl: data.feedUrl,
       status: data.status ?? "active",
       errorCount: data.errorCount ?? 0,
       categories: data.categories ?? [],
     });
 
-    return toFeed(doc);
+    return doc.toObject();
   }
 
   /**
@@ -86,12 +84,8 @@ export class FeedRepository {
    * @returns Feed 목록
    */
   async findByIds(feedIds: string[] | Types.ObjectId[]): Promise<FeedLean[]> {
-    const objectIds = feedIds.map((id) =>
-      typeof id === "string" ? new Types.ObjectId(id) : id,
-    );
-
     return FeedModel.find({
-      _id: { $in: objectIds },
+      _id: { $in: feedIds.map((id) => toObjectId(id)) },
     }).lean();
   }
 }

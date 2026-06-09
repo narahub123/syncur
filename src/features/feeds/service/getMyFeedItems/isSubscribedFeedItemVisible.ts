@@ -1,4 +1,4 @@
-import { FeedItem } from "@/shared/types/feed";
+import { FeedItemLean } from "@/shared/types/domain-leans";
 
 const DAY_MS = 1000 * 60 * 60 * 24;
 
@@ -9,12 +9,12 @@ const DAY_MS = 1000 * 60 * 60 * 24;
  * - publishedAt / createdAt 중 존재하는 값을 기준으로 시간 통일
  * - 구독 시점 + offsetDays 기준으로 필터링
  */
-const getItemTime = (item: FeedItem): number => {
+const getItemTime = (item: FeedItemLean): number => {
   return new Date(item.publishedAt ?? item.createdAt ?? 0).getTime();
 };
 
 export const isSubscribedFeedItemVisible = (
-  item: FeedItem,
+  item: FeedItemLean,
   subscribedAtMap: Map<string, Date>,
   offsetDays: number,
 ): boolean => {

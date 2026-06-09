@@ -1,5 +1,5 @@
-import { FeedItem } from "@/shared/types/feed";
 import { FEED_CONFIG } from "../../constants/feed-config";
+import { FeedItemLean } from "@/shared/types/domain-leans";
 
 /**
  * FeedItem의 시간 기준 정렬 + cursor 기반 pagination 처리 함수
@@ -15,7 +15,7 @@ import { FEED_CONFIG } from "../../constants/feed-config";
  * - feed business logic과 독립
  */
 export function paginateFeedItems(params: {
-  items: FeedItem[];
+  items: FeedItemLean[];
   cursor?: string;
 }) {
   const { items, cursor } = params;
@@ -24,7 +24,7 @@ export function paginateFeedItems(params: {
    * item 기준 시간 계산 함수
    * publishedAt 우선, 없으면 createdAt 사용
    */
-  const getItemTime = (item: FeedItem): number =>
+  const getItemTime = (item: FeedItemLean): number =>
     new Date(item.publishedAt ?? item.createdAt ?? 0).getTime();
 
   /**

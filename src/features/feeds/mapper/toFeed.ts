@@ -1,7 +1,7 @@
 import { Feed } from "@/shared/types/feed";
-import { FeedDocument } from "../model/feed";
+import { FeedLean } from "@/shared/types/domain-leans";
 
-export function toFeed(doc: FeedDocument): Feed {
+export function toFeed(doc: FeedLean): Feed {
   return {
     id: doc._id.toString(),
     siteId: doc.siteId.toString(),

@@ -1,7 +1,8 @@
 import { feedRepository } from "../repository/FeedRepository.instance";
 import { Feed } from "@/shared/types/feed";
 import { getFeedItems } from "./getMyFeedItems/getFeedItems";
-import { SiteLean } from "@/shared/types/domain-leans";
+import { FeedLean, SiteLean } from "@/shared/types/domain-leans";
+import { toFeed } from "../mapper/toFeed";
 
 export class FeedService {
   async ensureFeed(site: SiteLean): Promise<Feed | null> {
@@ -19,7 +20,7 @@ export class FeedService {
       });
     }
 
-    return feed;
+    return toFeed(feed as FeedLean);
   }
 
   async getMyFeedItems(userId: string, cursor?: string) {

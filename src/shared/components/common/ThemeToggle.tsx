@@ -22,7 +22,7 @@ export const ThemeToggle = () => {
     <Button
       variant="outline"
       onClick={toggleTheme}
-      className="flex size-12 items-center justify-center rounded-full"
+      className="flex size-12 cursor-pointer items-center justify-center rounded-full"
     >
       {resolvedTheme === "dark" ? (
         <Sun size={30} className="text-foreground" />

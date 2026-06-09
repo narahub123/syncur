@@ -1,5 +1,6 @@
 import { UserLean } from "@/shared/types/domain-leans";
 import { UserRepository } from "../repositories/UserRepository";
+import { connectMongo } from "@/shared/lib/db/mongoose";
 
 /**
  * User Service
@@ -19,6 +20,8 @@ export class UserService {
    * @returns UserLean | null
    */
   async getUserByEmail(email: string): Promise<UserLean | null> {
+    await connectMongo();
+
     return this.userRepository.findByEmail(email);
   }
 

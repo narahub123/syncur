@@ -2,11 +2,10 @@ import { subscriptionRepository } from "@/features/subscriptions/repository/Subs
 import { feedRepository } from "../../repository/FeedRepository.instance";
 import { siteRepository } from "@/features/rss/site/repository/SiteRepository.instance";
 import { feedItemRepository } from "@/features/feed-items/respositories/FeedItemRespository.instance";
-import { FeedItem } from "@/shared/types/feed";
-import { FeedLean, SiteLean } from "@/shared/types/domain-leans";
+import { FeedItemLean, FeedLean, SiteLean } from "@/shared/types/domain-leans";
 
 type FeedContext = {
-  items: FeedItem[];
+  items: FeedItemLean[];
   feedMap: Map<string, FeedLean>;
   siteMap: Map<string, SiteLean>;
   subscribedMap: Map<string, Date>;
