@@ -4,10 +4,11 @@ import { Feed } from "@/shared/types/feed";
 import { subscriptionRepository } from "@/features/subscriptions/repository/SubscriptionRepository.instance";
 import { feedItemRepository } from "@/features/feed-items/respositories/FeedItemRespository.instance";
 import { siteRepository } from "@/features/rss/site/repository/SiteRepository.instance";
-import { FeedItemResponse } from "../dto/feedDto";
+import { FeedResponse } from "../dto/feedDto";
 import { userFeedInteractionRepository } from "@/features/feed-interaction/repositories/UserFeedInteractionRepository.instance";
 import { feedItemStatsRepository } from "@/features/feed-items/respositories/FeedItemStatsRepository.instance";
 import { feedCondition } from "../utils/feedCondition";
+import { FEED_CONFIG } from "../constants/feed-config";
 
 export class FeedService {
   async ensureFeed(site: Site): Promise<Feed | null> {
@@ -28,18 +29,27 @@ export class FeedService {
     return feed;
   }
 
-  async getMyFeedItems(userId: string): Promise<FeedItemResponse[]> {
-    // 1. 구독 목록
+  async getMyFeedItems(userId: string, cursor?: string): Promise<FeedResponse> {
+    // 1. 사용자 구독 목록 조회
+    // - 해당 사용자가 구독한 feed 목록 기반으로 피드 생성
     const subscriptions = await subscriptionRepository.findByUserId(userId);
 
-    if (!subscriptions.length) return [];
+    // 구독이 없는 경우: 피드 생성 자체가 불가능
+    if (!subscriptions.length) {
+      return {
+        items: [],
+        nextCursor: null,
+        hasNext: false,
+        status: "NO_SUBSCRIPTION",
+      };
+    }
 
-    // 2. feedId → subscribedAt(Date로 강제 변환)
+    // 2. feedId → subscribedAt 매핑
+    // - 각 feed를 언제 구독했는지 기준으로 필터링/정렬에 활용
     const subscribedMap = new Map(
       subscriptions
         .map((s) => {
           if (!s.createdAt) return null;
-
           return [s.feedId.toString(), new Date(s.createdAt)] as const;
         })
         .filter(Boolean) as Array<[string, Date]>,
@@ -47,20 +57,22 @@ export class FeedService {
 
     const feedIds = [...subscribedMap.keys()];
 
+    // 3. feed / site 데이터 조회 (join 역할)
     const feeds = await feedRepository.findByIds(feedIds);
 
     const siteIds = [...new Set(feeds.map((f) => f.siteId.toString()))];
 
     const sites = await siteRepository.findByIds(siteIds);
 
+    // 빠른 lookup을 위한 map 구성
     const siteMap = new Map(sites.map((s) => [s._id.toString(), s]));
-
     const feedMap = new Map(feeds.map((f) => [f._id.toString(), f]));
 
-    // 3. feedItem 조회
+    // 4. feed item 조회 (전체 raw 데이터)
     const items = await feedItemRepository.findByFeedIds(feedIds);
 
-    // 4. 필터링 (시간 비교 안전하게)
+    // 5. 필터링
+    // - 구독 이후 생성된 feed item만 유지
     const filtered = items.filter((item) => {
       if (!item.publishedAt) return false;
 
@@ -70,14 +82,42 @@ export class FeedService {
       return feedCondition(item, subscribedMap, 1);
     });
 
-    // 5. 최신순 정렬
+    // 6. 최신순 정렬 (feed timeline 기준)
     filtered.sort(
       (a, b) =>
         new Date(b.publishedAt ?? 0).getTime() -
         new Date(a.publishedAt ?? 0).getTime(),
     );
 
-    const feedItemIds = items.map((i) => i._id.toString());
+    // 7. cursor 기반 pagination 시작 index 계산
+    // - cursor는 마지막으로 본 publishedAt 기준
+    const startIndex = cursor
+      ? filtered.findIndex(
+          (item) => new Date(item.publishedAt!).toISOString() === cursor,
+        ) + 1
+      : 0;
+
+    // 8. 페이지 단위 데이터 slicing
+    const pagedItems = filtered.slice(
+      startIndex,
+      startIndex + FEED_CONFIG.FEED_PAGINATION_LIMIT,
+    );
+
+    // 9. nextCursor 계산
+    // - 현재 페이지의 마지막 item 기준으로 다음 cursor 생성
+    const lastItem = pagedItems[pagedItems.length - 1];
+
+    const nextCursor = lastItem
+      ? new Date(lastItem.publishedAt!).toISOString()
+      : null;
+
+    // 10. hasNext 계산
+    // - 전체 데이터 대비 아직 남아있는지 여부
+    const hasNext =
+      startIndex + FEED_CONFIG.FEED_PAGINATION_LIMIT < filtered.length;
+
+    // 11. interaction 데이터 조회 (유저 행동 정보)
+    const feedItemIds = pagedItems.map((i) => i._id.toString());
 
     const interactions =
       await userFeedInteractionRepository.findByUserAndFeedIds(
@@ -89,13 +129,15 @@ export class FeedService {
       interactions.map((i) => [i.feedItemId.toString(), i]),
     );
 
+    // 12. stats 데이터 조회 (집계 정보)
     const statsList = await feedItemStatsRepository.findByFeedIds(feedItemIds);
 
     const statsMap = new Map(
       statsList.map((s) => [s.feedItemId.toString(), s]),
     );
 
-    return filtered.map((item) => {
+    // 13. 최종 DTO 매핑
+    const result = pagedItems.map((item) => {
       const feed = feedMap.get(item.feedId.toString());
       if (!feed) throw new Error("Feed missing");
 
@@ -105,8 +147,6 @@ export class FeedService {
       const interaction = interactionMap.get(item._id.toString());
       const stats = statsMap.get(item._id.toString());
 
-      console.log(item._id.toString());
-      console.log(statsMap.keys());
       return {
         meta: {
           site: {
@@ -160,5 +200,13 @@ export class FeedService {
         },
       };
     });
+
+    // 14. 최종 응답 반환
+    return {
+      items: result,
+      nextCursor,
+      hasNext,
+      status: items.length === 0 ? "EMPTY_FEED" : "HAS_DATA",
+    };
   }
 }

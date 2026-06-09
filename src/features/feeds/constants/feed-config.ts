@@ -1,0 +1,3 @@
+export const FEED_CONFIG = {
+  FEED_PAGINATION_LIMIT: 10,
+};

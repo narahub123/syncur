@@ -6,6 +6,9 @@ import { useState } from "react";
 import { useMyFeedItems } from "../hooks/useMyFeedItems";
 import FeedList from "./FeedList";
 import { FeedItemSkeleton } from "@/shared/components/common/FeedItemSkeleton";
+import EmptyFeed from "./EmptyFeed";
+import { useInfiniteScroll } from "@/shared/hooks/useInfiniteScroll";
+import LoadMoreTrigger from "@/shared/components/common/LoadMoreTrigger";
 
 type FeedClientProps = {
   isFirstLogin: boolean;
@@ -14,13 +17,26 @@ type FeedClientProps = {
 const FeedClient = ({ isFirstLogin }: FeedClientProps) => {
   const [isOpen, setIsOpen] = useState(isFirstLogin);
 
-  const { data, isLoading, error } = useMyFeedItems();
+  const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } =
+    useMyFeedItems();
 
-  const feedItems = data?.data ?? [];
+  const feedItems = data?.pages.flatMap((page) => page.items) ?? [];
+
+  const status = data?.pages[0]?.status;
+
+  const loadMoreRef = useInfiniteScroll({
+    onIntersect: () => {
+      if (hasNextPage && !isFetchingNextPage) {
+        fetchNextPage();
+      }
+    },
+    enabled: !!hasNextPage,
+  });
 
   return (
     <div>
       <InterestSelectionDialog open={isOpen} onClose={() => setIsOpen(false)} />
+
       {isLoading && (
         <div>
           {[1, 2, 3].map((idx) => (
@@ -28,12 +44,27 @@ const FeedClient = ({ isFirstLogin }: FeedClientProps) => {
           ))}
         </div>
       )}
-      {!isLoading && feedItems.length === 0 && (
+
+      {!isLoading && status === "EMPTY_FEED" && <EmptyFeed />}
+
+      {!isLoading && status === "NO_SUBSCRIPTION" && (
         <section className="p-4">
           <SiteSubscriptionForm />
         </section>
       )}
-      {!isLoading && feedItems.length > 0 && <FeedList items={feedItems} />}
+
+      {!isLoading && status === "HAS_DATA" && (
+        <>
+          <FeedList items={feedItems} />
+
+          {/* 👇 무한스크롤 트리거 */}
+          <LoadMoreTrigger ref={loadMoreRef} className="h-10" />
+
+          {isFetchingNextPage && (
+            <div className="p-4 text-center">loading...</div>
+          )}
+        </>
+      )}
     </div>
   );
 };

@@ -34,5 +34,5 @@ export type PaginatedResponse<T> = {
 export type CursorPaginationResponse<T> = {
   items: T[];
   nextCursor: string | null;
-  hasNextPage: boolean;
+  hasNext: boolean;
 };
