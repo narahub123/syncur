@@ -3,6 +3,7 @@
 import { Moon, Sun } from "lucide-react";
 import { useTheme } from "@/features/settings/apperance/theme/hooks/useTheme";
 import { Button } from "../ui/button";
+import ResponsiveActionButton from "./ResponsiveActionButton";
 
 export const ThemeToggle = () => {
   const { resolvedTheme, setTheme, mounted } = useTheme();
@@ -20,15 +21,20 @@ export const ThemeToggle = () => {
 
   return (
     <Button
-      variant="outline"
+      variant="ghost"
       onClick={toggleTheme}
-      className="flex size-12 cursor-pointer items-center justify-center rounded-full"
+      className="h-12 w-full rounded-none"
     >
-      {resolvedTheme === "dark" ? (
-        <Sun size={30} className="text-foreground" />
-      ) : (
-        <Moon size={30} className="text-foreground" />
-      )}
+      <ResponsiveActionButton
+        icon={
+          resolvedTheme === "dark" ? (
+            <Sun size={30} className="text-foreground" />
+          ) : (
+            <Moon size={30} className="text-foreground" />
+          )
+        }
+        label="테마 변경"
+      />
     </Button>
   );
 };
