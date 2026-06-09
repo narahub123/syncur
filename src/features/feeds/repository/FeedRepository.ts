@@ -2,6 +2,7 @@ import { Feed } from "@/shared/types/feed";
 import { FeedModel } from "../model/feed";
 import { toFeed } from "../mapper/toFeed";
 import { Types } from "mongoose";
+import { FeedLean } from "@/shared/types/domain-leans";
 
 /**
  * FeedRepository
@@ -79,7 +80,7 @@ export class FeedRepository {
    *
    * @returns Feed 목록
    */
-  async findByIds(feedIds: string[]) {
+  async findByIds(feedIds: string[]): Promise<FeedLean[]> {
     return FeedModel.find({
       _id: { $in: feedIds.map((id) => new Types.ObjectId(id)) },
     }).lean();

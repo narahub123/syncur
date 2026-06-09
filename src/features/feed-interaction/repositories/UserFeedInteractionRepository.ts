@@ -1,5 +1,6 @@
 import { Types } from "mongoose";
 import { UserFeedInteractionModel } from "../models/user-feed-interaction";
+import { UserFeedInteractionLean } from "@/shared/types/domain-leans";
 
 export type UserFeedInteractionUpdate = Partial<{
   hasContentClicked: boolean;
@@ -47,7 +48,10 @@ export class UserFeedInteractionRepository {
    * 목적:
    * - Feed list에서 user interaction batch merge
    */
-  async findByUserAndFeedIds(userId: string, feedItemIds: string[]) {
+  async findByUserAndFeedIds(
+    userId: string,
+    feedItemIds: string[],
+  ): Promise<UserFeedInteractionLean[]> {
     return UserFeedInteractionModel.find({
       userId: new Types.ObjectId(userId),
       feedItemId: {

@@ -1,5 +1,6 @@
 import { Types } from "mongoose";
 import { FeedItemStatsModel } from "../models/feed-item-stats";
+import { FeedItemStatsLean } from "@/shared/types/domain-leans";
 
 /**
  * FeedItemStats Repository
@@ -114,7 +115,7 @@ export class FeedItemStatsRepository {
    * 목적:
    * - Feed list에서 global stats batch merge
    */
-  async findByFeedIds(feedItemIds: string[]) {
+  async findByFeedIds(feedItemIds: string[]): Promise<FeedItemStatsLean[]> {
     return FeedItemStatsModel.find({
       feedItemId: {
         $in: feedItemIds.map((id) => new Types.ObjectId(id)),

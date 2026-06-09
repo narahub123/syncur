@@ -128,7 +128,7 @@ export class SiteRepository {
    *
    * @returns Site 목록
    */
-  async findBySiteIds(siteIds: string[]) {
+  async findBySiteIds(siteIds: Types.ObjectId[]) {
     return SiteModel.find({
       _id: { $in: siteIds },
     }).lean();

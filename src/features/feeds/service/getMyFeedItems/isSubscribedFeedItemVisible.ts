@@ -13,7 +13,7 @@ const getItemTime = (item: FeedItem): number => {
   return new Date(item.publishedAt ?? item.createdAt ?? 0).getTime();
 };
 
-export const feedCondition = (
+export const isSubscribedFeedItemVisible = (
   item: FeedItem,
   subscribedAtMap: Map<string, Date>,
   offsetDays: number,
