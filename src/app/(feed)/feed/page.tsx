@@ -1,5 +1,5 @@
 import FeedClient from "@/features/feeds/components/FeedClient";
-import { getCurrentUserService } from "@/features/users/services/getCurrentUserService";
+import { getCurrentUserAction } from "@/features/users/actions/getCurrentUserAction";
 
 /**
  * 메인 피드 페이지
@@ -10,7 +10,7 @@ import { getCurrentUserService } from "@/features/users/services/getCurrentUserS
  * 3. 첫 로그인 사용자인 경우 관심사 선택 모달 표시
  */
 const FeedPage = async () => {
-  const user = await getCurrentUserService();
+  const user = await getCurrentUserAction();
 
   /**
    * 온보딩을 완료하지 않은 사용자만

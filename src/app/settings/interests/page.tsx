@@ -1,7 +1,9 @@
 import InterestClient from "@/features/interests/components/InterestClient";
-import { getCurrentUserInterestProfileService } from "@/features/interests/services/getCurrentUserInterestProfileService";
+
+import { userInterestProfileService } from "@/features/interests/services/UserInterestProfileService.instance";
 
 export default async function InterestsPage() {
-  const interests = await getCurrentUserInterestProfileService();
+  const interests =
+    await userInterestProfileService.getCurrentUserInterestProfile();
   return <InterestClient interests={interests} />;
 }

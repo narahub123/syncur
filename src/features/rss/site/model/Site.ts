@@ -61,17 +61,7 @@ const siteSchema = new Schema<Site>(
     },
   },
   {
-    timestamps: {
-      /**
-       * Site 생성 시각
-       */
-      createdAt: "created_at",
-
-      /**
-       * Site 정보 수정 시각
-       */
-      updatedAt: "updated_at",
-    },
+    timestamps: true,
     versionKey: false,
   },
 );
