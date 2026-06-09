@@ -1,9 +1,9 @@
-import { SubscriptionListDto } from "../../dto/subscriptionDto";
+import { SubscriptionItemDto } from "../../dto/subscriptionDto";
 import SubscriptionSiteCard from "./SubscriptionSiteCard";
 import SubscriptionToggleButton from "./SubscriptionToggleButton";
 
 type Props = {
-  item: SubscriptionListDto;
+  item: SubscriptionItemDto;
 };
 
 const SubscriptionItem = ({ item }: Props) => {

@@ -1,7 +1,9 @@
 import { siteRepository } from "@/features/rss/site/repository/SiteRepository.instance";
 import { subscriptionRepository } from "../repository/SubscriptionRepository.instance";
-import { SubscriptionListDto } from "../dto/subscriptionDto";
+import { SubscriptionDto, SubscriptionItemDto } from "../dto/subscriptionDto";
 import { feedRepository } from "@/features/feeds/repository/FeedRepository.instance";
+import { PaginatedResponse } from "@/shared/types/pagination";
+import { toSubscriptionDto } from "../mapper/toSubscriptionDto";
 
 /**
  * 구독 생성 요청 입력값
@@ -104,39 +106,41 @@ export class SubscriptionService {
    * - N+1 query 방지 (batch fetch)
    * - Map lookup으로 O(1) join 처리
    */
-  async getUserSubscriptions(userId: string): Promise<SubscriptionListDto[]> {
-    const subscriptions = await subscriptionRepository.findByUserId(userId);
+  async getUserSubscriptions(
+    userId: string,
+    page: number,
+    limit: number,
+  ): Promise<PaginatedResponse<SubscriptionItemDto>> {
+    const subscriptions = await subscriptionRepository.findByUserIdPaged(
+      userId,
+      page,
+      limit,
+    );
 
-    if (!subscriptions.length) return [];
+    if (!subscriptions.length) {
+      return {
+        items: [],
+        pagination: {
+          page,
+          limit,
+          totalCount: 0,
+          totalPages: 0,
+        },
+      };
+    }
 
-    /**
-     * Subscription → Feed 매핑을 위한 feedId 추출
-     */
+    const totalCount = await subscriptionRepository.countByUserId(userId);
+
     const feedIds = subscriptions.map((sub) => sub.feedId);
-
     const feeds = await feedRepository.findByIds(feedIds);
 
-    /**
-     * Feed → Site 매핑을 위한 siteId 추출
-     */
     const siteIds = feeds.map((f) => f.siteId);
-
     const sites = await siteRepository.findBySiteIds(siteIds);
 
-    /**
-     * in-memory lookup 최적화를 위한 Map 구성
-     */
     const siteMap = new Map(sites.map((site) => [site._id.toString(), site]));
-
     const feedMap = new Map(feeds.map((feed) => [feed._id.toString(), feed]));
 
-    /**
-     * Subscription DTO 변환
-     *
-     * @note
-     * feed → site join 실패 시 안전하게 fallback 처리
-     */
-    return subscriptions.map((sub) => {
+    const items = subscriptions.map((sub) => {
       const feed = feedMap.get(sub.feedId.toString());
       const site = feed ? siteMap.get(feed.siteId.toString()) : null;
 
@@ -148,12 +152,22 @@ export class SubscriptionService {
         siteUrl: site?.url ?? "",
         favicon_url: site?.favicon_url ?? null,
 
-        created_at: sub.createdAt ?? "",
-        updated_at: sub.updatedAt ?? "",
+        createdAt: sub.createdAt.toISOString() ?? "",
+        updatedAt: sub.updatedAt.toISOString() ?? "",
 
         isSubscribed: true,
       };
     });
+
+    return {
+      items,
+      pagination: {
+        page,
+        limit,
+        totalCount,
+        totalPages: Math.ceil(totalCount / limit),
+      },
+    };
   }
 
   /**
@@ -162,7 +176,17 @@ export class SubscriptionService {
    * @description
    * user-feed 관계를 기준으로 구독을 삭제한다.
    */
-  async unsubscribe(userId: string, feedId: string) {
-    return subscriptionRepository.deleteByUserAndFeed(userId, feedId);
+  async unsubscribe(
+    userId: string,
+    feedId: string,
+  ): Promise<SubscriptionDto | null> {
+    const doc = await subscriptionRepository.deleteByUserAndFeed(
+      userId,
+      feedId,
+    );
+
+    if (!doc) return null;
+
+    return toSubscriptionDto(doc);
   }
 }

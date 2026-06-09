@@ -1,8 +1,8 @@
-import { SubscriptionListDto } from "../../dto/subscriptionDto";
+import { SubscriptionItemDto } from "../../dto/subscriptionDto";
 import SiteAvatar from "../SiteAvatar";
 
 type Props = {
-  item: SubscriptionListDto;
+  item: SubscriptionItemDto;
 };
 
 const SubscriptionSiteCard = ({ item }: Props) => {

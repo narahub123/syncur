@@ -11,5 +11,6 @@ export const subscriptionQueryKey = {
    * - 실제 데이터는 user 기준이므로 반드시 세분화된 key 사용
    * - 동일 사용자 캐시 재사용 목적
    */
-  me: () => ["subscriptions", "me"] as const,
+  me: (page: number, limit: number) =>
+    ["subscriptions", "me", page, limit] as const,
 };

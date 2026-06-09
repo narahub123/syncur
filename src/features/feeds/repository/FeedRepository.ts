@@ -80,9 +80,13 @@ export class FeedRepository {
    *
    * @returns Feed 목록
    */
-  async findByIds(feedIds: string[]): Promise<FeedLean[]> {
+  async findByIds(feedIds: string[] | Types.ObjectId[]): Promise<FeedLean[]> {
+    const objectIds = feedIds.map((id) =>
+      typeof id === "string" ? new Types.ObjectId(id) : id,
+    );
+
     return FeedModel.find({
-      _id: { $in: feedIds.map((id) => new Types.ObjectId(id)) },
+      _id: { $in: objectIds },
     }).lean();
   }
 }

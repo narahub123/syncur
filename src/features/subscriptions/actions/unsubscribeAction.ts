@@ -38,6 +38,5 @@ export const unsubscribeAction = async (feedId: string) => {
     throw new Error("UNAUTHORIZED");
   }
 
-  console.log("피드id", feedId);
   return subscriptionService.unsubscribe(session.user.id, feedId);
 };

@@ -4,12 +4,12 @@ import { auth } from "@/auth";
 
 import { subscriptionService } from "../services/SubscriptionService.instance";
 
-export const getSubscriptionsAction = async () => {
+export const getSubscriptionsAction = async (page: number, limit: number) => {
   const session = await auth();
 
   if (!session?.user?.id) {
     throw new Error("UNAUTHORIZED");
   }
 
-  return await subscriptionService.getUserSubscriptions(session.user.id);
+  return subscriptionService.getUserSubscriptions(session.user.id, page, limit);
 };

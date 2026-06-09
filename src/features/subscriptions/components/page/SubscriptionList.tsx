@@ -1,8 +1,8 @@
-import { SubscriptionListDto } from "../../dto/subscriptionDto";
+import { SubscriptionItemDto } from "../../dto/subscriptionDto";
 import SubscriptionItem from "./SubscriptionItem";
 
 type Props = {
-  subscriptions: SubscriptionListDto[];
+  subscriptions: SubscriptionItemDto[];
 };
 
 const SubscriptionList = ({ subscriptions }: Props) => {
