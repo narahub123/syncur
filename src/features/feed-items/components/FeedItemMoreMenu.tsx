@@ -51,6 +51,7 @@ const FeedItemMoreMenu = ({ feedItemId, feedId, context }: Props) => {
       <CollectionDialog
         open={isCollectionDialogOpen}
         onClose={() => setIsCollectionDialogOpen(false)}
+        feedItemId={feedItemId}
       />
       <MoreMenu actions={actions} />
     </>

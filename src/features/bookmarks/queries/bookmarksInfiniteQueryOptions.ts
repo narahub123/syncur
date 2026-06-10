@@ -2,8 +2,6 @@ import { InfiniteData, infiniteQueryOptions } from "@tanstack/react-query";
 import { getBookmarksAction } from "../actions/getBookmarksAction";
 import { FeedResponse } from "@/features/feeds/dto/feedDto";
 
-const BOOKMARKS_PAGE_SIZE = 20;
-
 type Page = FeedResponse;
 type PageParam = string | undefined;
 

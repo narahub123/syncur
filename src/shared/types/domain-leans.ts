@@ -249,3 +249,72 @@ export type UserInterestProfileLean = {
    */
   updatedAt: Date;
 };
+
+/**
+ * BookmarkCollection Lean Type
+ *
+ * DB에서 lean()으로 조회된 BookmarkCollection 문서 타입
+ */
+export type BookmarkCollectionLean = {
+  /**
+   * 컬렉션 ID
+   */
+  _id: Types.ObjectId;
+
+  /**
+   * 컬렉션 소유자
+   */
+  userId: Types.ObjectId;
+
+  /**
+   * 컬렉션 이름
+   */
+  name: string;
+
+  /**
+   * 생성 시각
+   */
+  createdAt: Date;
+
+  /**
+   * 수정 시각
+   */
+  updatedAt: Date;
+};
+
+/**
+ * BookmarkCollectionMap Lean Type
+ *
+ * DB에서 lean()으로 조회된 BookmarkCollectionMap 문서 타입
+ */
+export type BookmarkCollectionMapLean = {
+  /**
+   * 매핑 ID
+   */
+  _id: Types.ObjectId;
+
+  /**
+   * 사용자 ID
+   */
+  userId: Types.ObjectId;
+
+  /**
+   * FeedItem ID
+   */
+  feedItemId: Types.ObjectId;
+
+  /**
+   * Collection ID
+   */
+  collectionId: Types.ObjectId;
+
+  /**
+   * 생성 시각
+   */
+  createdAt: Date;
+
+  /**
+   * 수정 시각
+   */
+  updatedAt: Date;
+};
