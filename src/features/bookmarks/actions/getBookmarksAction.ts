@@ -2,7 +2,7 @@
 
 import { auth } from "@/auth";
 import { bookmarkService } from "../service/BookmarksService.instance";
-import { FeedActionResponse } from "@/features/feeds/dto/feedDto";
+import { BookmarkActionResponse } from "../dto/bookmarkDto";
 
 /**
  * 북마크 목록 조회 Server Action
@@ -11,7 +11,7 @@ import { FeedActionResponse } from "@/features/feeds/dto/feedDto";
  */
 export async function getBookmarksAction(
   cursor?: string,
-): Promise<FeedActionResponse> {
+): Promise<BookmarkActionResponse> {
   const session = await auth();
 
   // =========================
@@ -37,6 +37,8 @@ export async function getBookmarksAction(
     // Service 호출 (Feed와 동일 구조 반환)
     // =========================
     const data = await bookmarkService.getBookmarks(userId, cursor);
+
+    console.log("action data", data);
 
     return {
       success: true,

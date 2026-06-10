@@ -1,8 +1,8 @@
 import { InfiniteData, infiniteQueryOptions } from "@tanstack/react-query";
 import { getBookmarksAction } from "../actions/getBookmarksAction";
-import { FeedResponse } from "@/features/feeds/dto/feedDto";
+import { BookmarkResponse } from "../dto/bookmarkDto";
 
-type Page = FeedResponse;
+type Page = BookmarkResponse;
 type PageParam = string | undefined;
 
 export const bookmarksInfiniteQueryOptions = infiniteQueryOptions<

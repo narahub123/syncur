@@ -1,8 +1,8 @@
-import { FeedItemResponse } from "@/features/feeds/dto/feedDto";
 import BookmarkCard from "./BookmarkCard";
+import { BookmarkItemDto } from "../dto/bookmarkDto";
 
 type Props = {
-  bookmarks: FeedItemResponse[];
+  bookmarks: BookmarkItemDto[];
 };
 
 const BookmarkList = ({ bookmarks }: Props) => {

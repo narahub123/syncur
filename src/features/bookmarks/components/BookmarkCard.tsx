@@ -1,15 +1,16 @@
 import FeeditemActionBar from "@/features/feed-items/components/FeeditemActionBar";
 import FeedItemCategories from "@/features/feed-items/components/FeedItemCategories";
 import FeedItemContent from "@/features/feed-items/components/FeedItemContent";
-import { FeedItemResponse } from "@/features/feeds/dto/feedDto";
 import BookmarkHeader from "./BookmarkHeader";
+import { BookmarkItemDto } from "../dto/bookmarkDto";
 
 type Props = {
-  bookmark: FeedItemResponse;
+  bookmark: BookmarkItemDto;
 };
 
 const BookmarkCard = ({ bookmark }: Props) => {
-  const { meta, content, categories, interaction, stats } = bookmark;
+  const { meta, content, categories, interaction, stats, collection } =
+    bookmark;
 
   const bookmarkMeta: BookmarkMetaDto = {
     bookmarkedAt: interaction.lastBookmarkedAt,
@@ -17,7 +18,11 @@ const BookmarkCard = ({ bookmark }: Props) => {
 
   return (
     <li className="border-b border-gray-200 pt-4">
-      <BookmarkHeader meta={meta} bookmarkMeta={bookmarkMeta} />
+      <BookmarkHeader
+        meta={meta}
+        bookmarkMeta={bookmarkMeta}
+        collection={collection}
+      />
       <FeedItemContent item={content} />
       <FeedItemCategories categories={categories} />
       <FeeditemActionBar

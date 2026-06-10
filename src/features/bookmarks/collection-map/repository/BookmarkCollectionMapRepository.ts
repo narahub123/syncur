@@ -113,4 +113,14 @@ export class BookmarkCollectionMapRepository {
       feedItemId: params.feedItemId,
     }).lean();
   }
+
+  async findByFeedItemIds(
+    feedItemIds: (string | Types.ObjectId)[],
+  ): Promise<BookmarkCollectionMapLean[]> {
+    return BookmarkCollectionMapModel.find({
+      feedItemId: {
+        $in: feedItemIds.map((id) => toObjectId(id)),
+      },
+    }).lean();
+  }
 }

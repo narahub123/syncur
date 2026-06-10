@@ -49,7 +49,7 @@ export type FeedItemResponse = {
   interaction: FeedItemInteractionDto;
 };
 
-type FeedState =
+export type FeedState =
   | "NO_SUBSCRIPTION"
   | "EMPTY_FEED"
   | "HAS_DATA"

@@ -1,8 +1,8 @@
 import { InfiniteData, useInfiniteQuery } from "@tanstack/react-query";
 import { bookmarksInfiniteQueryOptions } from "../queries/bookmarksInfiniteQueryOptions";
-import { FeedResponse } from "@/features/feeds/dto/feedDto";
+import { BookmarkResponse } from "../dto/bookmarkDto";
 
-type Page = FeedResponse;
+type Page = BookmarkResponse;
 type PageParam = string | undefined;
 
 export function useBookmarks() {

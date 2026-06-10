@@ -80,6 +80,16 @@ export class BookmarkCollectionRepository {
       .lean();
   }
 
+  async findByIds(
+    collectionIds: (string | Types.ObjectId)[],
+  ): Promise<BookmarkCollectionLean[]> {
+    return BookmarkCollectionModel.find({
+      _id: {
+        $in: collectionIds.map((id) => toObjectId(id)),
+      },
+    }).lean();
+  }
+
   /**
    * 유저 컬렉션 검색 + 페이지네이션 (무한스크롤)
    */

@@ -7,6 +7,7 @@ export class UserFeedInteractionService {
    * LIKE 토글
    */
   async toggleLike(userId: string, feedItemId: string) {
+    console.log("toggleLike", feedItemId);
     const doc = await this.repo.findOrCreate(userId, feedItemId);
 
     const nextState = !doc.hasLiked;
