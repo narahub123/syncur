@@ -27,7 +27,7 @@ export class UserRepository {
           onboardingCompletedAt: new Date(),
         },
       },
-      { new: true },
+      { returnDocument: "after" },
     )
       .lean<UserLean>()
       .exec();

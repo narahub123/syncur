@@ -15,7 +15,7 @@ export function toBookmarkItemDto(params: {
 
   interactionMap: Map<string, UserFeedInteractionLean>;
   statsMap: Map<string, FeedItemStatsLean>;
-  collectionMap: Map<string, BookmarkCollectionLean>;
+  collectionMap: Map<string, BookmarkCollectionLean | undefined>;
 }) {
   const { item, feedMap, siteMap, interactionMap, statsMap, collectionMap } =
     params;

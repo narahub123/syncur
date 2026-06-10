@@ -11,6 +11,7 @@ import { bookmarkCollectionRepository } from "../collections/repository/Bookmark
 import { toBookmarkItemDto } from "../mappers/toBookmarkItemDto";
 import { BookmarkResponse } from "../dto/bookmarkDto";
 import { paginateBookmarkedItems } from "./paginateBookmarkedItems";
+import { BookmarkCollectionLean } from "@/shared/types/domain-leans";
 
 /**
  * BookmarkService
@@ -86,13 +87,17 @@ export class BookmarkService {
       await bookmarkCollectionRepository.findByIds(collectionIds);
 
     const collectionMap = new Map(
-      collections.map((c) => {
-        const feedItemId = collectionMaps.filter(
-          (m) => m.collectionId.toString() === c._id.toString(),
-        )[0].feedItemId;
+      collectionMaps
+        .map((m) => {
+          const collection = collections.find(
+            (c) => c._id.toString() === m.collectionId.toString(),
+          );
 
-        return [feedItemId.toString(), c];
-      }),
+          if (!collection) return null;
+
+          return [m.feedItemId.toString(), collection];
+        })
+        .filter(Boolean) as Array<[string, BookmarkCollectionLean]>,
     );
 
     // =========================

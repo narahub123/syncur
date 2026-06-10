@@ -6,18 +6,26 @@ import { FEED_ACTION } from "@/features/feed-interaction/types/feedActionDispatc
 import { useSubscriptionToggleMutation } from "@/features/subscriptions/hooks/useSubscriptionToggleMutation";
 import { createFeedItemActions } from "../context/createFeedItemActions";
 import { MoreMenu } from "@/shared/components/common/MoreMenu/MoreMenu";
-import CollectionDialog from "@/features/bookmarks/components/CollectionDialog";
+import { useCollectionDialogStore } from "@/features/bookmarks/stores/useCollectionDialogStore";
+import { BookmarkCollectionResponse } from "@/features/bookmarks/dto/bookmarkDto";
 
 type Props = {
   feedItemId: string;
   feedId: string;
   context: "feed" | "bookmark";
+  collection?: BookmarkCollectionResponse | null;
 };
 
-const FeedItemMoreMenu = ({ feedItemId, feedId, context }: Props) => {
+const FeedItemMoreMenu = ({
+  feedItemId,
+  feedId,
+  context,
+  collection,
+}: Props) => {
   const [isSubscribed, setIsSubscribed] = useState(true);
   const [collections, setCollections] = useState<string[]>([]);
-  const [isCollectionDialogOpen, setIsCollectionDialogOpen] = useState(false);
+
+  const openDialog = useCollectionDialogStore((s) => s.openDialog);
 
   const feedActionMutation = useFeedAction(feedItemId);
   const subscriptionMutation = useSubscriptionToggleMutation();
@@ -43,16 +51,11 @@ const FeedItemMoreMenu = ({ feedItemId, feedId, context }: Props) => {
     onHide: handleHide,
     onToggleSubscription: handleToggleSubscription,
     context,
-    onOpenCollectionModal: () => setIsCollectionDialogOpen(true),
+    onOpenCollectionModal: () => openDialog(feedItemId, collection),
   });
 
   return (
     <>
-      <CollectionDialog
-        open={isCollectionDialogOpen}
-        onClose={() => setIsCollectionDialogOpen(false)}
-        feedItemId={feedItemId}
-      />
       <MoreMenu actions={actions} />
     </>
   );

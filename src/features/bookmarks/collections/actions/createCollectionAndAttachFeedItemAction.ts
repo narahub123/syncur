@@ -28,6 +28,7 @@ export async function createCollectionAndAttachFeedItemAction(params: {
   const collection = await bookmarkCollectionService.create({
     userId,
     name: params.name,
+    feedItemId: params.feedItemId,
   });
 
   // 2. Map 생성 (즉시 연결)

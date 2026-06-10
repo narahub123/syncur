@@ -1,6 +1,7 @@
 import { FeedItemMetaDto } from "@/features/feeds/dto/feedDto";
 import FeedItemMoreMenu from "./FeedItemMoreMenu";
 import FeedSourceCard from "./FeedSourceCard";
+import { BookmarkCollectionResponse } from "@/features/bookmarks/dto/bookmarkDto";
 
 type Props = {
   meta: FeedItemMetaDto;

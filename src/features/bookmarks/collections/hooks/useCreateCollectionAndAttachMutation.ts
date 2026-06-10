@@ -15,7 +15,7 @@ export function useCreateCollectionAndAttachMutation() {
   return useMutation({
     mutationFn: createCollectionAndAttachFeedItemAction,
 
-    onSuccess: (_, variables) => {
+    onSuccess: () => {
       // 컬렉션 목록 갱신
       queryClient.invalidateQueries({
         queryKey: ["bookmark-collections"],
@@ -23,7 +23,7 @@ export function useCreateCollectionAndAttachMutation() {
 
       // 해당 feedItem 상태 갱신
       queryClient.invalidateQueries({
-        queryKey: ["feed-item-collections", variables.feedItemId],
+        queryKey: ["bookmarks"],
       });
     },
   });

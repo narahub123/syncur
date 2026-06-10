@@ -13,7 +13,7 @@ const BookmarkMetadata = ({ bookmarkMeta, collection, feedItemId }: Props) => {
   const { display, full } = formatRelativeTime(bookmarkedAt);
 
   return (
-    <div className="flex items-center gap-1 ">
+    <div className="flex items-center gap-1">
       <span className="text-xs" title={full}>
         {display}
       </span>

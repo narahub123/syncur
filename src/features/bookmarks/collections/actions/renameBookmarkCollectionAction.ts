@@ -13,6 +13,7 @@ import { bookmarkCollectionService } from "../service/BookmarkCollectionService.
 export async function renameBookmarkCollectionAction(params: {
   collectionId: string;
   name: string;
+  feedItemId: string;
 }) {
   const session = await auth();
 
@@ -22,9 +23,12 @@ export async function renameBookmarkCollectionAction(params: {
 
   const userId = session.user.id;
 
-  return await bookmarkCollectionService.rename({
+  const result = await bookmarkCollectionService.rename({
     userId,
     collectionId: params.collectionId,
     name: params.name,
+    feedItemId: params.feedItemId,
   });
+
+  return result;
 }

@@ -41,7 +41,7 @@ export class UserFeedInteractionRepository {
         feedItemId: toObjectId(feedItemId),
       },
       { $setOnInsert: { userId, feedItemId } },
-      { upsert: true, new: true },
+      { upsert: true, returnDocument: "after" },
     );
   }
 

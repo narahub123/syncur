@@ -3,6 +3,7 @@ import FeedItemCategories from "@/features/feed-items/components/FeedItemCategor
 import FeedItemContent from "@/features/feed-items/components/FeedItemContent";
 import BookmarkHeader from "./BookmarkHeader";
 import { BookmarkItemDto } from "../dto/bookmarkDto";
+import CollectionDialog from "../collections/components/CollectionDialog";
 
 type Props = {
   bookmark: BookmarkItemDto;
@@ -18,6 +19,7 @@ const BookmarkCard = ({ bookmark }: Props) => {
 
   return (
     <li className="border-b border-gray-200 pt-4">
+      <CollectionDialog />
       <BookmarkHeader
         meta={meta}
         bookmarkMeta={bookmarkMeta}

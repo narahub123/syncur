@@ -25,20 +25,20 @@ export class BookmarkCollectionMapRepository {
   }): Promise<BookmarkCollectionMapLean> {
     const doc = await BookmarkCollectionMapModel.findOneAndUpdate(
       {
-        userId: params.userId,
-        feedItemId: params.feedItemId,
-        collectionId: params.collectionId,
+        userId: toObjectId(params.userId),
+        feedItemId: toObjectId(params.feedItemId),
+        collectionId: toObjectId(params.collectionId),
       },
       {
         $setOnInsert: {
-          userId: params.userId,
-          feedItemId: params.feedItemId,
-          collectionId: params.collectionId,
+          userId: toObjectId(params.userId),
+          feedItemId: toObjectId(params.feedItemId),
+          collectionId: toObjectId(params.collectionId),
         },
       },
       {
         upsert: true,
-        new: true,
+        returnDocument: "after",
       },
     );
 
@@ -54,9 +54,9 @@ export class BookmarkCollectionMapRepository {
     collectionId: string | Types.ObjectId;
   }): Promise<void> {
     await BookmarkCollectionMapModel.deleteOne({
-      userId: params.userId,
-      feedItemId: params.feedItemId,
-      collectionId: params.collectionId,
+      userId: toObjectId(params.userId),
+      feedItemId: toObjectId(params.feedItemId),
+      collectionId: toObjectId(params.collectionId),
     });
   }
 
@@ -96,8 +96,8 @@ export class BookmarkCollectionMapRepository {
     collectionId: string | Types.ObjectId;
   }): Promise<BookmarkCollectionMapLean[]> {
     return BookmarkCollectionMapModel.find({
-      userId: params.userId,
-      collectionId: params.collectionId,
+      userId: toObjectId(params.userId),
+      collectionId: toObjectId(params.collectionId),
     }).lean();
   }
 
@@ -109,8 +109,8 @@ export class BookmarkCollectionMapRepository {
     feedItemId: string | Types.ObjectId;
   }): Promise<BookmarkCollectionMapLean[]> {
     return BookmarkCollectionMapModel.find({
-      userId: params.userId,
-      feedItemId: params.feedItemId,
+      userId: toObjectId(params.userId),
+      feedItemId: toObjectId(params.feedItemId),
     }).lean();
   }
 
@@ -121,6 +121,16 @@ export class BookmarkCollectionMapRepository {
       feedItemId: {
         $in: feedItemIds.map((id) => toObjectId(id)),
       },
+    }).lean();
+  }
+
+  async findOne(params: {
+    userId: Types.ObjectId | string;
+    feedItemId: Types.ObjectId | string;
+  }): Promise<BookmarkCollectionMapLean> {
+    return await BookmarkCollectionMapModel.findOne({
+      userId: toObjectId(toObjectId(params.userId)),
+      feedItemId: toObjectId(toObjectId(params.feedItemId)),
     }).lean();
   }
 }

@@ -20,9 +20,92 @@ export class BookmarkCollectionService {
   async create(params: {
     userId: Types.ObjectId | string;
     name: string;
+    feedItemId: Types.ObjectId | string;
   }): Promise<BookmarkCollectionDto> {
-    const result = await this.repo.create(params);
-    return toBookmarkCollectionDto(result);
+    const { userId, name, feedItemId } = params;
+    const trimmedName = name.trim();
+
+    /**
+     * 1. 기존 연결 확인
+     */
+    const existingMap = await this.mapRepo.findOne({
+      userId,
+      feedItemId,
+    });
+
+    let currentCollection = null;
+
+    if (existingMap) {
+      currentCollection = await this.repo.findOne(
+        existingMap.collectionId,
+        userId,
+      );
+
+      /**
+       * orphan map 정리
+       */
+      await this.mapRepo.removeFromCollection({
+        userId,
+        feedItemId,
+        collectionId: existingMap.collectionId,
+      });
+    }
+
+    /**
+     * 2. 현재 컬렉션과 동일한 이름이면 그대로 다시 연결
+     */
+    if (currentCollection && currentCollection.name === trimmedName) {
+      await this.mapRepo.addToCollection({
+        userId,
+        feedItemId,
+        collectionId: currentCollection._id,
+      });
+
+      return toBookmarkCollectionDto(currentCollection);
+    }
+
+    /**
+     * 3. target 컬렉션 resolve
+     */
+    let targetCollection = await this.repo.findByName({
+      userId,
+      name: trimmedName,
+    });
+
+    if (!targetCollection) {
+      try {
+        targetCollection = await this.repo.create({
+          userId,
+          name: trimmedName,
+        });
+      } catch (e: unknown) {
+        const err = e as { code?: number };
+
+        if (err.code === 11000) {
+          const fallback = await this.repo.findByName({
+            userId,
+            name: trimmedName,
+          });
+
+          if (!fallback) throw e;
+
+          targetCollection = fallback;
+        } else {
+          throw e;
+        }
+      }
+    }
+
+    /**
+     * 4. 최종 연결
+     */
+    await this.mapRepo.addToCollection({
+      userId,
+      feedItemId,
+      collectionId: targetCollection._id,
+    });
+
+    return toBookmarkCollectionDto(targetCollection);
   }
 
   /**
@@ -32,8 +115,38 @@ export class BookmarkCollectionService {
     userId: Types.ObjectId | string;
     collectionId: Types.ObjectId | string;
     name: string;
+    feedItemId: Types.ObjectId | string;
   }): Promise<BookmarkCollectionDto | null> {
-    const result = await this.repo.rename(params);
+    const userId = params.userId;
+    const collectionId = params.collectionId;
+    const name = params.name.trim();
+    const feedItemId = params.feedItemId;
+
+    /**
+     * existing 존재하면 → rename이 아니라 replace 수행
+     */
+    const existing = await this.repo.findByName({
+      userId,
+      name,
+    });
+
+    if (existing) {
+      return this.replaceCollection({
+        userId,
+        feedItemId,
+        currentCollectionId: collectionId,
+        nextCollectionId: existing._id,
+      });
+    }
+
+    /**
+     * existing 없으면 실제 rename 수행
+     */
+    const result = await this.repo.rename({
+      userId,
+      collectionId,
+      name,
+    });
 
     return result ? toBookmarkCollectionDto(result) : null;
   }
@@ -129,5 +242,93 @@ export class BookmarkCollectionService {
       user: users.map((collection) => toBookmarkCollectionDto(collection)),
       global: globals.map((collection) => toBookmarkCollectionDto(collection)),
     };
+  }
+
+  /**
+   * 컬렉션 교체
+   *
+   * 정책:
+   * - nextCollectionId 존재 시 해당 컬렉션 사용
+   * - nextCollectionName 존재 시 이름으로 조회
+   * - 없으면 생성 후 사용
+   * - FeedItem ↔ Collection 관계 갱신
+   */
+  async replaceCollection(params: {
+    userId: string | Types.ObjectId;
+    feedItemId: string | Types.ObjectId;
+
+    currentCollectionId: string | Types.ObjectId;
+
+    nextCollectionId?: string | Types.ObjectId;
+    nextCollectionName?: string;
+  }): Promise<BookmarkCollectionDto> {
+    let targetCollection;
+
+    /**
+     * 기존 컬렉션 선택
+     */
+    if (params.nextCollectionId) {
+      const collection = await this.repo.findOne(
+        params.nextCollectionId,
+        params.userId,
+      );
+
+      /**
+       * 존재하지 않거나 소유자가 다른 경우 → 새 컬렉션 생성으로 fallback
+       */
+      if (!collection || String(collection.userId) !== String(params.userId)) {
+        if (!params.nextCollectionName?.trim()) {
+          throw new Error("COLLECTION_REQUIRED");
+        }
+
+        targetCollection = await this.repo.create({
+          userId: params.userId,
+          name: params.nextCollectionName,
+        });
+      } else {
+        targetCollection = collection;
+      }
+    } else {
+      if (!params.nextCollectionName?.trim()) {
+        throw new Error("COLLECTION_REQUIRED");
+      }
+
+      /**
+       * 이름으로 조회
+       */
+      const existing = await this.repo.findByName({
+        userId: params.userId,
+        name: params.nextCollectionName,
+      });
+
+      /**
+       * 기존 컬렉션 사용
+       */
+      if (existing) {
+        targetCollection = existing;
+      } else {
+        /**
+         * 새 컬렉션 생성
+         */
+        targetCollection = await this.repo.create({
+          userId: params.userId,
+          name: params.nextCollectionName,
+        });
+      }
+    }
+
+    await this.mapRepo.removeFromCollection({
+      userId: params.userId,
+      feedItemId: params.feedItemId,
+      collectionId: params.currentCollectionId,
+    });
+
+    await this.mapRepo.addToCollection({
+      userId: params.userId,
+      feedItemId: params.feedItemId,
+      collectionId: targetCollection._id,
+    });
+
+    return toBookmarkCollectionDto(targetCollection);
   }
 }

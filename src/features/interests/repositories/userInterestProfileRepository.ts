@@ -1,7 +1,6 @@
 import { UserInterestProfileLean } from "@/shared/types/domain-leans";
 import UserInterestProfile from "../models/UserInterestProfile";
 
-
 /**
  * UserInterestProfile Repository
  *
@@ -50,7 +49,7 @@ export class UserInterestProfileRepository {
       },
       {
         upsert: true,
-        new: true,
+        returnDocument: "after",
       },
     )
       .lean<UserInterestProfileLean>()

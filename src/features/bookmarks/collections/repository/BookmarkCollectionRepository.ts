@@ -29,11 +29,11 @@ export class BookmarkCollectionRepository {
    *
    * @param collectionId 컬렉션 ID
    */
-  async findById(
+  async findOne(
     collectionId: string | Types.ObjectId,
     userId: string | Types.ObjectId,
   ): Promise<BookmarkCollectionLean | null> {
-    return BookmarkCollectionModel.findById({
+    return BookmarkCollectionModel.findOne({
       _id: toObjectId(collectionId),
       userId: toObjectId(userId),
     }).lean();
@@ -214,5 +214,20 @@ export class BookmarkCollectionRepository {
       user: userResult,
       global: globalResult,
     };
+  }
+  /**
+   * 이름으로 컬렉션 조회
+   *
+   * 정책:
+   * - 동일 사용자 내 검색
+   */
+  async findByName(params: {
+    userId: string | Types.ObjectId;
+    name: string;
+  }): Promise<BookmarkCollectionLean | null> {
+    return BookmarkCollectionModel.findOne({
+      userId: toObjectId(params.userId),
+      name: params.name,
+    }).lean();
   }
 }

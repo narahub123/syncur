@@ -3,6 +3,7 @@
 import { auth } from "@/auth";
 import { bookmarkService } from "../service/BookmarksService.instance";
 import { BookmarkActionResponse } from "../dto/bookmarkDto";
+import { connectMongo } from "@/shared/lib/db/mongoose";
 
 /**
  * 북마크 목록 조회 Server Action
@@ -12,6 +13,8 @@ import { BookmarkActionResponse } from "../dto/bookmarkDto";
 export async function getBookmarksAction(
   cursor?: string,
 ): Promise<BookmarkActionResponse> {
+  connectMongo();
+
   const session = await auth();
 
   // =========================
