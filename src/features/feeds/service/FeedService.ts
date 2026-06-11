@@ -3,6 +3,9 @@ import { Feed } from "@/shared/types/feed";
 import { getFeedItems } from "./getMyFeedItems/getFeedItems";
 import { FeedLean, SiteLean } from "@/shared/types/domain-leans";
 import { toFeed } from "../mapper/toFeed";
+import { PaginationParams } from "@/shared/types/pagination";
+import { FeedDtoPagedResponse } from "../dto/feedDto";
+import { toFeedDto } from "../mapper/toFeedDto";
 
 export class FeedService {
   async ensureFeed(site: SiteLean): Promise<Feed | null> {
@@ -25,5 +28,35 @@ export class FeedService {
 
   async getMyFeedItems(userId: string, cursor?: string) {
     return getFeedItems(userId, cursor);
+  }
+
+  /**
+   * Feed 목록 조회 (페이지네이션 + 검색)
+   *
+   * - admin / monitoring 용
+   */
+  async getFeedsPaginated(
+    params: PaginationParams & { search?: string },
+  ): Promise<FeedDtoPagedResponse> {
+    const page = params.page ?? 1;
+    const limit = params.limit ?? 20;
+
+    const { items, totalCount } = await feedRepository.findAllPaginated({
+      page,
+      limit,
+      search: params.search,
+    });
+
+    const totalPages = Math.ceil(totalCount / limit);
+
+    return {
+      items: items.map(toFeedDto),
+      pagination: {
+        page,
+        limit,
+        totalCount,
+        totalPages,
+      },
+    };
   }
 }

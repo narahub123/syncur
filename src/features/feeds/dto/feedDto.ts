@@ -1,5 +1,34 @@
 import { FeedItemSiteDto } from "@/features/rss/site/dto/siteDto";
-import { CursorPaginationResponse } from "@/shared/types/pagination";
+import { FeedLean } from "@/shared/types/domain-leans";
+import { FeedStatus } from "@/shared/types/feed";
+import {
+  CursorPaginationResponse,
+  PaginatedResponse,
+} from "@/shared/types/pagination";
+
+export type FeedDto = {
+  id: string;
+
+  siteId: string;
+
+  feedUrl: string;
+
+  status: FeedStatus;
+
+  lastFetchedAt: string | null;
+
+  etag: string | null;
+
+  lastModified: string | null;
+
+  errorCount: number;
+
+  categories: string[];
+
+  createdAt: string;
+
+  updatedAt: string;
+};
 
 export type FeedItemMetaDto = {
   site: FeedItemSiteDto;
@@ -87,3 +116,10 @@ export type FeedActionResponse = {
   data: FeedResponse;
   error?: string;
 };
+
+export type FeedLeanPaagedResponse = {
+  items: FeedLean[];
+  totalCount: number;
+};
+
+export type FeedDtoPagedResponse = PaginatedResponse<FeedDto>;

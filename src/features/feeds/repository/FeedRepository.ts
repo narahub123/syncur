@@ -2,6 +2,7 @@ import { FeedModel } from "../model/feed";
 import { Types } from "mongoose";
 import { FeedLean } from "@/shared/types/domain-leans";
 import { toObjectId } from "@/shared/utils/toObjectId";
+import { FeedLeanPaagedResponse } from "../dto/feedDto";
 
 /**
  * FeedRepository
@@ -87,5 +88,47 @@ export class FeedRepository {
     return FeedModel.find({
       _id: { $in: feedIds.map((id) => toObjectId(id)) },
     }).lean();
+  }
+
+  /**
+   * Feed 목록 조회 (페이지네이션 + 검색)
+   *
+   * @param params.page 페이지 번호
+   * @param params.limit 페이지 크기
+   * @param params.search feedUrl / categories 검색
+   */
+  async findAllPaginated(params: {
+    page: number;
+    limit: number;
+    search?: string;
+  }): Promise<FeedLeanPaagedResponse> {
+    const { page, limit, search } = params;
+
+    const skip = (page - 1) * limit;
+
+    const filter = search
+      ? {
+          $or: [
+            { feedUrl: { $regex: search, $options: "i" } },
+            { categories: { $regex: search, $options: "i" } },
+          ],
+        }
+      : {};
+
+    const [items, totalCount] = await Promise.all([
+      FeedModel.find(filter)
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .lean<FeedLean[]>()
+        .exec(),
+
+      FeedModel.countDocuments(filter),
+    ]);
+
+    return {
+      items,
+      totalCount,
+    };
   }
 }

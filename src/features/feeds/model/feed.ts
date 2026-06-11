@@ -1,4 +1,4 @@
-import { FeedStauts } from "@/shared/types/feed";
+import { FeedStatus } from "@/shared/types/feed";
 import mongoose, { Schema, Document, Types } from "mongoose";
 
 /**
@@ -26,7 +26,7 @@ export interface FeedDocument extends Document {
    * - error: 일시적 실패 상태
    * - disabled: 더 이상 수집하지 않음
    */
-  status: FeedStauts;
+  status: FeedStatus;
 
   /**
    * 마지막 성공적인 RSS fetch 시각

@@ -23,14 +23,14 @@ export type FeedItem = {
   updatedAt: Date;
 };
 
-export type FeedStauts = "active" | "disabled";
+export type FeedStatus = "active" | "disabled";
 
 export type Feed = {
   id: string;
   siteId: string;
   feedUrl: string;
 
-  status: FeedStauts;
+  status: FeedStatus;
 
   errorCount: number;
 

@@ -1,5 +1,5 @@
 import { Types } from "mongoose";
-import { FeedStauts } from "./feed";
+import { FeedStatus } from "./feed";
 import { USER_ROLE, UserRole } from "@/features/users/constants/user-role";
 
 /**
@@ -62,7 +62,7 @@ export type FeedLean = {
 
   feedUrl: string;
 
-  status: FeedStauts;
+  status: FeedStatus;
 
   lastFetchedAt: Date | null;
 
