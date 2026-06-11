@@ -1,15 +1,9 @@
-/**
- * 피드 화면에서 사용하는 탭 목록.
- */
-export const FEED_TAB = {
-  MY: "my",
-  POPULAR: "popular",
-  RECOMMENDED: "recommended",
-} as const;
+import { ROUTES } from "@/shared/constants/routes";
 
-/**
- * 피드 탭 값 유니온 타입.
- *
- * "my" | "popular" | "recommended"
- */
-export type FeedTab = (typeof FEED_TAB)[keyof typeof FEED_TAB];
+export const FEED_TABS = [
+  { name: "피드", link: ROUTES.FEED },
+  { name: "북마크", link: ROUTES.BOOKMARKS },
+  { name: "좋아요", link: ROUTES.LIKES },
+  { name: "추천", link: ROUTES.RECOMMENDATION },
+  { name: "인기", link: ROUTES.POPULAR },
+];

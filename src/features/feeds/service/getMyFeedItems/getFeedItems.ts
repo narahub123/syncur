@@ -27,10 +27,11 @@ export async function getFeedItems(
   // =========================
   const feedItemIds = pagedItems.map((i) => i._id.toString());
 
-  const interactions = await userFeedInteractionRepository.findByUserAndFeedIds(
-    userId,
-    feedItemIds,
-  );
+  const interactions =
+    await userFeedInteractionRepository.findByUserAndFeedItemIds(
+      userId,
+      feedItemIds,
+    );
 
   const interactionMap = new Map(
     interactions.map((i) => [i.feedItemId.toString(), i]),

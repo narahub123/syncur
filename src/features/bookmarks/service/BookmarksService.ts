@@ -52,7 +52,7 @@ export class BookmarkService {
     const feedItemIds = items.map((i) => i._id.toString());
 
     const interactions =
-      await userFeedInteractionRepository.findByUserAndFeedIds(
+      await userFeedInteractionRepository.findByUserAndFeedItemIds(
         userId,
         feedItemIds,
       );

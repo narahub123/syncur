@@ -18,10 +18,12 @@ export function useFeedAction(feedItemId: string) {
     onMutate: async (action) => {
       await qc.cancelQueries({ queryKey: ["my-feed-items"] });
       await qc.cancelQueries({ queryKey: ["bookmarks"] });
+      await qc.cancelQueries({ queryKey: ["my-likes"] });
 
       const prev = {
         myFeed: qc.getQueryData(["my-feed-items"]),
         bookmarks: qc.getQueryData(["bookmarks"]),
+        myLikes: qc.getQueryData(["my-likes"]),
       };
 
       qc.setQueryData(
@@ -34,17 +36,42 @@ export function useFeedAction(feedItemId: string) {
         updateFeed(old as MyFeedItemsResponse, action, feedItemId),
       );
 
+      qc.setQueryData(["my-likes"], (old: MyFeedItemsResponse | undefined) => {
+        if (!old?.data) return old;
+
+        if (action !== "LIKE") return old;
+
+        const exists = old.data.some(
+          (item) => item.meta.feedItemId === feedItemId,
+        );
+
+        if (exists) {
+          return {
+            ...old,
+            data: old.data.filter(
+              (item) => item.meta.feedItemId !== feedItemId,
+            ),
+          };
+        }
+
+        // LIKE 추가 시에는 구조상 feedItem 전체가 있어야 하므로
+        // 여기서는 optimistic insert는 제한적으로 처리
+        return old;
+      });
+
       return { prev };
     },
 
     onError: (_err, _action, ctx) => {
-      qc.setQueryData(["my-feed-items"], ctx?.prev);
-      qc.setQueryData(["bookmarks"], ctx?.prev);
+      qc.setQueryData(["my-feed-items"], ctx?.prev.myFeed);
+      qc.setQueryData(["bookmarks"], ctx?.prev.bookmarks);
+      qc.setQueryData(["my-likes"], ctx?.prev.myLikes);
     },
 
     onSettled: () => {
       qc.invalidateQueries({ queryKey: ["my-feed-items"] });
       qc.invalidateQueries({ queryKey: ["bookmarks"] });
+      qc.invalidateQueries({ queryKey: ["my-likes"] });
     },
   });
 }

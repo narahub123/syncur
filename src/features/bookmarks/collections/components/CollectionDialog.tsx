@@ -7,7 +7,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/shared/components/ui/dialog";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useCreateCollectionAndAttachMutation } from "../hooks/useCreateCollectionAndAttachMutation";
 import { useCollectionDialogStore } from "../../stores/useCollectionDialogStore";
 import { Button } from "@/shared/components/ui/button";

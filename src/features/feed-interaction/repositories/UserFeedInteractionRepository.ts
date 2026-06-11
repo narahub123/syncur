@@ -87,7 +87,7 @@ export class UserFeedInteractionRepository {
    * 목적:
    * - feed list에서 interaction batch merge
    */
-  async findByUserAndFeedIds(
+  async findByUserAndFeedItemIds(
     userId: string | Types.ObjectId,
     feedItemIds: (string | Types.ObjectId)[],
   ): Promise<UserFeedInteractionLean[]> {
