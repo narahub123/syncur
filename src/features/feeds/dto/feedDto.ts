@@ -5,6 +5,7 @@ import {
   CursorPaginationResponse,
   PaginatedResponse,
 } from "@/shared/types/pagination";
+import { Types } from "mongoose";
 
 export type FeedDto = {
   id: string;
@@ -117,9 +118,80 @@ export type FeedActionResponse = {
   error?: string;
 };
 
-export type FeedLeanPaagedResponse = {
+export type FeedLeanPagedResponse = {
   items: FeedLean[];
   totalCount: number;
 };
 
 export type FeedDtoPagedResponse = PaginatedResponse<FeedDto>;
+
+export type FeedWithSiteLean = {
+  _id: Types.ObjectId;
+
+  siteId: {
+    _id: Types.ObjectId;
+    name: string;
+    url: string;
+    favicon_url: string | null;
+    feed_url: string | null;
+  };
+
+  feedUrl: string;
+
+  status: FeedStatus;
+
+  lastFetchedAt: Date | null;
+
+  etag: string | null;
+
+  lastModified: string | null;
+
+  errorCount: number;
+
+  categories: string[];
+
+  createdAt: Date;
+  updatedAt: Date;
+};
+
+export type FeedWithSiteLeanPagedResponse = {
+  items: FeedWithSiteLean[];
+  totalCount: number;
+};
+
+/**
+ * Feed + Site join DTO
+ *
+ * repository에서는 siteId로 유지되지만
+ * DTO 단계에서 site로 변환된 구조
+ */
+export type FeedWithSiteDto = {
+  _id: string;
+
+  site: {
+    _id: string;
+    name: string;
+    url: string;
+    favicon_url: string | null;
+    feed_url: string | null;
+  };
+
+  feedUrl: string;
+
+  status: FeedStatus;
+
+  lastFetchedAt: string | null;
+
+  etag: string | null;
+
+  lastModified: string | null;
+
+  errorCount: number;
+
+  categories: string[];
+
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type FeedWithSiteDtoPagedResponse = PaginatedResponse<FeedWithSiteDto>;

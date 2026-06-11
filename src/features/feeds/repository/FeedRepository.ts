@@ -2,7 +2,10 @@ import { FeedModel } from "../model/feed";
 import { Types } from "mongoose";
 import { FeedLean } from "@/shared/types/domain-leans";
 import { toObjectId } from "@/shared/utils/toObjectId";
-import { FeedLeanPaagedResponse } from "../dto/feedDto";
+import {
+  FeedWithSiteLean,
+  FeedWithSiteLeanPagedResponse,
+} from "../dto/feedDto";
 
 /**
  * FeedRepository
@@ -101,7 +104,7 @@ export class FeedRepository {
     page: number;
     limit: number;
     search?: string;
-  }): Promise<FeedLeanPaagedResponse> {
+  }): Promise<FeedWithSiteLeanPagedResponse> {
     const { page, limit, search } = params;
 
     const skip = (page - 1) * limit;
@@ -117,17 +120,22 @@ export class FeedRepository {
 
     const [items, totalCount] = await Promise.all([
       FeedModel.find(filter)
+        .populate({
+          path: "siteId",
+          select: "name url favicon_url feed_url",
+        })
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit)
-        .lean<FeedLean[]>()
+        .lean<FeedWithSiteLean[]>()
         .exec(),
 
       FeedModel.countDocuments(filter),
     ]);
 
+    // orphan 데이터 처리 방법을 추가해야 함
     return {
-      items,
+      items: items.filter((f) => f.siteId !== null),
       totalCount,
     };
   }

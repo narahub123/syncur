@@ -4,8 +4,10 @@ import { getFeedItems } from "./getMyFeedItems/getFeedItems";
 import { FeedLean, SiteLean } from "@/shared/types/domain-leans";
 import { toFeed } from "../mapper/toFeed";
 import { PaginationParams } from "@/shared/types/pagination";
-import { FeedDtoPagedResponse } from "../dto/feedDto";
-import { toFeedDto } from "../mapper/toFeedDto";
+import { FeedWithSiteDtoPagedResponse } from "../dto/feedDto";
+import { toFeedWithSiteDto } from "../mapper/toFeedWithSiteDto";
+import { ADMIN_CONFIG } from "@/features/admin/constants/admin-config";
+import { PAGINATION } from "@/shared/constants/pagination";
 
 export class FeedService {
   async ensureFeed(site: SiteLean): Promise<Feed | null> {
@@ -37,9 +39,9 @@ export class FeedService {
    */
   async getFeedsPaginated(
     params: PaginationParams & { search?: string },
-  ): Promise<FeedDtoPagedResponse> {
-    const page = params.page ?? 1;
-    const limit = params.limit ?? 20;
+  ): Promise<FeedWithSiteDtoPagedResponse> {
+    const page = params.page ?? PAGINATION.DEFAULT_PAGE;
+    const limit = params.limit ?? ADMIN_CONFIG.FEEDS.PAGINATION_LIMIT;
 
     const { items, totalCount } = await feedRepository.findAllPaginated({
       page,
@@ -50,7 +52,7 @@ export class FeedService {
     const totalPages = Math.ceil(totalCount / limit);
 
     return {
-      items: items.map(toFeedDto),
+      items: items.map(toFeedWithSiteDto),
       pagination: {
         page,
         limit,
