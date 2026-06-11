@@ -11,17 +11,44 @@ import {
 } from "@/shared/components/ui/table";
 import { useRouter } from "next/navigation";
 import { userTableColumns } from "../constants/adminUserTable";
-import { LoaderCircle } from "lucide-react";
+import { ChevronDown, ChevronUp, LoaderCircle } from "lucide-react";
+import { AdminUserSort, AdminUsersQuery } from "../types";
 
 type Props = {
   users: UserDto[];
   isFetching: boolean;
+  query: AdminUsersQuery;
+  onChange: (value: AdminUsersQuery) => void;
 };
 
-export default function AdminUserTable({ users, isFetching }: Props) {
+export default function AdminUserTable({
+  users,
+  isFetching,
+  query,
+  onChange,
+}: Props) {
   const router = useRouter();
 
   const columnCount = userTableColumns.length;
+
+  const handleClick = (field: AdminUserSort) => {
+    if (query.sort === field) {
+      onChange({
+        ...query,
+        sortOrder: query.sortOrder === "asc" ? "desc" : "asc",
+        page: 1,
+      });
+
+      return;
+    }
+
+    onChange({
+      ...query,
+      sort: field,
+      sortOrder: "asc",
+      page: 1,
+    });
+  };
 
   return (
     <div className="flex-1 px-2">
@@ -30,7 +57,36 @@ export default function AdminUserTable({ users, isFetching }: Props) {
         <TableHeader>
           <TableRow>
             {userTableColumns.map((col) => (
-              <TableHead key={col.key}>{col.header}</TableHead>
+              <TableHead
+                key={col.key}
+                aria-sort={
+                  query.sort === col.key
+                    ? query.sortOrder === "asc"
+                      ? "ascending"
+                      : "descending"
+                    : "none"
+                }
+              >
+                <button
+                  type="button"
+                  className="flex w-full cursor-pointer items-center gap-1"
+                  onClick={() => handleClick(col.key)}
+                  title={
+                    query.sort === col.key
+                      ? `${col.header} ${query.sortOrder === "asc" ? "오름차순 정렬 중" : "내림차순 정렬 중"}`
+                      : `${col.header} 기준 정렬`
+                  }
+                >
+                  <span>{col.header}</span>
+
+                  {query.sort === col.key &&
+                    (query.sortOrder === "asc" ? (
+                      <ChevronUp size={16} />
+                    ) : (
+                      <ChevronDown size={16} />
+                    ))}
+                </button>
+              </TableHead>
             ))}
           </TableRow>
         </TableHeader>
@@ -42,7 +98,6 @@ export default function AdminUserTable({ users, isFetching }: Props) {
               <TableCell colSpan={columnCount} className="h-24 text-center">
                 <div className="text-muted-foreground flex items-center justify-center gap-2">
                   <LoaderCircle className="h-4 w-4 animate-spin" />
-                  로딩 중...
                 </div>
               </TableCell>
             </TableRow>

@@ -1,7 +1,8 @@
 import { UserDto } from "@/features/users/dto/userDto";
+import { AdminUserSort } from "../types";
 
 export type UserTableColumn = {
-  key: string;
+  key: AdminUserSort;
   header: string;
   render: (user: UserDto) => React.ReactNode;
 };

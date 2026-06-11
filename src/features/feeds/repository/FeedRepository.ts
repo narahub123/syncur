@@ -9,8 +9,8 @@ import {
 import {
   AdminFeedSearchField,
   AdminFeedSort,
-  AdminFeedSortOrder,
 } from "@/features/admin/feeds/types";
+import { SortOrder } from "@/shared/types/pagination";
 
 /**
  * FeedRepository
@@ -108,7 +108,7 @@ export class FeedRepository {
     search?: string;
     searchField?: AdminFeedSearchField;
     sort?: AdminFeedSort;
-    sortOrder?: AdminFeedSortOrder;
+    sortOrder?: SortOrder;
   }): Promise<FeedWithSiteLeanPagedResponse> {
     const {
       page,

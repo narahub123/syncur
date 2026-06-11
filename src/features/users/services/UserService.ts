@@ -104,6 +104,7 @@ export class UserService {
       search: query.search,
       searchField: query.searchField,
       sort: query.sort,
+      sortOrder: query.sortOrder,
     });
 
     const totalPages = Math.max(Math.ceil(totalCount / limit), 0);

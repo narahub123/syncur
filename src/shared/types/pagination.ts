@@ -36,3 +36,5 @@ export type CursorPaginationResponse<T> = {
   nextCursor: string | null;
   hasNext: boolean;
 };
+
+export type SortOrder = "asc" | "desc";

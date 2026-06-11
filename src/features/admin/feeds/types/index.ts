@@ -1,3 +1,5 @@
+import { SortOrder } from "@/shared/types/pagination";
+
 export type AdminFeedSearchField =
   | "siteName"
   | "siteUrl"
@@ -12,15 +14,13 @@ export type AdminFeedSort =
   | "lastFetchedAt"
   | "createdAt";
 
-export type AdminFeedSortOrder = "asc" | "desc";
-
 export type AdminFeedPageSize = 10 | 20 | 50 | 100;
 
 export type AdminFeedsQuery = {
   search: string;
   searchField: AdminFeedSearchField;
   sort: AdminFeedSort;
-  sortOrder: AdminFeedSortOrder;
+  sortOrder: SortOrder;
   page: number;
   limit: AdminFeedPageSize;
 };

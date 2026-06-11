@@ -11,7 +11,7 @@ type Props = {
   onChange: (value: AdminFeedsQuery) => void;
 };
 
-const AdminFeedTableToobar = ({ query, onChange }: Props) => {
+const AdminFeedTableToolbar = ({ query, onChange }: Props) => {
   return (
     <div className="flex items-center justify-between px-2">
       <div className="flex items-center gap-2">
@@ -35,4 +35,4 @@ const AdminFeedTableToobar = ({ query, onChange }: Props) => {
   );
 };
 
-export default AdminFeedTableToobar;
+export default AdminFeedTableToolbar;

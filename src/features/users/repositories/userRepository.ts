@@ -1,6 +1,11 @@
 import User from "@/features/users/models/User";
 import type { UserLean } from "@/shared/types/domain-leans";
 import type { UserLeanPaagedResponse } from "../dto/userDto";
+import {
+  AdminUserSearchField,
+  AdminUserSort,
+} from "@/features/admin/users/types";
+import { SortOrder } from "@/shared/types/pagination";
 
 /**
  * User Repository
@@ -118,15 +123,17 @@ export class UserRepository {
     page: number;
     limit: number;
     search?: string;
-    searchField?: "name" | "email" | "all";
-    sort?: "latest" | "oldest" | "name";
+    searchField?: AdminUserSearchField;
+    sort?: AdminUserSort;
+    sortOrder?: SortOrder;
   }): Promise<UserLeanPaagedResponse> {
     const {
       page,
       limit,
       search,
       searchField = "all",
-      sort = "latest",
+      sort = "name",
+      sortOrder = "desc",
     } = params;
 
     const skip = (page - 1) * limit;
@@ -147,10 +154,15 @@ export class UserRepository {
         : {};
 
     // 2. sort map
+
+    const mongoOrder = sortOrder === "asc" ? 1 : -1;
+
     const sortMap = {
-      latest: { createdAt: -1 },
-      oldest: { createdAt: 1 },
-      name: { name: 1 },
+      name: { name: mongoOrder },
+      email: { email: mongoOrder },
+      role: { role: mongoOrder },
+      onboarding: { onboardingCompleted: mongoOrder },
+      createdAt: { createdAt: mongoOrder },
     } as const;
 
     const [items, totalCount] = await Promise.all([

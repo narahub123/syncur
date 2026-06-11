@@ -5,7 +5,7 @@ import { useAdminFeedsQuery } from "../hooks/useAdminFeedsQuery";
 import AdminFeedTable from "./AdminFeedTable";
 import AdminPagination from "../../components/AdminPagination";
 import { AdminFeedsQuery } from "../types";
-import AdminFeedTableToobar from "./AdminFeedTableToobar";
+import AdminFeedTableToolbar from "./AdminFeedTableToolbar";
 
 const AdminFeedsClient = () => {
   /**
@@ -37,7 +37,7 @@ const AdminFeedsClient = () => {
 
       <div className="flex flex-1 flex-col space-y-2">
         {/* 🔹 검색 / 정렬 / 페이지 사이즈 컨트롤 */}
-        <AdminFeedTableToobar query={query} onChange={setQuery} />
+        <AdminFeedTableToolbar query={query} onChange={setQuery} />
         {/* 🔹 테이블 유지 구조 * - 로딩 중에도 UI 유지 * - 데이터 변경 시 깜빡임 방지 */}{" "}
         <AdminFeedTable
           feeds={feeds}

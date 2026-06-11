@@ -1,10 +1,11 @@
 "use client";
 
-import AdminUserPageSizeSelect from "./AdminUserPageSizeSelect";
-import AdminUserSortSelect from "./AdminUserSortSelect";
-import AdminUserSearchInput from "./AdminUserSearchInput";
-import AdminUserSearchFieldSelect from "./AdminUserSearchFieldSelect";
 import { AdminUsersQuery } from "../types";
+import AdminSearchFieldSelect from "../../components/AdminSearchFieldSelect";
+import AdminSearchInput from "../../components/AdminSearchInput";
+import AdminPageSizeSelect from "../../components/AdminPageSizeSelect";
+import { ADMIN_USER_SEARCH_FIELD_OPTIONS } from "../constants/adminUserSearchSelect";
+import { ADMIN_USER_PAGE_SIZE_OPTIONS } from "../constants/adminUserPageSizeSelect";
 
 type Props = {
   query: AdminUsersQuery;
@@ -14,23 +15,21 @@ type Props = {
 const AdminUsersTableToolbar = ({ query, onChange }: Props) => {
   return (
     <div className="flex items-center justify-around px-2">
-      <AdminUserSearchFieldSelect
-        value={query.searchField}
-        onChange={(v) => onChange({ ...query, searchField: v, page: 1 })}
-      />
+      <div className="flex items-center gap-2">
+        <AdminSearchFieldSelect
+          value={query.searchField}
+          options={ADMIN_USER_SEARCH_FIELD_OPTIONS}
+          onChange={(v) => onChange({ ...query, searchField: v, page: 1 })}
+        />
+        <AdminSearchInput
+          value={query.search}
+          onChange={(v) => onChange({ ...query, search: v, page: 1 })}
+        />
+      </div>
 
-      <AdminUserSearchInput
-        value={query.search}
-        onChange={(v) => onChange({ ...query, search: v, page: 1 })}
-      />
-
-      <AdminUserSortSelect
-        value={query.sort}
-        onChange={(v) => onChange({ ...query, sort: v })}
-      />
-
-      <AdminUserPageSizeSelect
+      <AdminPageSizeSelect
         value={query.limit}
+        options={ADMIN_USER_PAGE_SIZE_OPTIONS}
         onChange={(v) => onChange({ ...query, limit: v, page: 1 })}
       />
     </div>
