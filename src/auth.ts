@@ -3,6 +3,7 @@ import Google from "next-auth/providers/google";
 import { MongoDBAdapter } from "@auth/mongodb-adapter";
 
 import clientPromise from "@/shared/lib/db/mongodb";
+import { USER_ROLE } from "./features/users/constants/user-role";
 
 /**
  * NextAuth v5 인증 설정.
@@ -73,4 +74,50 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       },
     }),
   ],
+
+  /**
+   * session 콜백
+   *
+   * 역할:
+   * - 클라이언트/서버에서 사용하는 session 객체를 가공
+   * - DB(User document)에 있는 추가 필드를 session으로 전달
+   *
+   * 동작 흐름:
+   * - NextAuth가 DB에서 user를 조회
+   * - session.user에 필요한 정보(id, role 등)를 주입
+   * - 이후 auth() / useSession()에서 사용 가능
+   */
+  callbacks: {
+    async session({ session, user }) {
+      // MongoDB User document의 id를 session에 주입
+      session.user.id = user.id;
+
+      // role이 없으면 기본값 "user"로 설정
+      session.user.role = user.role ?? USER_ROLE.USER;
+
+      return session;
+    },
+
+    /**
+     * jwt 콜백
+     *
+     * 역할:
+     * - JWT 토큰에 사용자 정보를 저장
+     * - 이후 요청에서 DB 조회 없이 빠르게 인증 처리 가능
+     *
+     * 동작 흐름:
+     * - 로그인 시 user 객체가 전달됨
+     * - token에 role 같은 추가 정보를 저장
+     * - 이후 요청에서는 token 기반으로 session 생성
+     */
+    async jwt({ token, user }) {
+      // 최초 로그인 시에만 user 객체 존재
+      if (user) {
+        // role을 JWT 토큰에 저장 (없으면 기본값 "user")
+        token.role = user.role ?? USER_ROLE.USER;
+      }
+
+      return token;
+    },
+  },
 });

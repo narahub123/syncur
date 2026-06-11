@@ -1,5 +1,6 @@
 import { Types } from "mongoose";
 import { FeedStauts } from "./feed";
+import { USER_ROLE, UserRole } from "@/features/users/constants/user-role";
 
 /**
  * UserFeedInteraction lean type
@@ -147,47 +148,6 @@ export type SiteLean = {
 };
 
 /**
- * User Lean Type
- *
- * NextAuth MongoDBAdapter users 컬렉션 기준
- * - timestamps 없음
- * - lean() 전용 구조
- */
-export type UserLean = {
-  _id: Types.ObjectId;
-
-  /**
-   * 사용자 이름 (OAuth 제공값)
-   */
-  name: string | null;
-
-  /**
-   * 사용자 이메일 (unique)
-   */
-  email: string;
-
-  /**
-   * 이메일 인증 시각 (OAuth 사용 시 대부분 null)
-   */
-  emailVerified: Date | null;
-
-  /**
-   * 프로필 이미지 URL
-   */
-  image: string | null;
-
-  /**
-   * 온보딩 완료 여부
-   */
-  onboardingCompleted: boolean;
-
-  /**
-   * 온보딩 완료 시각
-   */
-  onboardingCompletedAt: Date | null;
-};
-
-/**
  * Subscription Lean Type
  *
  * user ↔ feed 관계 (lean 전용)
@@ -317,4 +277,51 @@ export type BookmarkCollectionMapLean = {
    * 수정 시각
    */
   updatedAt: Date;
+};
+
+/**
+ * UserModel lean() 반환 타입
+ *
+ * Document wrapper 없이 순수 JSON object
+ */
+export type UserLean = {
+  /**
+   * MongoDB ObjectId
+   */
+  _id: Types.ObjectId;
+
+  /**
+   * 사용자 이름
+   */
+  name: string | null;
+
+  /**
+   * 사용자 이메일
+   */
+  email: string;
+
+  /**
+   * 이메일 인증 완료 시각
+   */
+  emailVerified: Date | null;
+
+  /**
+   * 프로필 이미지 URL
+   */
+  image: string | null;
+
+  /**
+   * 관심사 온보딩 완료 여부
+   */
+  onboardingCompleted: boolean;
+
+  /**
+   * 관심사 온보딩 완료 시각
+   */
+  onboardingCompletedAt: Date | null;
+
+  /**
+   * 사용자 권한
+   */
+  role: UserRole;
 };

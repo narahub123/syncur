@@ -24,6 +24,12 @@ export const ROUTES = {
   SETTINGS_SUBSCRIPTIONS: "/settings/subscriptions",
 
   HIDDEN: "/hidden",
+
+  ADMIN_DASHBOARD: "/admin",
+  ADMIN_USERS: "/admin/users",
+  ADMIN_RSS: "/admin/rss",
+  ADMIN_FEEDS: "/admin/feeds",
+  ADMIN_LOGS: "/admin/logs",
 } as const;
 
 /**

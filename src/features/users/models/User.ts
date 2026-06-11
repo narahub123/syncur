@@ -1,4 +1,66 @@
-import { Schema, model, models } from "mongoose";
+import { Schema, model, models, Document } from "mongoose";
+import { USER_ROLE, UserRole } from "../constants/user-role";
+
+/**
+ * User Document
+ *
+ * - NextAuth MongoDBAdapter가 사용하는 users 컬렉션 기반
+ * - OAuth 로그인 시 자동 생성됨
+ * - 서비스 확장 필드 (onboarding, role 등 포함)
+ */
+export interface UserDocument extends Document {
+  /**
+   * 사용자 이름
+   *
+   * Google OAuth 로그인 시
+   * Google 계정 이름이 저장된다.
+   */
+  name: string | null;
+
+  /**
+   * 사용자 이메일
+   *
+   * 사용자 식별에 사용하는 핵심 값이다.
+   */
+  email: string;
+
+  /**
+   * 이메일 인증 완료 시각
+   *
+   * Google OAuth 사용 시 대부분 null
+   */
+  emailVerified: Date | null;
+
+  /**
+   * 사용자 프로필 이미지 URL
+   *
+   * Google OAuth 로그인 시 저장됨
+   */
+  image: string | null;
+
+  /**
+   * 관심사 온보딩 완료 여부
+   *
+   * 첫 로그인 사용자는 false 상태로 생성된다.
+   * 관심사 선택 완료 시 true로 변경된다.
+   */
+  onboardingCompleted: boolean;
+
+  /**
+   * 관심사 온보딩 완료 시각
+   *
+   * 최초 관심사 설정 완료 시점 기록
+   */
+  onboardingCompletedAt: Date | null;
+
+  /**
+   * 사용자 권한
+   *
+   * - user: 일반 사용자
+   * - admin: 관리자
+   */
+  role: UserRole;
+}
 
 /**
  * 사용자 정보.
@@ -11,7 +73,7 @@ import { Schema, model, models } from "mongoose";
  * - emailVerified: 이메일 인증 시각
  * - image: 프로필 이미지 URL
  */
-const userSchema = new Schema(
+const userSchema = new Schema<UserDocument>(
   {
     /**
      * 사용자 이름.
@@ -85,6 +147,17 @@ const userSchema = new Schema(
     onboardingCompletedAt: {
       type: Date,
       default: null,
+    },
+    /**
+     * 사용자 권한
+     *
+     * - user: 일반 사용자
+     * - admin: 관리자
+     */
+    role: {
+      type: String,
+      enum: [USER_ROLE.USER, USER_ROLE.ADMIN],
+      default: USER_ROLE.USER,
     },
   },
   {
