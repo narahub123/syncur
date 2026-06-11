@@ -118,23 +118,44 @@ export class UserRepository {
     page: number;
     limit: number;
     search?: string;
+    searchField?: "name" | "email" | "all";
+    sort?: "latest" | "oldest" | "name";
   }): Promise<UserLeanPaagedResponse> {
-    const { page, limit, search } = params;
+    const {
+      page,
+      limit,
+      search,
+      searchField = "all",
+      sort = "latest",
+    } = params;
 
     const skip = (page - 1) * limit;
 
-    const filter = search
-      ? {
-          $or: [
-            { name: { $regex: search, $options: "i" } },
-            { email: { $regex: search, $options: "i" } },
-          ],
-        }
-      : {};
+    // 1. filter
+    const filter =
+      search && search.trim().length > 0
+        ? searchField === "all"
+          ? {
+              $or: [
+                { name: { $regex: search, $options: "i" } },
+                { email: { $regex: search, $options: "i" } },
+              ],
+            }
+          : {
+              [searchField]: { $regex: search, $options: "i" },
+            }
+        : {};
+
+    // 2. sort map
+    const sortMap = {
+      latest: { createdAt: -1 },
+      oldest: { createdAt: 1 },
+      name: { name: 1 },
+    } as const;
 
     const [items, totalCount] = await Promise.all([
       User.find(filter)
-        .sort({ createdAt: -1 })
+        .sort(sortMap[sort])
         .skip(skip)
         .limit(limit)
         .lean<UserLean[]>()

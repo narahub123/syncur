@@ -23,6 +23,7 @@ const FeedClient = ({ isFirstLogin }: FeedClientProps) => {
   const feedItems = data?.pages.flatMap((page) => page.items) ?? [];
 
   const status = data?.pages[0]?.status;
+  console.log(feedItems, status);
 
   const loadMoreRef = useInfiniteScroll({
     onIntersect: () => {

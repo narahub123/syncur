@@ -166,12 +166,7 @@ const userSchema = new Schema<UserDocument>(
      */
     collection: "users",
 
-    /**
-     * createdAt, updatedAt을 생성하지 않는다.
-     *
-     * NextAuth 기본 users 컬렉션 구조와 맞춘다.
-     */
-    timestamps: false,
+    timestamps: true,
     versionKey: false,
   },
 );

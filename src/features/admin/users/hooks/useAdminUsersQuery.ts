@@ -1,16 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
 import { fetchAdminUsers } from "../api/fetchAdminUsers";
+import { AdminUsersQuery } from "../types";
 
-type Params = {
-  search?: string;
-  limit?: number;
-  page?: number;
-};
-
-export function useAdminUsersQuery(params: Params) {
+export function useAdminUsersQuery(query: AdminUsersQuery) {
   return useQuery({
-    queryKey: ["admin-users", params],
-    queryFn: () => fetchAdminUsers(params),
+    queryKey: ["admin-users", query],
+    queryFn: () => fetchAdminUsers(query),
     staleTime: 1000 * 60, // 1분 (admin list는 너무 자주 안 바뀜)
     placeholderData: (prev) => prev,
   });

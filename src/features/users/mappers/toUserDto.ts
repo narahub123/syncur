@@ -14,7 +14,7 @@ import { UserDto } from "../dto/userDto";
  */
 export function toUserDto(user: UserLean): UserDto {
   return {
-    id: user._id.toString(),
+    _id: user._id.toString(),
 
     name: user.name,
     email: user.email,
@@ -29,5 +29,8 @@ export function toUserDto(user: UserLean): UserDto {
       : null,
 
     role: user.role,
+
+    createdAt: user.createdAt?.toISOString() ?? "",
+    updatedAt: user.updatedAt?.toISOString() ?? "",
   };
 }

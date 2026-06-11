@@ -120,4 +120,20 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       return token;
     },
   },
+  events: {
+    async createUser({ user }) {
+      const db = (await clientPromise).db();
+
+      await db.collection("users").updateOne(
+        { email: user.email },
+        {
+          $set: {
+            role: USER_ROLE.USER,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          },
+        },
+      );
+    },
+  },
 });

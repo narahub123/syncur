@@ -14,7 +14,7 @@ export type UserDto = {
   /**
    * 사용자 ID (string으로 직렬화)
    */
-  id: string;
+  _id: string;
 
   /**
    * 사용자 이름
@@ -50,6 +50,9 @@ export type UserDto = {
    * 사용자 권한
    */
   role: UserRole;
+
+  createdAt: string;
+  updatedAt: string;
 };
 
 export type UserLeanPaagedResponse = {

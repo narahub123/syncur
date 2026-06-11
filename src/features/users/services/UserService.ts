@@ -2,9 +2,9 @@ import { UserRepository } from "../repositories/UserRepository";
 import { connectMongo } from "@/shared/lib/db/mongoose";
 import { UserDto, UserDtoPagedResponse } from "../dto/userDto";
 import { toUserDto } from "../mappers/toUserDto";
-import { PaginationParams } from "@/shared/types/pagination";
 import { ADMIN_CONFIG } from "@/features/admin/constants/admin-config";
 import { PAGINATION } from "@/shared/constants/pagination";
+import { AdminUsersQuery } from "@/features/admin/users/types";
 
 /**
  * User Service
@@ -93,15 +93,17 @@ export class UserService {
    * - pagination meta 포함 응답 생성
    */
   async getUsersPaginated(
-    params: PaginationParams & { search?: string },
+    query: AdminUsersQuery,
   ): Promise<UserDtoPagedResponse> {
-    const page = params.page ?? PAGINATION.DEFAULT_PAGE;
-    const limit = params.limit ?? ADMIN_CONFIG.USERS.PAGINATION_LIMIT;
+    const page = query.page ?? PAGINATION.DEFAULT_PAGE;
+    const limit = query.limit ?? ADMIN_CONFIG.USERS.PAGINATION_LIMIT;
 
     const { items, totalCount } = await this.userRepository.findAllPaginated({
       page,
       limit,
-      search: params.search,
+      search: query.search,
+      searchField: query.searchField,
+      sort: query.sort,
     });
 
     const totalPages = Math.max(Math.ceil(totalCount / limit), 0);

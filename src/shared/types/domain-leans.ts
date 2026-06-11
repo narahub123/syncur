@@ -1,6 +1,6 @@
 import { Types } from "mongoose";
 import { FeedStatus } from "./feed";
-import { USER_ROLE, UserRole } from "@/features/users/constants/user-role";
+import { UserRole } from "@/features/users/constants/user-role";
 
 /**
  * UserFeedInteraction lean type
@@ -324,4 +324,7 @@ export type UserLean = {
    * 사용자 권한
    */
   role: UserRole;
+
+  createdAt: Date;
+  updatedAt: Date;
 };

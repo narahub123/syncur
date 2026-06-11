@@ -54,9 +54,9 @@ export default async function AdminLayout({
    * - children: 각 admin 페이지 콘텐츠
    */
   return (
-    <div className="mt-1 flex-1 border-x border-gray-100">
+    <div className="mt-1 flex flex-1 flex-col border-x border-gray-100">
       <AdminHeader />
-      <main>{children}</main>
+      <main className="flex flex-1 flex-col">{children}</main>
     </div>
   );
 }

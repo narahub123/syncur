@@ -64,6 +64,11 @@ export async function getFeedItems(
     items: result,
     nextCursor,
     hasNext,
-    status: items.length === 0 ? "EMPTY_FEED" : "HAS_DATA",
+    status:
+      subscribedMap.size === 0
+        ? "NO_SUBSCRIPTION"
+        : items.length === 0
+          ? "EMPTY_FEED"
+          : "HAS_DATA",
   };
 }
