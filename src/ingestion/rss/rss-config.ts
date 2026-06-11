@@ -2,9 +2,11 @@ export const RSS_CONFIG = {
   /**
    * RSS fetch 기본 설정
    */
-  RSS_FETCH_TIMEOUT: 8000,
-  RSS_USER_AGENT: "Syncur RSS Bot",
-  RSS_ACCEPT: "application/rss+xml, application/xml, text/xml",
+  RSS_FETCH_TIMEOUT: 20000,
+  RSS_USER_AGENT:
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36 SyncurBot/1.0",
+  RSS_ACCEPT:
+    "application/rss+xml, application/xml, text/xml, application/atom+xml, */*",
 
   /**
    * cron 실행 주기
