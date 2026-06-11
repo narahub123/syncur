@@ -53,7 +53,7 @@ export class BookmarkCollectionRepository {
         userId: toObjectId(params.userId),
       },
       { $set: { name: params.name } },
-      { new: true },
+      { returnDocument: "after" },
     ).lean();
   }
 

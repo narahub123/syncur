@@ -106,7 +106,7 @@ export async function runFeedIngestion(feed: FeedDocument) {
       {
         $inc: { errorCount: 1 },
       },
-      { new: true },
+      { returnDocument: "after" },
     );
 
     /**

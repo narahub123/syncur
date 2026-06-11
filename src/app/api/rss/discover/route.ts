@@ -12,7 +12,6 @@ export async function POST(req: Request) {
 
     const result = await discoverSite(url);
 
-    console.log("결과", result);
     return NextResponse.json({
       success: true,
       data: result,

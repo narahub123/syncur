@@ -1,5 +1,6 @@
 import { UserDto } from "@/features/users/dto/userDto";
 import { AdminUserSort } from "../types";
+import { RoleCell } from "../components/AdminUserRoleCell";
 
 export type UserTableColumn = {
   key: AdminUserSort;
@@ -21,15 +22,7 @@ export const userTableColumns: UserTableColumn[] = [
   {
     key: "role",
     header: "권한",
-    render: (user) => (
-      <span
-        className={
-          user.role === "admin" ? "font-medium text-red-500" : "text-gray-600"
-        }
-      >
-        {user.role}
-      </span>
-    ),
+    render: (user) => <RoleCell user={user} />,
   },
   {
     key: "onboarding",

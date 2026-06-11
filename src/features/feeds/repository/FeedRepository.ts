@@ -220,7 +220,7 @@ export class FeedRepository {
     return FeedModel.findByIdAndUpdate(
       feedId,
       { status },
-      { new: true },
+      { returnDocument: "after" },
     ).lean();
   }
 
@@ -231,7 +231,7 @@ export class FeedRepository {
     return FeedModel.findByIdAndUpdate(
       feedId,
       { errorCount },
-      { new: true },
+      { returnDocument: "after" },
     ).lean();
   }
 }

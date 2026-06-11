@@ -25,10 +25,7 @@ const SiteSubscriptionForm = () => {
 
   const { data: options, isFetching } = useSiteSearch(debouncedInput);
 
-  console.log(options);
-
   const handleSelectSite = (site: SiteContextDTO) => {
-    console.log("사이트 정보", site);
     selectSite(site);
 
     if (!site.rssAvailable) {

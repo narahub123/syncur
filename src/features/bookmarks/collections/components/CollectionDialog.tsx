@@ -66,12 +66,6 @@ const CollectionDialog = () => {
       return;
     }
 
-    console.log({
-      value,
-      selectedCollectionId,
-      currentCollection: collection,
-    });
-
     /**
      * 이름 변경
      */

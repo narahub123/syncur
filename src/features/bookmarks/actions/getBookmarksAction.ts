@@ -41,8 +41,6 @@ export async function getBookmarksAction(
     // =========================
     const data = await bookmarkService.getBookmarks(userId, cursor);
 
-    console.log("action data", data);
-
     return {
       success: true,
       data,

@@ -9,7 +9,6 @@ import SubscriptionItemSkeleton from "./SubscriptionSkeleton";
 const SubscriptionsClient = () => {
   const { data: subscriptions, isFetching } = useSubscriptionsQuery(1, 10);
 
-  console.log("구독 목록", subscriptions);
   const hasSubscriptions = subscriptions && subscriptions.items.length > 0;
 
   return (

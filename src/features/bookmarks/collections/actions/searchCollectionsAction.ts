@@ -53,6 +53,5 @@ export async function searchCollectionsAction(params: {
     limit: params.limit,
   });
 
-  console.log("결과 값 from service", result);
   return result;
 }

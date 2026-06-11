@@ -5,6 +5,7 @@ import { toUserDto } from "../mappers/toUserDto";
 import { ADMIN_CONFIG } from "@/features/admin/constants/admin-config";
 import { PAGINATION } from "@/shared/constants/pagination";
 import { AdminUsersQuery } from "@/features/admin/users/types";
+import { USER_ROLE } from "../constants/user-role";
 
 /**
  * User Service
@@ -76,14 +77,24 @@ export class UserService {
    *
    * @param userId 사용자 ObjectId
    * @param role 변경할 role (user | admin)
-   * @returns 업데이트된 UserDto | null
+   * @returns 업데이트된 UserDto
    */
   async updateUserRole(
     userId: string,
     role: UserDto["role"],
-  ): Promise<UserDto | null> {
+  ): Promise<UserDto> {
+    // 1. role 유효성 검증
+    if (!Object.values(USER_ROLE).includes(role)) {
+      throw new Error("Invalid role");
+    }
+
     const lean = await this.userRepository.updateRole(userId, role);
-    return lean ? toUserDto(lean) : null;
+
+    if (!lean) {
+      throw new Error("User not found");
+    }
+
+    return toUserDto(lean);
   }
 
   /**

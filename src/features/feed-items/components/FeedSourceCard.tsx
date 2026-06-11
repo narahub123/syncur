@@ -12,7 +12,6 @@ type Props = {
 const FeedSourceCard = ({ meta }: Props) => {
   const { site, publishedAt, feedItemId } = meta;
 
-  console.log("feedItemId", feedItemId);
   const { display, full } = formatFeedPublishedTime(publishedAt);
 
   const mutation = useFeedAction(feedItemId);
