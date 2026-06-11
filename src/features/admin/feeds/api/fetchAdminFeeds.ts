@@ -1,4 +1,5 @@
 import { getAdminFeedsPaginatedAction } from "../actions/getAdminFeedsPaginatedAction";
+import { AdminFeedsQuery } from "../types";
 
 /**
  * Feed 목록 Fetcher
@@ -6,10 +7,6 @@ import { getAdminFeedsPaginatedAction } from "../actions/getAdminFeedsPaginatedA
  * - server action 호출 래퍼
  * - react-query와 action 분리 목적
  */
-export const fetchAdminFeeds = async (params: {
-  search?: string;
-  limit?: number;
-  page?: number;
-}) => {
-  return await getAdminFeedsPaginatedAction(params);
+export const fetchAdminFeeds = async (query: AdminFeedsQuery) => {
+  return await getAdminFeedsPaginatedAction(query);
 };

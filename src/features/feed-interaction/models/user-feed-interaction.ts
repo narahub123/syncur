@@ -103,7 +103,6 @@ const UserFeedInteractionSchema = new Schema<UserFeedInteractionDocument>(
       type: Schema.Types.ObjectId,
       ref: "FeedItem",
       required: true,
-      index: true,
     },
 
     hasContentClicked: {

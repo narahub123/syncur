@@ -3,11 +3,11 @@ import { Feed } from "@/shared/types/feed";
 import { getFeedItems } from "./getMyFeedItems/getFeedItems";
 import { FeedLean, SiteLean } from "@/shared/types/domain-leans";
 import { toFeed } from "../mapper/toFeed";
-import { PaginationParams } from "@/shared/types/pagination";
 import { FeedWithSiteDtoPagedResponse } from "../dto/feedDto";
 import { toFeedWithSiteDto } from "../mapper/toFeedWithSiteDto";
 import { ADMIN_CONFIG } from "@/features/admin/constants/admin-config";
 import { PAGINATION } from "@/shared/constants/pagination";
+import { AdminFeedsQuery } from "@/features/admin/feeds/types";
 
 export class FeedService {
   async ensureFeed(site: SiteLean): Promise<Feed | null> {
@@ -38,15 +38,18 @@ export class FeedService {
    * - admin / monitoring 용
    */
   async getFeedsPaginated(
-    params: PaginationParams & { search?: string },
+    query: AdminFeedsQuery,
   ): Promise<FeedWithSiteDtoPagedResponse> {
-    const page = params.page ?? PAGINATION.DEFAULT_PAGE;
-    const limit = params.limit ?? ADMIN_CONFIG.FEEDS.PAGINATION_LIMIT;
+    const page = query.page ?? PAGINATION.DEFAULT_PAGE;
+    const limit = query.limit ?? ADMIN_CONFIG.FEEDS.PAGINATION_LIMIT;
 
     const { items, totalCount } = await feedRepository.findAllPaginated({
       page,
       limit,
-      search: params.search,
+      search: query.search,
+      searchField: query.searchField,
+      sort: query.sort,
+      sortOrder: query.sortOrder,
     });
 
     const totalPages = Math.ceil(totalCount / limit);

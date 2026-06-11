@@ -6,6 +6,11 @@ import {
   FeedWithSiteLean,
   FeedWithSiteLeanPagedResponse,
 } from "../dto/feedDto";
+import {
+  AdminFeedSearchField,
+  AdminFeedSort,
+  AdminFeedSortOrder,
+} from "@/features/admin/feeds/types";
 
 /**
  * FeedRepository
@@ -96,47 +101,117 @@ export class FeedRepository {
   /**
    * Feed 목록 조회 (페이지네이션 + 검색)
    *
-   * @param params.page 페이지 번호
-   * @param params.limit 페이지 크기
-   * @param params.search feedUrl / categories 검색
    */
   async findAllPaginated(params: {
     page: number;
     limit: number;
     search?: string;
+    searchField?: AdminFeedSearchField;
+    sort?: AdminFeedSort;
+    sortOrder?: AdminFeedSortOrder;
   }): Promise<FeedWithSiteLeanPagedResponse> {
-    const { page, limit, search } = params;
+    const {
+      page,
+      limit,
+      search,
+      searchField = "siteName",
+      sort = "siteName",
+      sortOrder = "desc",
+    } = params;
 
     const skip = (page - 1) * limit;
 
-    const filter = search
-      ? {
-          $or: [
-            { feedUrl: { $regex: search, $options: "i" } },
-            { categories: { $regex: search, $options: "i" } },
-          ],
-        }
-      : {};
+    const searchMap = {
+      siteName: "site.name",
+      siteUrl: "site.url",
+      status: "status",
+      category: "categories",
+    } as const;
 
-    const [items, totalCount] = await Promise.all([
-      FeedModel.find(filter)
-        .populate({
-          path: "siteId",
-          select: "name url favicon_url feed_url",
-        })
-        .sort({ createdAt: -1 })
-        .skip(skip)
-        .limit(limit)
-        .lean<FeedWithSiteLean[]>()
-        .exec(),
+    const mongoOrder = sortOrder === "asc" ? 1 : -1;
 
-      FeedModel.countDocuments(filter),
+    const sortMap = {
+      siteName: { "site.name": mongoOrder },
+      feedUrl: { feedUrl: mongoOrder },
+      status: { status: mongoOrder },
+      errorCount: { errorCount: mongoOrder },
+      lastFetchedAt: { lastFetchedAt: mongoOrder },
+      createdAt: { createdAt: mongoOrder },
+    } as const;
+
+    const matchStage =
+      search && search.trim().length > 0
+        ? {
+            [searchMap[searchField]]: {
+              $regex: search,
+              $options: "i",
+            },
+          }
+        : {};
+
+    const basePipeline = [
+      {
+        $lookup: {
+          from: "sites",
+          localField: "siteId",
+          foreignField: "_id",
+          as: "site",
+        },
+      },
+      {
+        $unwind: "$site",
+      },
+      {
+        $match: matchStage,
+      },
+    ];
+
+    const [items, countResult] = await Promise.all([
+      FeedModel.aggregate<FeedWithSiteLean>([
+        ...basePipeline,
+        {
+          $sort: sortMap[sort],
+        },
+        {
+          $skip: skip,
+        },
+        {
+          $limit: limit,
+        },
+        {
+          $project: {
+            _id: 1,
+            feedUrl: 1,
+            status: 1,
+            lastFetchedAt: 1,
+            etag: 1,
+            lastModified: 1,
+            errorCount: 1,
+            categories: 1,
+            createdAt: 1,
+            updatedAt: 1,
+            siteId: {
+              _id: "$site._id",
+              name: "$site.name",
+              url: "$site.url",
+              favicon_url: "$site.favicon_url",
+              feed_url: "$site.feed_url",
+            },
+          },
+        },
+      ]),
+
+      FeedModel.aggregate([
+        ...basePipeline,
+        {
+          $count: "totalCount",
+        },
+      ]),
     ]);
 
-    // orphan 데이터 처리 방법을 추가해야 함
     return {
-      items: items.filter((f) => f.siteId !== null),
-      totalCount,
+      items,
+      totalCount: countResult[0]?.totalCount ?? 0,
     };
   }
 }

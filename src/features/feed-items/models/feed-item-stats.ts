@@ -76,8 +76,6 @@ const FeedItemStatsSchema = new Schema<FeedItemStatsDocument>(
       type: Schema.Types.ObjectId,
       ref: "FeedItem",
       required: true,
-      unique: true,
-      index: true,
     },
 
     contentClickCount: {
