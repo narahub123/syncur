@@ -1,10 +1,13 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import AdminPageSizeSelect from "../../components/AdminPageSizeSelect";
 import AdminSearchFieldSelect from "../../components/AdminSearchFieldSelect";
 import AdminSearchInput from "../../components/AdminSearchInput";
 import { ADMIN_FEED_PAGE_SIZE_OPTIONS } from "../constants/adminFeedPageSize";
 import { ADMIN_FEED_SEARCH_FIELD_OPTIONS } from "../constants/adminFeedSearchField";
-
 import { AdminFeedsQuery } from "../types";
+import { useDebounce } from "@/shared/hooks/useDebounce";
 
 type Props = {
   query: AdminFeedsQuery;
@@ -12,6 +15,23 @@ type Props = {
 };
 
 const AdminFeedTableToolbar = ({ query, onChange }: Props) => {
+  // 1. input local state
+  const [search, setSearch] = useState(query.search);
+
+  // 2. debounce
+  const debouncedSearch = useDebounce(search, 300);
+
+  // 3. debounce 이후 query 반영
+  useEffect(() => {
+    if (debouncedSearch === query.search) return;
+
+    onChange({
+      ...query,
+      search: debouncedSearch,
+      page: 1,
+    });
+  }, [debouncedSearch, onChange]);
+
   return (
     <div className="flex items-center justify-between px-2">
       <div className="flex items-center gap-2">
@@ -20,10 +40,8 @@ const AdminFeedTableToolbar = ({ query, onChange }: Props) => {
           options={ADMIN_FEED_SEARCH_FIELD_OPTIONS}
           onChange={(v) => onChange({ ...query, searchField: v, page: 1 })}
         />
-        <AdminSearchInput
-          value={query.search}
-          onChange={(v) => onChange({ ...query, search: v, page: 1 })}
-        />
+
+        <AdminSearchInput value={search} onChange={(v) => setSearch(v)} />
       </div>
 
       <AdminPageSizeSelect

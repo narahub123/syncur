@@ -1,10 +1,13 @@
 import { FeedWithSiteDto } from "@/features/feeds/dto/feedDto";
+import { AdminFeedStatusSelect } from "../components/AdminFeedStatusSelect";
+import AdminFeedErrorCountInput from "../components/AdminFeedErrorCountInput";
+import AdminFeedSiteLink from "../components/AdminFeedSiteLink";
 
 export const adminFeedTableColumns = [
   {
     key: "siteName",
     header: "사이트",
-    render: (feed: FeedWithSiteDto) => feed.site.name,
+    render: (feed: FeedWithSiteDto) => <AdminFeedSiteLink feed={feed} />,
   },
   {
     key: "feedUrl",
@@ -14,12 +17,12 @@ export const adminFeedTableColumns = [
   {
     key: "status",
     header: "상태",
-    render: (feed: FeedWithSiteDto) => feed.status,
+    render: (feed: FeedWithSiteDto) => <AdminFeedStatusSelect feed={feed} />,
   },
   {
     key: "errorCount",
     header: "에러",
-    render: (feed: FeedWithSiteDto) => feed.errorCount,
+    render: (feed: FeedWithSiteDto) => <AdminFeedErrorCountInput feed={feed} />,
   },
   {
     key: "lastFetchedAt",

@@ -1,13 +1,14 @@
 import { feedRepository } from "../repository/FeedRepository.instance";
-import { Feed } from "@/shared/types/feed";
+import { Feed, FeedStatus } from "@/shared/types/feed";
 import { getFeedItems } from "./getMyFeedItems/getFeedItems";
 import { FeedLean, SiteLean } from "@/shared/types/domain-leans";
 import { toFeed } from "../mapper/toFeed";
-import { FeedWithSiteDtoPagedResponse } from "../dto/feedDto";
+import { FeedDto, FeedWithSiteDtoPagedResponse } from "../dto/feedDto";
 import { toFeedWithSiteDto } from "../mapper/toFeedWithSiteDto";
 import { ADMIN_CONFIG } from "@/features/admin/constants/admin-config";
 import { PAGINATION } from "@/shared/constants/pagination";
 import { AdminFeedsQuery } from "@/features/admin/feeds/types";
+import { toFeedDto } from "../mapper/toFeedDto";
 
 export class FeedService {
   async ensureFeed(site: SiteLean): Promise<Feed | null> {
@@ -63,5 +64,31 @@ export class FeedService {
         totalPages,
       },
     };
+  }
+
+  async changeStatus(
+    feedId: string,
+    status: FeedStatus,
+  ): Promise<FeedDto | null> {
+    const feed = await feedRepository.updateStatus(feedId, status);
+
+    if (!feed) {
+      throw new Error("Feed not found");
+    }
+
+    return toFeedDto(feed);
+  }
+
+  async changeErrorCount(
+    feedId: string,
+    errorCount: number,
+  ): Promise<FeedDto | null> {
+    const feed = await feedRepository.updateErrorCount(feedId, errorCount);
+
+    if (!feed) {
+      throw new Error("Feed not found");
+    }
+
+    return toFeedDto(feed);
   }
 }

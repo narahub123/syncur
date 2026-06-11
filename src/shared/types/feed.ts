@@ -1,3 +1,5 @@
+import { FEED_STATUS } from "@/features/feeds/constants/feed-status";
+
 export type FeedItem = {
   _id: string;
 
@@ -23,7 +25,7 @@ export type FeedItem = {
   updatedAt: Date;
 };
 
-export type FeedStatus = "active" | "disabled";
+export type FeedStatus = (typeof FEED_STATUS)[keyof typeof FEED_STATUS];
 
 export type Feed = {
   id: string;

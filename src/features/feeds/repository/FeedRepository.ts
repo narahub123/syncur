@@ -11,6 +11,7 @@ import {
   AdminFeedSort,
 } from "@/features/admin/feeds/types";
 import { SortOrder } from "@/shared/types/pagination";
+import { FeedStatus } from "@/shared/types/feed";
 
 /**
  * FeedRepository
@@ -213,5 +214,24 @@ export class FeedRepository {
       items,
       totalCount: countResult[0]?.totalCount ?? 0,
     };
+  }
+
+  async updateStatus(feedId: string, status: FeedStatus): Promise<FeedLean> {
+    return FeedModel.findByIdAndUpdate(
+      feedId,
+      { status },
+      { new: true },
+    ).lean();
+  }
+
+  async updateErrorCount(
+    feedId: string,
+    errorCount: number,
+  ): Promise<FeedLean> {
+    return FeedModel.findByIdAndUpdate(
+      feedId,
+      { errorCount },
+      { new: true },
+    ).lean();
   }
 }
