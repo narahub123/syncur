@@ -1,6 +1,10 @@
-import { UserLean } from "@/shared/types/domain-leans";
 import { UserRepository } from "../repositories/UserRepository";
 import { connectMongo } from "@/shared/lib/db/mongoose";
+import { UserDto, UserDtoPagedResponse } from "../dto/userDto";
+import { toUserDto } from "../mappers/toUserDto";
+import { PaginationParams } from "@/shared/types/pagination";
+import { ADMIN_CONFIG } from "@/features/admin/constants/admin-config";
+import { PAGINATION } from "@/shared/constants/pagination";
 
 /**
  * User Service
@@ -17,12 +21,14 @@ export class UserService {
    * 이메일로 사용자 조회
    *
    * @param email 사용자 이메일
-   * @returns UserLean | null
+   * @returns UserDto | null
    */
-  async getUserByEmail(email: string): Promise<UserLean | null> {
+  async getUserByEmail(email: string): Promise<UserDto | null> {
     await connectMongo();
 
-    return this.userRepository.findByEmail(email);
+    const lean = await this.userRepository.findByEmail(email);
+
+    return lean ? toUserDto(lean) : null;
   }
 
   /**
@@ -33,9 +39,81 @@ export class UserService {
    * - onboardingCompletedAt = 현재 시간
    *
    * @param email 사용자 이메일
-   * @returns 업데이트된 UserLean | null
+   * @returns 업데이트된 UserDto | null
    */
-  async completeInterestOnboarding(email: string): Promise<UserLean | null> {
-    return this.userRepository.completeInterestOnboarding(email);
+  async completeInterestOnboarding(email: string): Promise<UserDto | null> {
+    const lean = await this.userRepository.completeInterestOnboarding(email);
+    return lean ? toUserDto(lean) : null;
+  }
+
+  /**
+   * 전체 사용자 목록 조회
+   *
+   * admin 페이지에서 사용자 리스트 출력용
+   *
+   * 특징:
+   * - repository layer를 통해 DB 접근
+   * - lean 기반 경량 조회
+   */
+  async getAllUsers(): Promise<UserDto[]> {
+    const leans = await this.userRepository.findAll();
+    return leans.map(toUserDto);
+  }
+
+  /**
+   * ID로 사용자 조회
+   *
+   * @param userId 사용자 ObjectId
+   * @returns UserDto | null
+   */
+  async getUserById(userId: string): Promise<UserDto | null> {
+    const lean = await this.userRepository.findById(userId);
+    return lean ? toUserDto(lean) : null;
+  }
+
+  /**
+   * 사용자 권한(role) 변경
+   *
+   * @param userId 사용자 ObjectId
+   * @param role 변경할 role (user | admin)
+   * @returns 업데이트된 UserDto | null
+   */
+  async updateUserRole(
+    userId: string,
+    role: UserDto["role"],
+  ): Promise<UserDto | null> {
+    const lean = await this.userRepository.updateRole(userId, role);
+    return lean ? toUserDto(lean) : null;
+  }
+
+  /**
+   * 사용자 목록 조회 (페이지네이션 + 검색)
+   *
+   * - admin 리스트용
+   * - pagination meta 포함 응답 생성
+   */
+  async getUsersPaginated(
+    params: PaginationParams & { search?: string },
+  ): Promise<UserDtoPagedResponse> {
+    const page = params.page ?? PAGINATION.DEFAULT_PAGE;
+    const limit = params.limit ?? ADMIN_CONFIG.USERS.PAGINATION_LIMIT;
+
+    const { items, totalCount } = await this.userRepository.findAllPaginated({
+      page,
+      limit,
+      search: params.search,
+    });
+
+    const totalPages = Math.max(Math.ceil(totalCount / limit), 0);
+
+    return {
+      items: items.map(toUserDto),
+      pagination: {
+        page,
+        limit,
+        totalCount,
+        totalPages,
+      },
+    };
   }
 }

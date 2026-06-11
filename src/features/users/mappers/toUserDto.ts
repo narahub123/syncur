@@ -1,0 +1,33 @@
+import { UserLean } from "@/shared/types/domain-leans";
+import { UserDto } from "../dto/userDto";
+
+/**
+ * User -> UserResponse DTO Mapper
+ *
+ * - MongoDB Lean Object를
+ * - Frontend-safe Response 형태로 변환
+ *
+ * 변환 규칙:
+ * - _id -> id (string)
+ * - Date -> ISO string
+ * - 그대로 사용 가능한 필드는 유지
+ */
+export function toUserDto(user: UserLean): UserDto {
+  return {
+    id: user._id.toString(),
+
+    name: user.name,
+    email: user.email,
+
+    emailVerified: user.emailVerified ? user.emailVerified.toISOString() : null,
+
+    image: user.image,
+
+    onboardingCompleted: user.onboardingCompleted,
+    onboardingCompletedAt: user.onboardingCompletedAt
+      ? user.onboardingCompletedAt.toISOString()
+      : null,
+
+    role: user.role,
+  };
+}

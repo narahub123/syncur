@@ -1,0 +1,7 @@
+const ADMIN_USER_CONFIG = {
+  PAGINATION_LIMIT: 20,
+};
+
+export const ADMIN_CONFIG = {
+  USERS: ADMIN_USER_CONFIG,
+};
