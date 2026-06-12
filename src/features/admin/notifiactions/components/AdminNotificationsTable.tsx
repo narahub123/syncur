@@ -16,6 +16,7 @@ import { useRouter } from "next/navigation";
 import { cn } from "@/shared/utils/cn";
 import { NotificationWithSiteAndFeedExecutionLogDto } from "@/features/notifications/dtos/notificationDto";
 import { adminNotificationTableColumns } from "../constants/adminNotificationsTable";
+import { useMarkNotificationAsReadMutation } from "../hooks/useMarkNotificationAsReadMutation";
 
 type Props = {
   notifications: NotificationWithSiteAndFeedExecutionLogDto[];
@@ -50,6 +51,14 @@ export default function AdminNotificationTable({
       sortOrder: "asc",
       page: 1,
     });
+  };
+
+  const readMutation = useMarkNotificationAsReadMutation();
+
+  const handleRowClick = (notificationId: string) => {
+    readMutation.mutate(notificationId);
+
+    router.push(`/admin/notifications/${notificationId}`);
   };
 
   return (
@@ -126,9 +135,7 @@ export default function AdminNotificationTable({
               <TableRow
                 key={notification._id}
                 className="max-w-2xl cursor-pointer xl:max-w-6xl"
-                onClick={() =>
-                  router.push(`/admin/notifications/${notification._id}`)
-                }
+                onClick={() => handleRowClick(notification._id)}
               >
                 {adminNotificationTableColumns.map((col) => (
                   <TableCell

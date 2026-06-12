@@ -84,8 +84,8 @@ export async function fetchRSS(feed: FeedLean): Promise<FetchRSSResult> {
        */
       const res = await axios.get(feed.feedUrl, {
         signal: controller.signal,
-        validateStatus: (status) =>
-          (status >= 200 && status < 300) || status === 304,
+        // validateStatus: (status) =>
+        //   (status >= 200 && status < 300) || status === 304,
         headers: {
           "User-Agent": RSS_CONFIG.RSS_USER_AGENT,
           Accept: RSS_CONFIG.RSS_ACCEPT,

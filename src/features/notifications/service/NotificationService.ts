@@ -96,8 +96,14 @@ export class NotificationService {
   /**
    * 알림 읽음 처리
    */
-  async markAsRead(id: Types.ObjectId): Promise<NotificationDto | null> {
-    const notification = await this.notificationRepository.markAsRead(id);
+  async markAsRead(
+    id: Types.ObjectId | string,
+    userId: Types.ObjectId | string,
+  ): Promise<NotificationDto | null> {
+    const notification = await this.notificationRepository.markAsRead(
+      id,
+      userId,
+    );
 
     if (!notification) {
       return null;
@@ -109,7 +115,7 @@ export class NotificationService {
   /**
    * 사용자 전체 알림 읽음 처리
    */
-  async markAllAsRead(userId: Types.ObjectId): Promise<number> {
+  async markAllAsRead(userId: Types.ObjectId | string): Promise<number> {
     return this.notificationRepository.markAllAsRead(userId);
   }
 
@@ -163,6 +169,7 @@ export class NotificationService {
           metadata: {
             feedId: toObjectId(params.feedId),
             feedExecutionLogId: toObjectId(params.feedExecutionLogId),
+            siteId: toObjectId(params.siteId),
           },
         }),
       ),

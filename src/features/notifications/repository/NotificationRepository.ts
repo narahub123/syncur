@@ -7,6 +7,7 @@ import {
 import { CreateNotificationDto } from "../types";
 import { NotificationModel } from "../model/notification";
 import { AdminNotificationsQuery } from "@/features/admin/notifiactions/types";
+import { toObjectId } from "@/shared/utils/toObjectId";
 
 /**
  * Notification Repository
@@ -76,14 +77,17 @@ export class NotificationRepository {
   /**
    * 알림 읽음 처리
    */
-  async markAsRead(id: Types.ObjectId): Promise<NotificationLean | null> {
+  async markAsRead(
+    id: Types.ObjectId | string,
+    userId: Types.ObjectId | string,
+  ): Promise<NotificationLean | null> {
     return NotificationModel.findByIdAndUpdate(
-      id,
+      { _id: toObjectId(id), userId: toObjectId(userId) },
       {
-        isRead: true,
+        $set: { isRead: true },
       },
       {
-        new: true,
+        returnDocument: "after",
       },
     ).lean();
   }
@@ -91,7 +95,7 @@ export class NotificationRepository {
   /**
    * 사용자 전체 알림 읽음 처리
    */
-  async markAllAsRead(userId: Types.ObjectId): Promise<number> {
+  async markAllAsRead(userId: Types.ObjectId | string): Promise<number> {
     const result = await NotificationModel.updateMany(
       {
         userId,
