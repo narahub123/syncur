@@ -129,6 +129,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         {
           $set: {
             role: USER_ROLE.USER,
+            onboardingCompleted: false,
+            onboardingCompletedAt: null,
             createdAt: new Date(),
             updatedAt: new Date(),
           },

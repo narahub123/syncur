@@ -22,6 +22,8 @@ const FeedPage = async () => {
    */
   const isFirstLogin = user?.onboardingCompleted === false;
 
+  console.log("온보딩완료?", isFirstLogin);
+
   return <FeedClient isFirstLogin={isFirstLogin} />;
 };
 
