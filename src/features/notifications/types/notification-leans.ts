@@ -1,6 +1,8 @@
 import { Types } from "mongoose";
 import { NotificationTarget } from "../constants/notification-target";
 import { NotificationType } from "../constants/notification-type";
+import { FeedExecutionLogLean } from "@/features/feed-execution-logs/types/lean";
+import { SiteLean } from "@/shared/types/domain-leans";
 
 /**
  * Notification 관련 리소스 정보
@@ -24,7 +26,7 @@ export interface NotificationMetadataLean {
   /**
    * 관련 RSS 실행 로그 ID
    */
-  executionId?: string;
+  feedExecutionLogId?: Types.ObjectId;
 }
 
 /**
@@ -83,4 +85,50 @@ export interface NotificationLean {
    * 수정일시
    */
   updatedAt: Date;
+}
+
+/**
+ * Notification 페이지 응답
+ */
+export interface NotificationLeanPagedResponse {
+  items: NotificationLean[];
+  totalCount: number;
+}
+
+/**
+ * 관리자 알림 목록 조회용
+ *
+ * Notification
+ * + Site
+ * + FeedExecutionLog
+ */
+export interface NotificationWithSiteAndFeedExecutionLogLean extends NotificationLean {
+  /**
+   * 관련 사이트
+   */
+  site: Pick<SiteLean, "_id" | "name" | "url" | "favicon_url"> | null;
+
+  /**
+   * 관련 실행 로그
+   */
+  feedExecutionLog: Pick<
+    FeedExecutionLogLean,
+    | "_id"
+    | "executionId"
+    | "status"
+    | "reason"
+    | "error"
+    | "failedAtStage"
+    | "startedAt"
+    | "finishedAt"
+    | "durationMs"
+  > | null;
+}
+
+/**
+ * Notification 페이지 응답
+ */
+export interface NotificationWithSiteAndFeedExecutionLogLeanPagedResponse {
+  items: NotificationWithSiteAndFeedExecutionLogLean[];
+  totalCount: number;
 }

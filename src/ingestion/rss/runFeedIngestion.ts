@@ -11,12 +11,14 @@ import {
   FEED_EXECUTION_STATUS,
   FeedExecutionStage,
 } from "@/features/feed-execution-logs/constants/feed-execution-log";
+import { notificationService } from "@/features/notifications/service/NotificationService.instance";
 
 export async function runFeedIngestion(feed: FeedLean) {
   const feedId = feed._id.toString();
 
   const execution = await feedExecutionLogService.startExecution(feedId);
   const executionId = execution.executionId;
+  const feedExecutionLogId = execution.id;
 
   /**
    * 현재 stage 추적용 변수 (핵심)
@@ -144,6 +146,18 @@ export async function runFeedIngestion(feed: FeedLean) {
         type: errorType,
         message: err instanceof Error ? err.message : String(err),
       },
+    });
+
+    /**
+     * RSS 실행 중 에러가 발생한 경우
+     * 모든 관리자에게 알림을 전송한다.
+     */
+    await notificationService.createAdminErrorNotification({
+      siteId: feed.siteId.toString(),
+      feedId,
+      feedExecutionLogId,
+      stage: currentStage,
+      errorMessage: err instanceof Error ? err.message : String(err),
     });
 
     /**

@@ -1,7 +1,7 @@
 import { UserRepository } from "../repositories/UserRepository";
 import { connectMongo } from "@/shared/lib/db/mongoose";
 import { UserDto, UserDtoPagedResponse } from "../dto/userDto";
-import { toUserDto } from "../mappers/toUserDto";
+import { toUserDto, toUserDtos } from "../mappers/toUserDto";
 import { ADMIN_CONFIG } from "@/features/admin/constants/admin-config";
 import { PAGINATION } from "@/shared/constants/pagination";
 import { AdminUsersQuery } from "@/features/admin/users/types";
@@ -129,5 +129,14 @@ export class UserService {
         totalPages,
       },
     };
+  }
+
+  /**
+   * 관리자 목록 조회
+   */
+  async findAdmins(): Promise<UserDto[]> {
+    const admins = await this.userRepository.findAdmins();
+
+    return toUserDtos(admins);
   }
 }

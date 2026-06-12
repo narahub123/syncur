@@ -1,7 +1,12 @@
 import { Types } from "mongoose";
-import { NotificationLean } from "../types/notification-leans";
+import {
+  NotificationLean,
+  NotificationWithSiteAndFeedExecutionLogLean,
+  NotificationWithSiteAndFeedExecutionLogLeanPagedResponse,
+} from "../types/notification-leans";
 import { CreateNotificationDto } from "../types";
 import { NotificationModel } from "../model/notification";
+import { AdminNotificationsQuery } from "@/features/admin/notifiactions/types";
 
 /**
  * Notification Repository
@@ -111,5 +116,161 @@ export class NotificationRepository {
     });
 
     return result.deletedCount > 0;
+  }
+
+  /**
+   * 관리자 알림 목록 조회
+   *
+   * 페이지네이션 + 검색 + 정렬
+   */
+  /**
+   * 관리자 알림 목록 조회
+   *
+   * 페이지네이션 + 검색 + 정렬
+   */
+  async findAllPaginated(
+    params: AdminNotificationsQuery,
+  ): Promise<NotificationWithSiteAndFeedExecutionLogLeanPagedResponse> {
+    const {
+      page,
+      limit,
+      search,
+      searchField = "title",
+      sort = "createdAt",
+      sortOrder = "desc",
+    } = params;
+
+    const skip = (page - 1) * limit;
+
+    const mongoOrder = sortOrder === "asc" ? 1 : -1;
+
+    const sortMap = {
+      title: { title: mongoOrder },
+      type: { type: mongoOrder },
+      isRead: { isRead: mongoOrder },
+      createdAt: { createdAt: mongoOrder },
+    } as const;
+
+    const matchStage =
+      search && search.trim().length > 0
+        ? {
+            [searchField]: {
+              $regex: search,
+              $options: "i",
+            },
+          }
+        : {};
+
+    /**
+     * Site + FeedExecutionLog JOIN
+     */
+    const basePipeline = [
+      {
+        $lookup: {
+          from: "sites",
+          localField: "metadata.siteId",
+          foreignField: "_id",
+          as: "site",
+        },
+      },
+      {
+        $unwind: {
+          path: "$site",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+
+      {
+        $lookup: {
+          from: "feedexecutionlogs",
+          localField: "metadata.feedExecutionLogId",
+          foreignField: "_id",
+          as: "feedExecutionLog",
+        },
+      },
+      {
+        $unwind: {
+          path: "$feedExecutionLog",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+
+      ...(Object.keys(matchStage).length ? [{ $match: matchStage }] : []),
+    ];
+
+    const [items, countResult] = await Promise.all([
+      NotificationModel.aggregate<NotificationWithSiteAndFeedExecutionLogLean>([
+        ...basePipeline,
+
+        {
+          $sort: sortMap[sort],
+        },
+
+        {
+          $skip: skip,
+        },
+
+        {
+          $limit: limit,
+        },
+
+        {
+          $project: {
+            _id: 1,
+
+            userId: 1,
+            target: 1,
+            type: 1,
+
+            title: 1,
+            message: 1,
+
+            isRead: 1,
+
+            metadata: 1,
+
+            createdAt: 1,
+            updatedAt: 1,
+
+            site: {
+              _id: "$site._id",
+              name: "$site.name",
+              url: "$site.url",
+              favicon_url: "$site.favicon_url",
+            },
+
+            feedExecutionLog: {
+              _id: "$feedExecutionLog._id",
+              executionId: "$feedExecutionLog.executionId",
+
+              status: "$feedExecutionLog.status",
+              reason: "$feedExecutionLog.reason",
+
+              failedAtStage: "$feedExecutionLog.failedAtStage",
+
+              error: "$feedExecutionLog.error",
+
+              startedAt: "$feedExecutionLog.startedAt",
+
+              finishedAt: "$feedExecutionLog.finishedAt",
+
+              durationMs: "$feedExecutionLog.durationMs",
+            },
+          },
+        },
+      ]),
+
+      NotificationModel.aggregate([
+        ...basePipeline,
+        {
+          $count: "totalCount",
+        },
+      ]),
+    ]);
+
+    return {
+      items,
+      totalCount: countResult[0]?.totalCount ?? 0,
+    };
   }
 }

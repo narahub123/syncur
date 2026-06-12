@@ -36,7 +36,8 @@ export function toNotificationDto(
           feedId: notification.metadata.feedId?.toString(),
           postId: notification.metadata.postId?.toString(),
           siteId: notification.metadata.siteId?.toString(),
-          executionId: notification.metadata.executionId,
+          feedExecutionLogId:
+            notification.metadata.feedExecutionLogId?.toString(),
         }
       : undefined,
 

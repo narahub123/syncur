@@ -134,9 +134,9 @@ const NotificationSchema = new Schema<NotificationDocument>(
         ref: "Feed",
       },
 
-      postId: {
+      feedItemId: {
         type: Schema.Types.ObjectId,
-        ref: "Post",
+        ref: "FeedItem",
       },
 
       siteId: {
@@ -144,8 +144,9 @@ const NotificationSchema = new Schema<NotificationDocument>(
         ref: "Site",
       },
 
-      executionId: {
-        type: String,
+      feedExecutionLogId: {
+        type: Schema.Types.ObjectId,
+        ref: "feedExecutionLog",
       },
     },
   },

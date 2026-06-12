@@ -1,5 +1,12 @@
+import { PaginatedResponse } from "@/shared/types/pagination";
 import { NotificationTarget } from "../constants/notification-target";
 import { NotificationType } from "../constants/notification-type";
+import {
+  FeedExecutionErrorType,
+  FeedExecutionReason,
+  FeedExecutionStage,
+  FeedExecutionStatus,
+} from "@/features/feed-execution-logs/constants/feed-execution-log";
 
 /**
  * Notification 관련 리소스 정보
@@ -23,7 +30,7 @@ export interface NotificationMetadataDto {
   /**
    * 관련 RSS 실행 로그 ID
    */
-  executionId?: string;
+  feedExecutionLogId?: string;
 }
 
 /**
@@ -82,3 +89,50 @@ export interface NotificationDto {
    */
   updatedAt: string;
 }
+
+export type NotificationDtoPagedResponse = PaginatedResponse<NotificationDto>;
+
+/**
+ * 관리자 알림 목록 조회용 DTO
+ */
+export interface NotificationWithSiteAndFeedExecutionLogDto extends NotificationDto {
+  /**
+   * 관련 사이트
+   */
+  site: {
+    _id: string;
+    name: string;
+    url: string;
+    faviconUrl: string | null;
+  } | null;
+
+  /**
+   * 관련 실행 로그
+   */
+  feedExecutionLog: {
+    _id: string;
+    executionId: string;
+
+    status: FeedExecutionStatus;
+    reason?: FeedExecutionReason | null;
+
+    failedAtStage?: FeedExecutionStage | null;
+
+    error?: {
+      type?: FeedExecutionErrorType | null;
+      message?: string | null;
+    };
+
+    startedAt?: string;
+    finishedAt?: string;
+
+    durationMs?: number | null;
+  } | null;
+}
+
+/**
+ * Notification 페이지 응답 DTO
+ */
+
+export type NotificationWithSiteAndFeedExecutionLogDtoPagedResponse =
+  PaginatedResponse<NotificationWithSiteAndFeedExecutionLogDto>;

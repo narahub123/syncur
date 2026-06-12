@@ -6,6 +6,7 @@ import {
   AdminUserSort,
 } from "@/features/admin/users/types";
 import { SortOrder } from "@/shared/types/pagination";
+import { USER_ROLE } from "../constants/user-role";
 
 /**
  * User Repository
@@ -180,5 +181,13 @@ export class UserRepository {
       items,
       totalCount,
     };
+  }
+  /**
+   * 관리자 목록 조회
+   */
+  async findAdmins(): Promise<UserLean[]> {
+    return User.find({
+      role: USER_ROLE.ADMIN,
+    }).lean();
   }
 }

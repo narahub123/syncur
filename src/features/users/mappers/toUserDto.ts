@@ -34,3 +34,7 @@ export function toUserDto(user: UserLean): UserDto {
     updatedAt: user.updatedAt?.toISOString() ?? "",
   };
 }
+
+export function toUserDtos(users: UserLean[]): UserDto[] {
+  return users.map(toUserDto);
+}

@@ -47,6 +47,14 @@ export class FeedExecutionLogService {
     });
 
     return {
+      /**
+       * FeedExecutionLog ID
+       */
+      id: doc._id.toString(),
+
+      /**
+       * 외부 노출용 실행 ID
+       */
       executionId: doc.executionId,
     };
   }

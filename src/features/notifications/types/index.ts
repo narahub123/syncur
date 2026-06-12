@@ -17,7 +17,7 @@ export interface NotificationMetadata {
   /**
    * 관련 게시글 ID
    */
-  postId?: Types.ObjectId;
+  feedItemId?: Types.ObjectId;
 
   /**
    * 관련 사이트 ID
@@ -27,7 +27,7 @@ export interface NotificationMetadata {
   /**
    * 관련 RSS 실행 로그 ID
    */
-  executionId?: string;
+  feedExecutionLogId?: Types.ObjectId;
 }
 
 /**

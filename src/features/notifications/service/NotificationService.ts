@@ -1,11 +1,27 @@
 import { Types } from "mongoose";
 import { NotificationRepository } from "../repository/NotificationRepository";
-import { NotificationDto } from "../dtos/notificationDto";
+import {
+  NotificationDto,
+  NotificationWithSiteAndFeedExecutionLogDtoPagedResponse,
+} from "../dtos/notificationDto";
 import { CreateNotificationDto } from "../types";
 import {
   toNotificationDto,
   toNotificationDtos,
 } from "../mappers/toNotificationDto";
+import {
+  FEED_EXECUTION_STAGE,
+  FeedExecutionStage,
+} from "@/features/feed-execution-logs/constants/feed-execution-log";
+import { NOTIFICATION_TARGET } from "../constants/notification-target";
+import { NOTIFICATION_TYPE } from "../constants/notification-type";
+import { UserService } from "@/features/users/services/UserService";
+
+import { PAGINATION } from "@/shared/constants/pagination";
+import { ADMIN_CONFIG } from "@/features/admin/constants/admin-config";
+import { toObjectId } from "@/shared/utils/toObjectId";
+import { toNotificationWithSiteAndFeedExecutionLogDtoS } from "../mappers/toNotificationWithSiteAndFeedExecutionLogDto";
+import { AdminNotificationsQuery } from "@/features/admin/notifiactions/types";
 
 /**
  * Notification Service
@@ -15,6 +31,7 @@ import {
 export class NotificationService {
   constructor(
     private readonly notificationRepository: NotificationRepository,
+    private readonly userService: UserService,
   ) {}
 
   /**
@@ -101,5 +118,79 @@ export class NotificationService {
    */
   async deleteById(id: Types.ObjectId): Promise<boolean> {
     return this.notificationRepository.deleteById(id);
+  }
+
+  /**
+   * 관리자 에러 알림 생성
+   *
+   * RSS 수집 과정에서 에러가 발생한 경우
+   * 모든 관리자에게 알림을 전송한다.
+   */
+  async createAdminErrorNotification(params: {
+    siteId: string;
+    feedId: string;
+    feedExecutionLogId: string;
+    stage: FeedExecutionStage;
+    errorMessage: string;
+  }): Promise<void> {
+    const admins = await this.userService.findAdmins();
+
+    const title =
+      params.stage === FEED_EXECUTION_STAGE.FETCH
+        ? "RSS 수집 실패"
+        : params.stage === FEED_EXECUTION_STAGE.PARSE
+          ? "RSS 파싱 실패"
+          : "RSS 저장 실패";
+
+    const message = [
+      `Feed ID: ${params.feedId}`,
+      `Stage: ${params.stage}`,
+      `Error: ${params.errorMessage}`,
+    ].join("\n");
+
+    await Promise.all(
+      admins.map((admin) =>
+        this.notificationRepository.create({
+          userId: toObjectId(admin._id),
+
+          target: NOTIFICATION_TARGET.ADMIN,
+
+          type: NOTIFICATION_TYPE.RSS_FAILED,
+
+          title,
+          message,
+
+          metadata: {
+            feedId: toObjectId(params.feedId),
+            feedExecutionLogId: toObjectId(params.feedExecutionLogId),
+          },
+        }),
+      ),
+    );
+  }
+
+  /**
+   * 관리자 알림 목록 조회
+   */
+  async findAllPaginated(
+    query: AdminNotificationsQuery,
+  ): Promise<NotificationWithSiteAndFeedExecutionLogDtoPagedResponse> {
+    const page = query.page ?? PAGINATION.DEFAULT_PAGE;
+    const limit = query.limit ?? ADMIN_CONFIG.NOTIFICATIONS.PAGINATION_LIMIT;
+
+    const { items, totalCount } =
+      await this.notificationRepository.findAllPaginated(query);
+
+    const totalPages = Math.max(Math.ceil(totalCount / limit), 0);
+
+    return {
+      items: toNotificationWithSiteAndFeedExecutionLogDtoS(items),
+      pagination: {
+        page,
+        limit,
+        totalCount,
+        totalPages,
+      },
+    };
   }
 }
