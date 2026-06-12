@@ -10,6 +10,8 @@ export type AdminNotificationSearchField = "title" | "message" | "type";
  */
 export type AdminNotificationSort = "title" | "type" | "isRead" | "createdAt";
 
+export type AdminNotificationPageSize = 10 | 20 | 50 | 100;
+
 /**
  * 관리자 알림 조회 Query
  */
@@ -17,8 +19,8 @@ export interface AdminNotificationsQuery {
   page: number;
   limit: number;
 
-  search?: string;
-  searchField?: AdminNotificationSearchField;
+  search: string;
+  searchField: AdminNotificationSearchField;
 
   sort?: AdminNotificationSort;
   sortOrder?: SortOrder;

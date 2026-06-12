@@ -30,6 +30,7 @@ export const ROUTES = {
   ADMIN_RSS: "/admin/rss",
   ADMIN_FEEDS: "/admin/feeds",
   ADMIN_LOGS: "/admin/logs",
+  ADMIN_NOTIFICATIONS: "/admin/notifications",
 } as const;
 
 /**
