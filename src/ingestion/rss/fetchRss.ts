@@ -1,6 +1,6 @@
 import axios from "axios";
 import { RSS_CONFIG } from "./rss-config";
-import { FeedDocument } from "@/features/feeds/model/feed";
+import { FeedLean } from "@/shared/types/domain-leans";
 
 /**
  * retry 가능한 에러인지 판단
@@ -68,7 +68,7 @@ export type FetchRSSResult =
  * - If-Modified-Since → Last-Modified 기반
  * - 304 → 데이터 변경 없음 → ingestion skip
  */
-export async function fetchRSS(feed: FeedDocument): Promise<FetchRSSResult> {
+export async function fetchRSS(feed: FeedLean): Promise<FetchRSSResult> {
   let lastError: unknown;
 
   for (let attempt = 0; attempt < RSS_CONFIG.MAX_RETRY_COUNT; attempt++) {

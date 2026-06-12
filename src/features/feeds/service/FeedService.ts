@@ -9,6 +9,7 @@ import { ADMIN_CONFIG } from "@/features/admin/constants/admin-config";
 import { PAGINATION } from "@/shared/constants/pagination";
 import { AdminFeedsQuery } from "@/features/admin/feeds/types";
 import { toFeedDto } from "../mapper/toFeedDto";
+import { RSS_CONFIG } from "@/ingestion/rss/rss-config";
 
 export class FeedService {
   async ensureFeed(site: SiteLean): Promise<Feed | null> {
@@ -90,5 +91,18 @@ export class FeedService {
     }
 
     return toFeedDto(feed);
+  }
+
+  /**
+   * ingestion 대상 feed 조회
+   *
+   * cron에서는 이 메서드만 호출한다
+   * → query 조건을 cron에서 제거하기 위함
+   */
+  async getIngestionTargets() {
+    return feedRepository.findIngestionTargets({
+      errorThreshold: RSS_CONFIG.ERROR_THRESHOLD,
+      fetchIntervalMs: RSS_CONFIG.FETCH_INTERVAL_MS,
+    });
   }
 }

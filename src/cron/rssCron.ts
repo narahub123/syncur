@@ -1,10 +1,10 @@
 import cron from "node-cron";
 import mongoose from "mongoose";
-import { FeedModel } from "@/features/feeds/model/feed";
 import { runFeedIngestion } from "@/ingestion/rss/runFeedIngestion";
 import dotenv from "dotenv";
 import { RSS_CONFIG } from "@/ingestion/rss/rss-config";
 import { runRecovery } from "@/ingestion/rss/runRecovery";
+import { feedService } from "@/features/feeds/service/FeedService.instance";
 
 dotenv.config({ path: ".env.local" });
 
@@ -66,18 +66,7 @@ async function runCron() {
        * - 동일 feed 중복 fetch 방지
        * - 안정적인 ingestion cycle 유지
        */
-      const feeds = await FeedModel.find({
-        status: "active",
-        errorCount: { $lt: RSS_CONFIG.ERROR_THRESHOLD },
-        $or: [
-          { lastFetchedAt: null },
-          {
-            lastFetchedAt: {
-              $lt: new Date(Date.now() - RSS_CONFIG.FETCH_INTERVAL_MS),
-            },
-          },
-        ],
-      }).sort({ lastFetchedAt: 1 });
+      const feeds = await feedService.getIngestionTargets();
 
       console.log(`[RSS CRON] feeds: ${feeds.length}`);
 

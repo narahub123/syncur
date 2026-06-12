@@ -1,37 +1,41 @@
-import { FeedDocument, FeedModel } from "@/features/feeds/model/feed";
 import { fetchRSS } from "@/ingestion/rss/fetchRss";
 import { parseRSS } from "@/ingestion/rss/parseRss";
 import { upsertFeedItems } from "@/ingestion/rss/upsertFeedItems";
 import { RSS_CONFIG } from "./rss-config";
 import { classifyRSSFailure } from "./classifyRSSFailure";
 import { INGESTION_RESULT } from "./types";
+import { FeedLean } from "@/shared/types/domain-leans";
+
+import { feedExecutionLogService } from "@/features/feed-execution-logs/service/FeedExecutionLogService.instance";
+import { feedIngestionService } from "@/features/feeds/service/FeedIngestionService.instance";
+import { FEED_EXECUTION_STAGE } from "@/features/feed-execution-logs/constants/feed-execution-log";
 
 /**
- * RSS Feed ingestion unit
+ * RSS Feed ingestion unit (FINAL VERSION)
  *
  * === 역할 ===
- * - cron / worker 어디서든 재사용 가능
  * - feed 1개 단위 ingestion 처리
- * - idempotent (재실행 안전)
- *
- * === 상태 모델 ===
- * active   : 정상 수집 대상
- * disabled : 더 이상 수집하지 않는 feed
- *
- * === 설계 원칙 ===
- * - Feed.status는 "생존 여부"만 관리 (active / disabled)
- * - 실행 결과는 INGESTION_RESULT로 분리
- * - 실패 판단은 errorCount + failureType 기반
+ * - execution lifecycle 관리 (observability)
+ * - feed 상태 업데이트 (policy layer)
  */
-export async function runFeedIngestion(feed: FeedDocument) {
+export async function runFeedIngestion(feed: FeedLean) {
   const feedId = feed._id.toString();
+
+  /**
+   * 1. execution 시작
+   */
+  const execution = await feedExecutionLogService.startExecution(feedId);
+  const executionId = execution.executionId;
 
   try {
     /**
-     * 0. 상태 가드
-     * - disabled feed는 더 이상 ingestion 하지 않음
+     * 2. 상태 가드
      */
     if (feed.status === RSS_CONFIG.STATUS.DISABLED) {
+      await feedExecutionLogService.successExecution(executionId, {
+        fetchedCount: 0,
+      });
+
       return {
         feedId,
         status: INGESTION_RESULT.SKIPPED_DISABLED,
@@ -39,51 +43,72 @@ export async function runFeedIngestion(feed: FeedDocument) {
     }
 
     /**
-     * 1. RSS Fetch (retry 포함)
-     * - 네트워크 안정성은 fetchRSS 내부에서 처리
+     * 3. FETCH
      */
+    await feedExecutionLogService.updateStage(
+      executionId,
+      FEED_EXECUTION_STAGE.FETCH,
+    );
+
     const result = await fetchRSS(feed);
 
+    /**
+     * 4. CACHE CHECK
+     */
+    await feedExecutionLogService.updateStage(
+      executionId,
+      FEED_EXECUTION_STAGE.CACHE_CHECK,
+    );
+
     if (result.type === "NOT_MODIFIED") {
+      await feedExecutionLogService.successExecution(executionId, {
+        fetchedCount: 0,
+      });
+
       return {
         feedId,
         status: INGESTION_RESULT.SKIPPED_CACHE,
       };
     }
 
-    const xml = result.xml;
-    const etag = result.etag;
-    const lastModified = result.lastModified;
+    const { xml, etag, lastModified } = result;
 
     /**
-     * 2. XML Parse → normalized items
+     * 5. PARSE
      */
+    await feedExecutionLogService.updateStage(
+      executionId,
+      FEED_EXECUTION_STAGE.PARSE,
+    );
+
     const items = parseRSS(xml);
 
     /**
-     * 3. Idempotent Upsert
-     * - 동일 item 재수집에도 안전해야 함
+     * 6. PERSIST
      */
-    await upsertFeedItems(feedId, items);
+    await feedExecutionLogService.updateStage(
+      executionId,
+      FEED_EXECUTION_STAGE.PERSIST,
+    );
+
+    const upsertResult = await upsertFeedItems(feedId, items);
 
     /**
-     * 4. 성공 처리
-     *
-     * - lastFetchedAt 업데이트
-     * - errorCount 초기화 (연속 실패 리셋)
+     * 7. Feed 상태 업데이트 (policy layer)
      */
-    await FeedModel.updateOne(
-      { _id: feed._id },
-      {
-        $set: {
-          lastFetchedAt: new Date(),
-          errorCount: 0,
+    await feedIngestionService.handleSuccess({
+      feedId,
+      etag,
+      lastModified,
+    });
 
-          ...(etag && { etag }),
-          ...(lastModified && { lastModified }),
-        },
-      },
-    );
+    /**
+     * 8. SUCCESS 종료
+     */
+    await feedExecutionLogService.successExecution(executionId, {
+      fetchedCount: items.length,
+      insertedCount: upsertResult?.upsertedCount ?? 0,
+    });
 
     return {
       feedId,
@@ -92,70 +117,43 @@ export async function runFeedIngestion(feed: FeedDocument) {
     };
   } catch (err) {
     /**
-     * 5. failure type 분류
-     * - retry 정책과는 별개로 "의미 분석 단계"
+     * 9. ERROR 처리
      */
     const type = classifyRSSFailure(err);
 
-    /**
-     * 6. errorCount 증가 (모든 실패 공통)
-     * - Feed 상태(active/disabled)는 여기서 변경하지 않음
-     */
-    const updated = await FeedModel.findByIdAndUpdate(
-      feed._id,
-      {
-        $inc: { errorCount: 1 },
-      },
-      { returnDocument: "after" },
+    await feedExecutionLogService.failExecution(
+      executionId,
+      err,
+      type === "PARSE" ? FEED_EXECUTION_STAGE.PARSE : undefined,
     );
 
     /**
-     * 7. disabled 전환 정책
-     *
-     * - 모든 failure type 공통 적용
-     * - errorCount가 threshold 초과 시에만 disabled
+     * 10. Feed 실패 처리 (단일 호출로 정리)
      */
-    const errorCount = updated?.errorCount ?? 0;
+    const result = await feedIngestionService.handleFailure(feedId);
 
-    if (errorCount >= RSS_CONFIG.ERROR_THRESHOLD) {
-      await FeedModel.updateOne(
-        { _id: feed._id },
-        {
-          $set: {
-            status: RSS_CONFIG.STATUS.DISABLED,
-          },
-        },
-      );
+    const errorCount = result.errorCount;
 
+    if (result.disabled) {
       return {
         feedId,
         status: INGESTION_RESULT.DISABLED_TRIGGERED,
         type,
-        errorCount: updated.errorCount ?? 0,
+        errorCount,
       };
     }
 
     /**
-     * 8. PARSE error
-     * - XML 구조/데이터 문제
-     */
-    if (type === "PARSE") {
-      return {
-        feedId,
-        status: INGESTION_RESULT.PARSE_ERROR,
-        type,
-        errorCount: updated?.errorCount ?? 0,
-      };
-    }
-
-    /**
-     * 9. 일반 ERROR (NETWORK / HTTP / UNKNOWN)
+     * 11. ERROR 응답
      */
     return {
       feedId,
-      status: INGESTION_RESULT.ERROR,
+      status:
+        type === "PARSE"
+          ? INGESTION_RESULT.PARSE_ERROR
+          : INGESTION_RESULT.ERROR,
       type,
-      errorCount: updated?.errorCount ?? 0,
+      errorCount,
     };
   }
 }

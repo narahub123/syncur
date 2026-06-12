@@ -234,4 +234,95 @@ export class FeedRepository {
       { returnDocument: "after" },
     ).lean();
   }
+
+  /**
+   * ingestion 대상 feed 조회
+   *
+   * 조건:
+   * - active 상태
+   * - error threshold 미만
+   * - lastFetchedAt 기준 throttle 적용
+   */
+  async findIngestionTargets(params: {
+    errorThreshold: number;
+    fetchIntervalMs: number;
+  }): Promise<FeedLean[]> {
+    const { errorThreshold, fetchIntervalMs } = params;
+
+    return FeedModel.find({
+      status: "active",
+      errorCount: { $lt: errorThreshold },
+      $or: [
+        { lastFetchedAt: null },
+        {
+          lastFetchedAt: {
+            $lt: new Date(Date.now() - fetchIntervalMs),
+          },
+        },
+      ],
+    }).sort({ lastFetchedAt: 1 });
+  }
+
+  /**
+   * ingestion 성공 시 feed 상태 업데이트
+   *
+   * 역할:
+   * - lastFetchedAt 갱신
+   * - errorCount 초기화
+   * - etag / lastModified 저장
+   */
+  async markIngestionSuccess(params: {
+    feedId: string;
+    etag?: string;
+    lastModified?: string;
+  }) {
+    const { feedId, etag, lastModified } = params;
+
+    return FeedModel.updateOne(
+      { _id: feedId },
+      {
+        $set: {
+          lastFetchedAt: new Date(),
+          errorCount: 0,
+
+          ...(etag && { etag }),
+          ...(lastModified && { lastModified }),
+        },
+      },
+    );
+  }
+
+  /**
+   * ingestion 실패 시 errorCount 증가
+   */
+  async incrementErrorCount(feedId: string) {
+    return FeedModel.findByIdAndUpdate(
+      feedId,
+      {
+        $inc: { errorCount: 1 },
+      },
+      { new: true },
+    );
+  }
+
+  /**
+   * error threshold 초과 시 feed disable 처리
+   */
+  async disableFeed(feedId: string) {
+    return FeedModel.updateOne(
+      { _id: feedId },
+      {
+        $set: {
+          status: "disabled",
+        },
+      },
+    );
+  }
+
+  /**
+   * feed 단건 조회 (필요 시)
+   */
+  async findById(feedId: string) {
+    return FeedModel.findById(feedId);
+  }
 }
