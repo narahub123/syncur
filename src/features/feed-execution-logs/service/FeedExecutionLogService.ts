@@ -1,11 +1,22 @@
+import { PAGINATION } from "@/shared/constants/pagination";
 import {
   FEED_EXECUTION_STATUS,
   FeedExecutionReason,
   FeedExecutionStage,
   FeedExecutionStatus,
 } from "../constants/feed-execution-log";
+import { toFeedExecutionLogWithFeedAndSiteDto } from "../mappers/toFeedExecutionLogWithFeedAndSiteDto";
 import { FeedExecutionLogModel } from "../model/feed-execution-log";
-import { FeedExecutionError, FetchLog, ParseLog, PersistLog } from "../types";
+import {
+  AdminFeedExecutionLogsQuery,
+  FeedExecutionError,
+  FetchLog,
+  ParseLog,
+  PersistLog,
+} from "../types";
+import { ADMIN_CONFIG } from "@/features/admin/constants/admin-config";
+import { FeedExecutionLogWithFeedAndSiteDtoPagedResponse } from "../dto/feedExecutionLogDto";
+import { feedExecutionLogRepository } from "../repository/FeedExecutionLogRepository.instance";
 
 type ExecutionUpdatePayload = {
   status: FeedExecutionStatus;
@@ -94,5 +105,57 @@ export class FeedExecutionLogService {
         },
       },
     );
+  }
+
+  /**
+   * 로그 목록 조회 (페이지네이션 + 검색 + 정렬)
+   *
+   * - admin monitoring 용
+   */
+  async getLogsPaginated(
+    query: AdminFeedExecutionLogsQuery,
+  ): Promise<FeedExecutionLogWithFeedAndSiteDtoPagedResponse> {
+    const page = query.page ?? PAGINATION.DEFAULT_PAGE;
+    const limit =
+      query.limit ?? ADMIN_CONFIG.FEED_EXECUTION_LOGS.PAGINATION_LIMIT;
+
+    /**
+     * 1. repository 호출
+     *
+     * - aggregation 기반 raw data 조회
+     * - feed + site join 포함
+     */
+    const { items, totalCount } =
+      await feedExecutionLogRepository.findAllPaginated({
+        page,
+        limit,
+        search: query.search,
+        searchField: query.searchField,
+        sort: query.sort,
+        sortOrder: query.sortOrder,
+      });
+
+    /**
+     * 2. pagination 계산
+     */
+    const totalPages = Math.ceil(totalCount / limit);
+
+    /**
+     * 3. DTO 변환
+     *
+     * - ObjectId → string
+     * - Date → ISO string
+     * - feed/site flatten
+     */
+    return {
+      items: items.map(toFeedExecutionLogWithFeedAndSiteDto),
+
+      pagination: {
+        page,
+        limit,
+        totalCount,
+        totalPages,
+      },
+    };
   }
 }

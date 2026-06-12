@@ -120,3 +120,36 @@ export const FEED_EXECUTION_REASON = {
  */
 export type FeedExecutionReason =
   (typeof FEED_EXECUTION_REASON)[keyof typeof FEED_EXECUTION_REASON];
+
+export const FEED_EXECUTION_STATUS_KR: Record<FeedExecutionStatus, string> = {
+  running: "진행중",
+  success: "성공",
+  failed: "실패",
+  partial_success: "부분 성공",
+  skipped: "스킵",
+};
+
+export const FEED_EXECUTION_STAGE_KR: Record<FeedExecutionStage, string> = {
+  fetch: "수집",
+  cache_check: "캐시 확인",
+  parse: "파싱",
+  persist: "저장",
+};
+
+export const FEED_EXECUTION_ERROR_TYPE_KR: Record<
+  FeedExecutionErrorType,
+  string
+> = {
+  HTTP_ERROR: "HTTP 오류",
+  XML_PARSE_ERROR: "XML 파싱 오류",
+  DB_ERROR: "DB 오류",
+  UNKNOWN: "알 수 없는 오류",
+};
+
+export const FEED_EXECUTION_REASON_KR: Record<FeedExecutionReason, string> = {
+  DISABLED_FEED: "비활성 피드",
+  FETCH_NOT_MODIFIED: "변경 없음 (304)",
+  FETCH_ERROR: "수집 실패",
+  PARSE_ERROR: "파싱 실패",
+  PERSIST_ERROR: "저장 실패",
+};

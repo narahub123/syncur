@@ -1,4 +1,10 @@
+import {
+  AdminFeedExecutionLogPageSize,
+  AdminFeedExecutionLogSearchField,
+  AdminFeedExecutionLogSort,
+} from "@/features/admin/logs/types";
 import { FeedExecutionErrorType } from "../constants/feed-execution-log";
+import { SortOrder } from "mongoose";
 
 /**
  * Fetch 단계 로그
@@ -38,4 +44,13 @@ export type FeedExecutionError = {
   type: FeedExecutionErrorType;
   message: string;
   stack?: string;
+};
+
+export type AdminFeedExecutionLogsQuery = {
+  search: string;
+  searchField: AdminFeedExecutionLogSearchField;
+  sort: AdminFeedExecutionLogSort;
+  sortOrder: SortOrder;
+  page: number;
+  limit: AdminFeedExecutionLogPageSize;
 };

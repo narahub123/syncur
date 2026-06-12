@@ -1,3 +1,3 @@
 import { FeedExecutionLogRepository } from "./FeedExecutionLogRepository";
 
-export const feedExecutionLog = new FeedExecutionLogRepository();
+export const feedExecutionLogRepository = new FeedExecutionLogRepository();

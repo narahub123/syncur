@@ -1,81 +1,177 @@
 import { FeedExecutionLogModel } from "../model/feed-execution-log";
+import { FeedExecutionLogWithFeedAndSiteLeanPagedResponse } from "../dto/feedExecutionLogDto";
+import { AdminFeedExecutionLogsQuery } from "../types";
 
 /**
- * FeedExecutionLogRepository
- *
- * 역할:
- * - MongoDB 접근 전담 계층
- * - 순수 CRUD만 담당 (비즈니스 로직 금지)
+ * Admin Feed Execution Log 조회 Repository
  *
  * 특징:
- * - executionId 기반 업데이트가 핵심
- * - ingestion flow에서 계속 업데이트되므로 update 중심 구조
+ * - User / Feed repository와 동일한 pagination pattern 적용
+ * - search + sort + pagination + count 동시 지원
+ * - Feed + Site join 포함 (admin read model)
  */
 export class FeedExecutionLogRepository {
   /**
-   * Execution 생성
+   * 로그 목록 조회 (페이지네이션 + 검색 + 정렬)
    *
-   * - ingestion 시작 시 1회 호출
-   * - execution 단위의 시작 상태 기록
+   * Admin UI 전용 API
    */
-  async create(data: {
-    feedId: string;
-    executionId: string;
-    status: string;
-    startedAt: Date;
-  }) {
-    return FeedExecutionLogModel.create(data);
-  }
+  async findAllPaginated(
+    params: AdminFeedExecutionLogsQuery,
+  ): Promise<FeedExecutionLogWithFeedAndSiteLeanPagedResponse> {
+    const {
+      page,
+      limit,
+      search,
+      searchField = "siteName",
+      sort = "startedAt",
+      sortOrder = "desc",
+    } = params;
 
-  /**
-   * executionId 기준 단일 업데이트
-   *
-   * - stage 업데이트
-   * - success/fail 종료 처리
-   * - partial update 모두 포함
-   */
-  async updateByExecutionId(
-    executionId: string,
-    update: Partial<{
-      status: string;
-      startedAt: Date;
-      finishedAt: Date;
-      durationMs: number;
+    const skip = (page - 1) * limit;
 
-      httpStatus: number;
-      cacheHit: boolean;
+    const mongoOrder = sortOrder === "asc" ? 1 : -1;
 
-      fetchedCount: number;
-      insertedCount: number;
+    const sortMap = {
+      siteName: { "site.name": mongoOrder },
+      errorType: { "error.type": mongoOrder },
+      status: { status: mongoOrder },
+      reason: { reason: mongoOrder },
+      httpStatus: { httpStatus: mongoOrder },
+      startedAt: { startedAt: mongoOrder },
+      durationMs: { durationMs: mongoOrder },
+      cacheHit: { cacheHit: mongoOrder },
+      fetchedCount: { fetchedCount: mongoOrder },
+      insertedCount: { insertedCount: mongoOrder },
+      failedAtStage: { failedAtStage: mongoOrder },
+    } as const;
 
-      errorMessage: string;
-      errorCode: string;
-      failedAtStage: string;
+    const searchMap = {
+      siteName: "site.name",
+      status: "status",
+      reason: "reason",
+      errorType: "error.type",
+      httpStatus: "httpStatus",
+    } as const;
 
-      currentStage: string;
-    }>,
-  ) {
-    return FeedExecutionLogModel.updateOne({ executionId }, { $set: update });
-  }
+    /**
+     * 1. base pipeline (JOIN 먼저)
+     */
+    const basePipeline = [
+      {
+        $lookup: {
+          from: "feeds",
+          localField: "feedId",
+          foreignField: "_id",
+          as: "feed",
+        },
+      },
+      {
+        $unwind: {
+          path: "$feed",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $lookup: {
+          from: "sites",
+          localField: "feed.siteId",
+          foreignField: "_id",
+          as: "site",
+        },
+      },
+      {
+        $unwind: {
+          path: "$site",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+    ];
 
-  /**
-   * feedId 기준 로그 조회
-   *
-   * - 관리자 페이지 (Logs UI)
-   * - 최근 실행 이력 조회
-   */
-  async findByFeedId(feedId: string, limit = 50) {
-    return FeedExecutionLogModel.find({ feedId })
-      .sort({ startedAt: -1 })
-      .limit(limit);
-  }
+    /**
+     * 2. match stage (JOIN 이후 적용!)
+     */
+    const matchStage =
+      search && search.trim().length > 0
+        ? {
+            [searchMap[searchField]]: {
+              $regex: search,
+              $options: "i",
+            },
+          }
+        : {};
 
-  /**
-   * executionId 단건 조회
-   *
-   * - 디버깅 / trace 용도
-   */
-  async findByExecutionId(executionId: string) {
-    return FeedExecutionLogModel.findOne({ executionId });
+    /**
+     * 3. pipeline (match는 lookup 이후)
+     */
+    const pipelineBase = [
+      ...basePipeline,
+      ...(Object.keys(matchStage).length ? [{ $match: matchStage }] : []),
+    ];
+
+    const [items, countResult] = await Promise.all([
+      FeedExecutionLogModel.aggregate([
+        ...pipelineBase,
+
+        {
+          $sort: sortMap[sort],
+        },
+        {
+          $skip: skip,
+        },
+        {
+          $limit: limit,
+        },
+
+        {
+          $project: {
+            _id: 1,
+            executionId: 1,
+            status: 1,
+            reason: 1,
+
+            startedAt: 1,
+            finishedAt: 1,
+            durationMs: 1,
+
+            httpStatus: 1,
+            cacheHit: 1,
+
+            fetchedCount: 1,
+            insertedCount: 1,
+
+            error: 1,
+            failedAtStage: 1,
+
+            createdAt: 1,
+            updatedAt: 1,
+
+            feed: {
+              _id: 1,
+              feedUrl: 1,
+              status: 1,
+              siteId: 1,
+            },
+
+            site: {
+              _id: 1,
+              url: 1,
+              name: 1,
+              favicon_url: 1,
+            },
+          },
+        },
+      ]),
+
+      FeedExecutionLogModel.aggregate([
+        ...pipelineBase,
+        { $count: "totalCount" },
+      ]),
+    ]);
+
+    return {
+      items,
+      totalCount: countResult[0]?.totalCount ?? 0,
+    };
   }
 }
