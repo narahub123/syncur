@@ -48,7 +48,7 @@ export default function AdminFeedTable({
   };
 
   return (
-    <div className="flex-1 overflow-x-auto px-2">
+    <div className="max-w-2xl flex-1 overflow-x-auto px-2 xl:max-w-6xl">
       <Table className="border">
         <TableHeader>
           <TableRow>

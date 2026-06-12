@@ -1,14 +1,20 @@
 interface ResponsiveActionButtonProps {
   icon: React.ReactNode;
   label: string;
+  onClick?: () => void;
 }
 
 const ResponsiveActionButton = ({
   icon,
   label,
+  onClick,
 }: ResponsiveActionButtonProps) => {
   return (
-    <div className="flex size-12 items-center justify-center rounded-full border border-gray-200 xl:w-full xl:gap-2 xl:rounded-none xl:border-0">
+    <div
+      className="hover:bg-accent flex size-12 cursor-pointer items-center justify-center rounded-full border border-gray-200 xl:w-full xl:gap-2 xl:rounded-none xl:border-0"
+      title={label}
+      onClick={onClick}
+    >
       <span className="shrink-0">{icon}</span>
 
       <span className="hidden xl:inline">{label}</span>

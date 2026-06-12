@@ -20,21 +20,17 @@ export const ThemeToggle = () => {
   };
 
   return (
-    <Button
-      variant="ghost"
-      onClick={toggleTheme}
-      className="h-12 w-full rounded-none"
-    >
+    <button onClick={toggleTheme} className="rounded-full">
       <ResponsiveActionButton
         icon={
           resolvedTheme === "dark" ? (
-            <Sun size={30} className="text-foreground" />
+            <Sun className="text-foreground size-5" />
           ) : (
-            <Moon size={30} className="text-foreground" />
+            <Moon className="text-foreground size-5" />
           )
         }
         label="테마 변경"
       />
-    </Button>
+    </button>
   );
 };
