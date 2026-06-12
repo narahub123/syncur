@@ -2,6 +2,7 @@ import { Types } from "mongoose";
 import { NotificationRepository } from "../repository/NotificationRepository";
 import {
   NotificationDto,
+  NotificationWithSiteAndFeedExecutionLogDto,
   NotificationWithSiteAndFeedExecutionLogDtoPagedResponse,
 } from "../dtos/notificationDto";
 import { CreateNotificationDto } from "../types";
@@ -20,8 +21,12 @@ import { UserService } from "@/features/users/services/UserService";
 import { PAGINATION } from "@/shared/constants/pagination";
 import { ADMIN_CONFIG } from "@/features/admin/constants/admin-config";
 import { toObjectId } from "@/shared/utils/toObjectId";
-import { toNotificationWithSiteAndFeedExecutionLogDtoS } from "../mappers/toNotificationWithSiteAndFeedExecutionLogDto";
+import {
+  toNotificationWithSiteAndFeedExecutionLogDto,
+  toNotificationWithSiteAndFeedExecutionLogDtoS,
+} from "../mappers/toNotificationWithSiteAndFeedExecutionLogDto";
 import { AdminNotificationsQuery } from "@/features/admin/notifiactions/types";
+import { notFound } from "next/navigation";
 
 /**
  * Notification Service
@@ -199,5 +204,18 @@ export class NotificationService {
         totalPages,
       },
     };
+  }
+
+  /**
+   * 관리자 알림 상세 조회
+   */
+  async getNotificationDetail(
+    id: string,
+  ): Promise<NotificationWithSiteAndFeedExecutionLogDto> {
+    const data = await this.notificationRepository.findDetailById(id);
+    if (!data) {
+      notFound();
+    }
+    return toNotificationWithSiteAndFeedExecutionLogDto(data);
   }
 }

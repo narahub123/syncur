@@ -277,4 +277,113 @@ export class NotificationRepository {
       totalCount: countResult[0]?.totalCount ?? 0,
     };
   }
+
+  /**
+   * 관리자 알림 상세 조회
+   *
+   * Notification + Site + FeedExecutionLog 상세 정보
+   */
+  async findDetailById(
+    id: string,
+  ): Promise<NotificationWithSiteAndFeedExecutionLogLean | null> {
+    const objectId = new Types.ObjectId(id);
+
+    const basePipeline = [
+      {
+        $match: {
+          _id: objectId,
+        },
+      },
+
+      /**
+       * Site JOIN
+       */
+      {
+        $lookup: {
+          from: "sites",
+          localField: "metadata.siteId",
+          foreignField: "_id",
+          as: "site",
+        },
+      },
+      {
+        $unwind: {
+          path: "$site",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+
+      /**
+       * FeedExecutionLog JOIN
+       */
+      {
+        $lookup: {
+          from: "feedexecutionlogs",
+          localField: "metadata.feedExecutionLogId",
+          foreignField: "_id",
+          as: "feedExecutionLog",
+        },
+      },
+      {
+        $unwind: {
+          path: "$feedExecutionLog",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+    ];
+
+    const [result] =
+      await NotificationModel.aggregate<NotificationWithSiteAndFeedExecutionLogLean>(
+        [
+          ...basePipeline,
+
+          {
+            $project: {
+              _id: 1,
+
+              userId: 1,
+              target: 1,
+              type: 1,
+
+              title: 1,
+              message: 1,
+
+              isRead: 1,
+
+              metadata: 1,
+
+              createdAt: 1,
+              updatedAt: 1,
+
+              site: {
+                _id: "$site._id",
+                name: "$site.name",
+                url: "$site.url",
+                favicon_url: "$site.favicon_url",
+              },
+
+              feedExecutionLog: {
+                _id: "$feedExecutionLog._id",
+                executionId: "$feedExecutionLog.executionId",
+
+                status: "$feedExecutionLog.status",
+                reason: "$feedExecutionLog.reason",
+
+                failedAtStage: "$feedExecutionLog.failedAtStage",
+
+                error: "$feedExecutionLog.error",
+
+                startedAt: "$feedExecutionLog.startedAt",
+
+                finishedAt: "$feedExecutionLog.finishedAt",
+
+                durationMs: "$feedExecutionLog.durationMs",
+              },
+            },
+          },
+        ],
+      );
+
+    return result ?? null;
+  }
 }

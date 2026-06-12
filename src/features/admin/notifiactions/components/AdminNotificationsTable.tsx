@@ -17,6 +17,7 @@ import { cn } from "@/shared/utils/cn";
 import { NotificationWithSiteAndFeedExecutionLogDto } from "@/features/notifications/dtos/notificationDto";
 import { adminNotificationTableColumns } from "../constants/adminNotificationsTable";
 import { useMarkNotificationAsReadMutation } from "../hooks/useMarkNotificationAsReadMutation";
+import { ROUTES } from "@/shared/constants/routes";
 
 type Props = {
   notifications: NotificationWithSiteAndFeedExecutionLogDto[];
@@ -55,10 +56,12 @@ export default function AdminNotificationTable({
 
   const readMutation = useMarkNotificationAsReadMutation();
 
-  const handleRowClick = (notificationId: string) => {
-    readMutation.mutate(notificationId);
+  const handleRowClick = (notificationId: string, isRead: boolean) => {
+    if (!isRead) {
+      readMutation.mutate(notificationId);
+    }
 
-    router.push(`/admin/notifications/${notificationId}`);
+    router.push(`${ROUTES.ADMIN_NOTIFICATIONS}/${notificationId}`);
   };
 
   return (
@@ -135,7 +138,9 @@ export default function AdminNotificationTable({
               <TableRow
                 key={notification._id}
                 className="max-w-2xl cursor-pointer xl:max-w-6xl"
-                onClick={() => handleRowClick(notification._id)}
+                onClick={() =>
+                  handleRowClick(notification._id, notification.isRead)
+                }
               >
                 {adminNotificationTableColumns.map((col) => (
                   <TableCell
