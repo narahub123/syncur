@@ -4,7 +4,9 @@ import AdminFeedExecutionLogsStatusCell from "../components/AdminFeedExecutionLo
 import {
   FEED_EXECUTION_ERROR_TYPE_KR,
   FEED_EXECUTION_REASON_KR,
+  FEED_EXECUTION_STAGE_KR,
   FeedExecutionErrorType,
+  FeedExecutionStage,
 } from "@/features/feed-execution-logs/constants/feed-execution-log";
 
 export type AdminFeedExecutionLogTableColumn = {
@@ -105,9 +107,7 @@ export const adminFeedExecutionLogTableColumns: AdminFeedExecutionLogTableColumn
       header: "단계",
       align: "center",
       render: (log) =>
-        FEED_EXECUTION_ERROR_TYPE_KR[
-          log.failedAtStage as FeedExecutionErrorType
-        ] ?? "-",
+        FEED_EXECUTION_STAGE_KR[log.failedAtStage as FeedExecutionStage] ?? "-",
     },
     /**
      * Reason

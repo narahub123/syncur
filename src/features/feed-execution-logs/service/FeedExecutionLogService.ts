@@ -26,6 +26,7 @@ type ExecutionUpdatePayload = {
   parse?: ParseLog;
   persist?: PersistLog;
 
+  failedAtStage?: FeedExecutionStage;
   finishedAt?: Date;
 
   error?: FeedExecutionError;

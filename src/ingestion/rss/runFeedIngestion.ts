@@ -141,6 +141,7 @@ export async function runFeedIngestion(feed: FeedLean) {
     await feedExecutionLogService.updateExecution(executionId, {
       status: FEED_EXECUTION_STATUS.FAILED,
       reason,
+      failedAtStage: currentStage,
       finishedAt: new Date(),
       error: {
         type: errorType,
