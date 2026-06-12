@@ -1,126 +1,141 @@
-import { v4 as uuid } from "uuid";
-import { FeedExecutionLogRepository } from "../repository/FeedExecutionLogRepository";
-import { normalizeError } from "../utils/normalizeError";
+import { FeedExecutionLogModel } from "../model/feed-execution-log";
 
-/**
- * FeedExecutionLogService
- *
- * 역할:
- * - execution lifecycle 관리
- * - ingestion 과정 관측 (observability layer)
- * - repository 위에 비즈니스 규칙 추가
- *
- * 핵심 책임:
- * - execution 생성
- * - stage 업데이트
- * - success/fail 종료 처리
- * - duration 계산
- */
+type ExecutionStatus =
+  | "RUNNING"
+  | "SUCCESS"
+  | "FAILED"
+  | "PARTIAL_SUCCESS"
+  | "SKIPPED";
+
+type ExecutionStage = "fetch" | "cache_check" | "parse" | "persist";
+
+type FetchLog = {
+  url: string;
+  etag?: string;
+  lastModified?: string;
+  cacheResult?: "HIT" | "MISS";
+  responseTimeMs?: number;
+};
+
+type ParseLog = {
+  normalizedCount: number;
+  errorSnippet?: string;
+};
+
+type PersistLog = {
+  upserted: number;
+  matched: number;
+  modified: number;
+};
+
+type TimingLog = {
+  startedAt?: Date;
+  finishedAt?: Date;
+  totalDurationMs?: number;
+};
+
+type ExecutionError = {
+  type: "HTTP_ERROR" | "XML_PARSE_ERROR" | "DB_ERROR" | "UNKNOWN";
+  message: string;
+  stack?: string;
+};
+
+type ExecutionUpdatePayload = {
+  status: ExecutionStatus;
+  reason?: string;
+
+  timing?: TimingLog;
+
+  fetch?: FetchLog;
+  parse?: ParseLog;
+  persist?: PersistLog;
+
+  error?: ExecutionError;
+};
+
 export class FeedExecutionLogService {
-  constructor(private readonly repo: FeedExecutionLogRepository) {}
-
   /**
    * execution 시작
-   *
-   * - ingestion 시작 시 호출
-   * - executionId 생성 책임은 service가 가진다
    */
   async startExecution(feedId: string) {
-    const executionId = uuid();
-    const startedAt = new Date();
-
-    await this.repo.create({
+    const doc = await FeedExecutionLogModel.create({
       feedId,
-      executionId,
-      status: "running",
-      startedAt,
+      executionId: crypto.randomUUID(),
+      status: "RUNNING",
+      stage: "fetch",
+      timing: {
+        startedAt: new Date(),
+      },
+      fetch: {
+        retryCount: 0,
+      },
+      persist: {
+        upserted: 0,
+        matched: 0,
+        modified: 0,
+      },
     });
 
     return {
-      executionId,
-      startedAt,
+      executionId: doc.executionId,
     };
   }
 
   /**
-   * stage 업데이트
-   *
-   * - ingestion 진행 상태 기록
-   * - FETCH / CACHE_CHECK / PARSE / PERSIST
+   * stage 이동 (lightweight update)
    */
-  async updateStage(executionId: string, stage: string) {
-    return this.repo.updateByExecutionId(executionId, {
-      currentStage: stage,
-    });
+  async updateStage(executionId: string, stage: ExecutionStage) {
+    await FeedExecutionLogModel.updateOne(
+      { executionId },
+      {
+        $set: {
+          stage,
+        },
+      },
+    );
   }
 
   /**
-   * execution 성공 종료
-   *
-   * - ingestion 정상 완료 시 호출
-   * - 통계 데이터 포함 업데이트
+   * partial update (중간 상태 기록)
    */
-  async successExecution(
+  async patchExecution(
     executionId: string,
-    data: {
-      fetchedCount: number;
-      insertedCount?: number;
-    },
+    patch: Partial<ExecutionUpdatePayload>,
   ) {
+    await FeedExecutionLogModel.updateOne(
+      { executionId },
+      {
+        $set: patch,
+      },
+    );
+  }
+
+  /**
+   * 최종 종료 (SUCCESS / FAILED / SKIPPED)
+   */
+  async updateExecution(executionId: string, data: ExecutionUpdatePayload) {
     const finishedAt = new Date();
 
-    const execution = await this.repo.findByExecutionId(executionId);
-
-    const durationMs = execution?.startedAt
-      ? finishedAt.getTime() - execution.startedAt.getTime()
-      : undefined;
-
-    return this.repo.updateByExecutionId(executionId, {
-      status: "success",
-      finishedAt,
-      durationMs,
-
-      fetchedCount: data.fetchedCount,
-      insertedCount: data.insertedCount ?? 0,
+    const doc = await FeedExecutionLogModel.findOne({
+      executionId,
     });
-  }
 
-  /**
-   * execution 실패 종료
-   *
-   * - ingestion 중 에러 발생 시 호출
-   */
-  async failExecution(
-    executionId: string,
-    error: unknown,
-    failedAtStage?: string,
-  ) {
-    const finishedAt = new Date();
+    if (!doc) return;
 
-    const execution = await this.repo.findByExecutionId(executionId);
+    const startedAt = doc.timing?.startedAt;
 
-    const durationMs = execution?.startedAt
-      ? finishedAt.getTime() - execution.startedAt.getTime()
-      : undefined;
+    await FeedExecutionLogModel.updateOne(
+      { executionId },
+      {
+        $set: {
+          ...data,
 
-    const normalized = normalizeError(error);
-
-    return this.repo.updateByExecutionId(executionId, {
-      status: "failed",
-      finishedAt,
-      durationMs,
-
-      errorMessage: normalized.message,
-      errorCode: normalized.code,
-
-      failedAtStage,
-    });
-  }
-
-  /**
-   * feed 기준 로그 조회 (관리자용)
-   */
-  async getLogsByFeedId(feedId: string, limit?: number) {
-    return this.repo.findByFeedId(feedId, limit);
+          "timing.finishedAt": finishedAt,
+          "timing.totalDurationMs": startedAt
+            ? finishedAt.getTime() - startedAt.getTime()
+            : undefined,
+        },
+      },
+    );
   }
 }

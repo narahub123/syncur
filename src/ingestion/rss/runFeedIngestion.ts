@@ -1,159 +1,163 @@
-import { fetchRSS } from "@/ingestion/rss/fetchRss";
-import { parseRSS } from "@/ingestion/rss/parseRss";
-import { upsertFeedItems } from "@/ingestion/rss/upsertFeedItems";
-import { RSS_CONFIG } from "./rss-config";
-import { classifyRSSFailure } from "./classifyRSSFailure";
-import { INGESTION_RESULT } from "./types";
-import { FeedLean } from "@/shared/types/domain-leans";
-
 import { feedExecutionLogService } from "@/features/feed-execution-logs/service/FeedExecutionLogService.instance";
+import { FeedLean } from "@/shared/types/domain-leans";
+import { RSS_CONFIG } from "./rss-config";
+import { fetchRSS } from "./fetchRss";
+import { parseRSS } from "./parseRss";
+import { upsertFeedItems } from "./upsertFeedItems";
 import { feedIngestionService } from "@/features/feeds/service/FeedIngestionService.instance";
-import { FEED_EXECUTION_STAGE } from "@/features/feed-execution-logs/constants/feed-execution-log";
 
-/**
- * RSS Feed ingestion unit (FINAL VERSION)
- *
- * === 역할 ===
- * - feed 1개 단위 ingestion 처리
- * - execution lifecycle 관리 (observability)
- * - feed 상태 업데이트 (policy layer)
- */
 export async function runFeedIngestion(feed: FeedLean) {
   const feedId = feed._id.toString();
 
-  /**
-   * 1. execution 시작
-   */
   const execution = await feedExecutionLogService.startExecution(feedId);
   const executionId = execution.executionId;
 
+  /**
+   * 현재 stage 추적용 변수 (핵심)
+   */
+  let currentStage: "fetch" | "cache_check" | "parse" | "persist" = "fetch";
+
   try {
     /**
-     * 2. 상태 가드
+     * 1. DISABLED CHECK
      */
     if (feed.status === RSS_CONFIG.STATUS.DISABLED) {
-      await feedExecutionLogService.successExecution(executionId, {
-        fetchedCount: 0,
+      await feedExecutionLogService.updateExecution(executionId, {
+        status: "SKIPPED",
+        reason: "DISABLED_FEED",
+        timing: {
+          finishedAt: new Date(),
+        },
       });
 
-      return {
-        feedId,
-        status: INGESTION_RESULT.SKIPPED_DISABLED,
-      };
+      return;
     }
 
     /**
-     * 3. FETCH
+     * 2. FETCH
      */
-    await feedExecutionLogService.updateStage(
-      executionId,
-      FEED_EXECUTION_STAGE.FETCH,
-    );
+    currentStage = "fetch";
+    await feedExecutionLogService.updateStage(executionId, currentStage);
 
-    const result = await fetchRSS(feed);
+    const fetchResult = await fetchRSS(feed);
 
     /**
-     * 4. CACHE CHECK
+     * 3. CACHE CHECK
      */
-    await feedExecutionLogService.updateStage(
-      executionId,
-      FEED_EXECUTION_STAGE.CACHE_CHECK,
-    );
+    currentStage = "cache_check";
+    await feedExecutionLogService.updateStage(executionId, currentStage);
 
-    if (result.type === "NOT_MODIFIED") {
-      await feedExecutionLogService.successExecution(executionId, {
-        fetchedCount: 0,
+    if (fetchResult.type === "NOT_MODIFIED") {
+      await feedExecutionLogService.updateExecution(executionId, {
+        status: "SKIPPED",
+        reason: "FETCH_NOT_MODIFIED",
+        timing: {
+          finishedAt: new Date(),
+        },
+        fetch: {
+          url: feed.feedUrl,
+          cacheResult: "HIT",
+        },
       });
 
-      return {
-        feedId,
-        status: INGESTION_RESULT.SKIPPED_CACHE,
-      };
+      return;
     }
 
-    const { xml, etag, lastModified } = result;
+    const { xml, etag, lastModified } = fetchResult;
 
     /**
-     * 5. PARSE
+     * 4. PARSE
      */
-    await feedExecutionLogService.updateStage(
-      executionId,
-      FEED_EXECUTION_STAGE.PARSE,
-    );
+    currentStage = "parse";
+    await feedExecutionLogService.updateStage(executionId, currentStage);
 
-    const items = parseRSS(xml);
+    const parsed = parseRSS(xml);
 
     /**
-     * 6. PERSIST
+     * 5. PERSIST
      */
-    await feedExecutionLogService.updateStage(
-      executionId,
-      FEED_EXECUTION_STAGE.PERSIST,
-    );
+    currentStage = "persist";
+    await feedExecutionLogService.updateStage(executionId, currentStage);
 
-    const upsertResult = await upsertFeedItems(feedId, items);
+    const persistResult = await upsertFeedItems(feedId, parsed);
 
     /**
-     * 7. Feed 상태 업데이트 (policy layer)
+     * 6. SUCCESS
+     */
+    await feedExecutionLogService.updateExecution(executionId, {
+      status: "SUCCESS",
+      reason: undefined,
+      timing: {
+        finishedAt: new Date(),
+      },
+      fetch: {
+        url: feed.feedUrl,
+        etag,
+        lastModified,
+      },
+      parse: {
+        normalizedCount: parsed.length,
+      },
+      persist: {
+        upserted: persistResult.upsertedCount ?? 0,
+        matched: persistResult.matchedCount ?? 0,
+        modified: persistResult.modifiedCount ?? 0,
+      },
+    });
+
+    /**
+     * 7. FEED STATE UPDATE (projection)
      */
     await feedIngestionService.handleSuccess({
       feedId,
       etag,
       lastModified,
     });
-
-    /**
-     * 8. SUCCESS 종료
-     */
-    await feedExecutionLogService.successExecution(executionId, {
-      fetchedCount: items.length,
-      insertedCount: upsertResult?.upsertedCount ?? 0,
-    });
-
-    return {
-      feedId,
-      status: INGESTION_RESULT.SUCCESS,
-      items: items.length,
-    };
   } catch (err) {
     /**
-     * 9. ERROR 처리
+     * ERROR → stage 기반으로 결정 (중요)
      */
-    const type = classifyRSSFailure(err);
+    const reason =
+      currentStage === "fetch"
+        ? "FETCH_ERROR"
+        : currentStage === "cache_check"
+          ? "FETCH_ERROR"
+          : currentStage === "parse"
+            ? "PARSE_ERROR"
+            : "PERSIST_ERROR";
 
-    await feedExecutionLogService.failExecution(
-      executionId,
-      err,
-      type === "PARSE" ? FEED_EXECUTION_STAGE.PARSE : undefined,
-    );
+    const errorType =
+      currentStage === "fetch"
+        ? "HTTP_ERROR"
+        : currentStage === "parse"
+          ? "XML_PARSE_ERROR"
+          : "DB_ERROR";
 
     /**
-     * 10. Feed 실패 처리 (단일 호출로 정리)
+     * 8. FAIL EXECUTION
+     */
+    await feedExecutionLogService.updateExecution(executionId, {
+      status: "FAILED",
+      reason,
+      timing: {
+        finishedAt: new Date(),
+      },
+      error: {
+        type: errorType,
+        message: err instanceof Error ? err.message : String(err),
+      },
+    });
+
+    /**
+     * 9. FEED POLICY UPDATE
      */
     const result = await feedIngestionService.handleFailure(feedId);
 
-    const errorCount = result.errorCount;
-
-    if (result.disabled) {
-      return {
-        feedId,
-        status: INGESTION_RESULT.DISABLED_TRIGGERED,
-        type,
-        errorCount,
-      };
-    }
-
-    /**
-     * 11. ERROR 응답
-     */
     return {
       feedId,
-      status:
-        type === "PARSE"
-          ? INGESTION_RESULT.PARSE_ERROR
-          : INGESTION_RESULT.ERROR,
-      type,
-      errorCount,
+      status: "FAILED",
+      disabled: result.disabled,
+      errorCount: result.errorCount,
     };
   }
 }

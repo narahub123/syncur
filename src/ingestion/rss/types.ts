@@ -32,15 +32,3 @@ export type RSSFailureType =
   | "TEMPORARY" // retry + 누적
   | "PERMANENT" // 즉시 중단/disabled 후보
   | "PARSE"; // 데이터 문제
-
-export const INGESTION_RESULT = {
-  SUCCESS: "success",
-  ERROR: "error",
-  PARSE_ERROR: "parse_error",
-  SKIPPED_DISABLED: "skipped_disabled",
-  DISABLED_TRIGGERED: "disabled_triggered",
-  SKIPPED_CACHE: "skipped_cache",
-} as const;
-
-export type IngestionResult =
-  (typeof INGESTION_RESULT)[keyof typeof INGESTION_RESULT];
