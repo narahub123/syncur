@@ -1,3 +1,5 @@
+import { useState } from "react";
+
 import { NativeImageProps } from "@/shared/types/element-props";
 import { cn } from "@/shared/utils/cn";
 
@@ -11,6 +13,22 @@ const UserAvatar = ({
   className,
   ...props
 }: UserAvatarProps) => {
+  const [hasError, setHasError] = useState(false);
+
+  if (!src || hasError) {
+    return (
+      <div
+        style={{ width, height }}
+        className={cn(
+          "bg-muted flex items-center justify-center rounded-full font-medium",
+          className,
+        )}
+      >
+        {alt?.charAt(0).toUpperCase()}
+      </div>
+    );
+  }
+
   return (
     <img
       src={src}
@@ -18,6 +36,7 @@ const UserAvatar = ({
       width={width}
       height={height}
       className={cn("rounded-full object-cover", className)}
+      onError={() => setHasError(true)}
       {...props}
     />
   );
