@@ -5,6 +5,12 @@ import { fetchRSS } from "./fetchRss";
 import { parseRSS } from "./parseRss";
 import { upsertFeedItems } from "./upsertFeedItems";
 import { feedIngestionService } from "@/features/feeds/service/FeedIngestionService.instance";
+import {
+  FEED_EXECUTION_ERROR_TYPE,
+  FEED_EXECUTION_REASON,
+  FEED_EXECUTION_STATUS,
+  FeedExecutionStage,
+} from "@/features/feed-execution-logs/constants/feed-execution-log";
 
 export async function runFeedIngestion(feed: FeedLean) {
   const feedId = feed._id.toString();
@@ -15,7 +21,7 @@ export async function runFeedIngestion(feed: FeedLean) {
   /**
    * 현재 stage 추적용 변수 (핵심)
    */
-  let currentStage: "fetch" | "cache_check" | "parse" | "persist" = "fetch";
+  let currentStage: FeedExecutionStage = "fetch";
 
   try {
     /**
@@ -23,11 +29,9 @@ export async function runFeedIngestion(feed: FeedLean) {
      */
     if (feed.status === RSS_CONFIG.STATUS.DISABLED) {
       await feedExecutionLogService.updateExecution(executionId, {
-        status: "SKIPPED",
-        reason: "DISABLED_FEED",
-        timing: {
-          finishedAt: new Date(),
-        },
+        status: FEED_EXECUTION_STATUS.SKIPPED,
+        reason: FEED_EXECUTION_REASON.DISABLED_FEED,
+        finishedAt: new Date(),
       });
 
       return;
@@ -49,11 +53,9 @@ export async function runFeedIngestion(feed: FeedLean) {
 
     if (fetchResult.type === "NOT_MODIFIED") {
       await feedExecutionLogService.updateExecution(executionId, {
-        status: "SKIPPED",
-        reason: "FETCH_NOT_MODIFIED",
-        timing: {
-          finishedAt: new Date(),
-        },
+        status: FEED_EXECUTION_STATUS.SKIPPED,
+        reason: FEED_EXECUTION_REASON.FETCH_NOT_MODIFIED,
+        finishedAt: new Date(),
         fetch: {
           url: feed.feedUrl,
           cacheResult: "HIT",
@@ -85,11 +87,9 @@ export async function runFeedIngestion(feed: FeedLean) {
      * 6. SUCCESS
      */
     await feedExecutionLogService.updateExecution(executionId, {
-      status: "SUCCESS",
+      status: FEED_EXECUTION_STATUS.SUCCESS,
       reason: undefined,
-      timing: {
-        finishedAt: new Date(),
-      },
+      finishedAt: new Date(),
       fetch: {
         url: feed.feedUrl,
         etag,
@@ -119,29 +119,27 @@ export async function runFeedIngestion(feed: FeedLean) {
      */
     const reason =
       currentStage === "fetch"
-        ? "FETCH_ERROR"
+        ? FEED_EXECUTION_REASON.FETCH_ERROR
         : currentStage === "cache_check"
-          ? "FETCH_ERROR"
+          ? FEED_EXECUTION_REASON.FETCH_ERROR
           : currentStage === "parse"
-            ? "PARSE_ERROR"
-            : "PERSIST_ERROR";
+            ? FEED_EXECUTION_REASON.PARSE_ERROR
+            : FEED_EXECUTION_REASON.PERSIST_ERROR;
 
     const errorType =
       currentStage === "fetch"
-        ? "HTTP_ERROR"
+        ? FEED_EXECUTION_ERROR_TYPE.HTTP_ERROR
         : currentStage === "parse"
-          ? "XML_PARSE_ERROR"
-          : "DB_ERROR";
+          ? FEED_EXECUTION_ERROR_TYPE.XML_PARSE_ERROR
+          : FEED_EXECUTION_ERROR_TYPE.DB_ERROR;
 
     /**
      * 8. FAIL EXECUTION
      */
     await feedExecutionLogService.updateExecution(executionId, {
-      status: "FAILED",
+      status: FEED_EXECUTION_STATUS.FAILED,
       reason,
-      timing: {
-        finishedAt: new Date(),
-      },
+      finishedAt: new Date(),
       error: {
         type: errorType,
         message: err instanceof Error ? err.message : String(err),

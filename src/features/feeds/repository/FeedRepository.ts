@@ -301,7 +301,7 @@ export class FeedRepository {
       {
         $inc: { errorCount: 1 },
       },
-      { new: true },
+      { returnDocument: "after" },
     );
   }
 
