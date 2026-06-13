@@ -4,26 +4,29 @@ import {
   NotificationWithSiteAndFeedExecutionLogDto,
   NotificationWithSiteAndFeedExecutionLogDtoPagedResponse,
 } from "@/features/notifications/dtos/notificationDto";
+import { NotificationTarget } from "@/features/notifications/constants/notification-target";
 
 /**
  * 전체 알림 읽음 처리 Mutation
  */
-export function useMarkAllNotificationsAsReadMutation() {
+export function useMarkAllNotificationsAsReadMutation(
+  target: NotificationTarget,
+) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: () => markAllNotificationsAsRead(),
+    mutationFn: () => markAllNotificationsAsRead(target),
 
     onMutate: async () => {
       await queryClient.cancelQueries({
-        queryKey: ["admin-notifications"],
+        queryKey: ["notifications", target],
       });
 
       const prev = queryClient.getQueryData(["admin-notifications"]);
 
       // optimistic update (전체 읽음 처리)
       queryClient.setQueryData(
-        ["admin-notifications"],
+        ["notifications", target],
         (old: NotificationWithSiteAndFeedExecutionLogDtoPagedResponse) => {
           if (!old) return old;
 

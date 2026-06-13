@@ -15,10 +15,6 @@ async function migrate() {
 
   const cursor = FeedExecutionLogModel.find({}).cursor();
 
-  for await (const doc of cursor) {
-    // migration logic
-  }
-
   console.log("Migration completed");
   process.exit(0);
 }

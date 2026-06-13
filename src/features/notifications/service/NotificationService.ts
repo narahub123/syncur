@@ -14,7 +14,10 @@ import {
   FEED_EXECUTION_STAGE,
   FeedExecutionStage,
 } from "@/features/feed-execution-logs/constants/feed-execution-log";
-import { NOTIFICATION_TARGET } from "../constants/notification-target";
+import {
+  NOTIFICATION_TARGET,
+  NotificationTarget,
+} from "../constants/notification-target";
 import { NOTIFICATION_TYPE } from "../constants/notification-type";
 import { UserService } from "@/features/users/services/UserService";
 
@@ -96,8 +99,11 @@ export class NotificationService {
   /**
    * 읽지 않은 알림 개수 조회
    */
-  async countUnreadByUserId(userId: Types.ObjectId): Promise<number> {
-    return this.notificationRepository.countUnreadByUserId(userId);
+  async countUnreadByUserId(
+    userId: Types.ObjectId | string,
+    target: NotificationTarget,
+  ): Promise<number> {
+    return this.notificationRepository.countUnreadByUserId(userId, target);
   }
 
   /**
@@ -122,8 +128,11 @@ export class NotificationService {
   /**
    * 사용자 전체 알림 읽음 처리
    */
-  async markAllAsRead(userId: Types.ObjectId | string): Promise<number> {
-    return this.notificationRepository.markAllAsRead(userId);
+  async markAllAsRead(
+    userId: Types.ObjectId | string,
+    target: NotificationTarget,
+  ): Promise<number> {
+    return this.notificationRepository.markAllAsRead(userId, target);
   }
 
   /**

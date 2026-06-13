@@ -9,6 +9,7 @@ import { FeedItemSkeleton } from "@/shared/components/common/FeedItemSkeleton";
 import EmptyFeed from "./EmptyFeed";
 import { useInfiniteScroll } from "@/shared/hooks/useInfiniteScroll";
 import LoadMoreTrigger from "@/shared/components/common/LoadMoreTrigger";
+import UnreadFeedIndicator from "./UnreadFeedIndicator";
 
 type FeedClientProps = {
   isFirstLogin: boolean;
@@ -55,6 +56,7 @@ const FeedClient = ({ isFirstLogin }: FeedClientProps) => {
 
       {!isLoading && status === "HAS_DATA" && (
         <>
+          <UnreadFeedIndicator />
           <FeedList items={feedItems} />
 
           {/* 👇 무한스크롤 트리거 */}

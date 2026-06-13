@@ -11,6 +11,7 @@ import {
 import ConfirmDialog from "@/shared/components/common/ConfirmDialog";
 import { useMarkAllNotificationsAsReadMutation } from "../hooks/useMarkAllNotificationsAsReadMutation";
 import { Button } from "@/shared/components/ui/button";
+import { NOTIFICATION_TARGET } from "@/features/notifications/constants/notification-target";
 
 type Props = {
   query: AdminNotificationsQuery;
@@ -36,7 +37,9 @@ const AdminNotificationsTableToolbar = ({ query, onChange }: Props) => {
     });
   }, [debouncedSearch, onChange]);
 
-  const readAllMutation = useMarkAllNotificationsAsReadMutation();
+  const readAllMutation = useMarkAllNotificationsAsReadMutation(
+    NOTIFICATION_TARGET.ADMIN,
+  );
 
   const handleClick = () => {
     if (readAllMutation.isPending) return;

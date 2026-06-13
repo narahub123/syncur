@@ -8,6 +8,10 @@ import { CreateNotificationDto } from "../types";
 import { NotificationModel } from "../model/notification";
 import { AdminNotificationsQuery } from "@/features/admin/notifiactions/types";
 import { toObjectId } from "@/shared/utils/toObjectId";
+import {
+  NOTIFICATION_TARGET,
+  NotificationTarget,
+} from "../constants/notification-target";
 
 /**
  * Notification Repository
@@ -67,10 +71,14 @@ export class NotificationRepository {
   /**
    * 읽지 않은 알림 개수 조회
    */
-  async countUnreadByUserId(userId: Types.ObjectId): Promise<number> {
+  async countUnreadByUserId(
+    userId: Types.ObjectId | string,
+    target: NotificationTarget,
+  ): Promise<number> {
     return NotificationModel.countDocuments({
-      userId,
+      userId: toObjectId(userId),
       isRead: false,
+      target,
     });
   }
 
@@ -95,10 +103,14 @@ export class NotificationRepository {
   /**
    * 사용자 전체 알림 읽음 처리
    */
-  async markAllAsRead(userId: Types.ObjectId | string): Promise<number> {
+  async markAllAsRead(
+    userId: Types.ObjectId | string,
+    target: NotificationTarget,
+  ): Promise<number> {
     const result = await NotificationModel.updateMany(
       {
         userId,
+        target,
         isRead: false,
       },
       {
@@ -155,15 +167,18 @@ export class NotificationRepository {
       createdAt: { createdAt: mongoOrder },
     } as const;
 
-    const matchStage =
-      search && search.trim().length > 0
+    const matchStage = {
+      target: NOTIFICATION_TARGET.ADMIN,
+
+      ...(search && search.trim().length > 0
         ? {
             [searchField]: {
               $regex: search,
               $options: "i",
             },
           }
-        : {};
+        : {}),
+    };
 
     /**
      * Site + FeedExecutionLog JOIN
