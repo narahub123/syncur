@@ -386,4 +386,27 @@ export class NotificationRepository {
 
     return result ?? null;
   }
+
+  /**
+   * 알림 일괄 생성
+   *
+   * @description
+   * FeedItem 신규 등록 시
+   * 다수 사용자에게 알림을 생성하기 위해 사용한다.
+   */
+  async createMany(notifications: CreateNotificationDto[]): Promise<void> {
+    /**
+     * 생성 대상 없음
+     */
+    if (!notifications.length) {
+      return;
+    }
+
+    /**
+     * 알림 일괄 생성
+     */
+    await NotificationModel.insertMany(notifications, {
+      ordered: false,
+    });
+  }
 }

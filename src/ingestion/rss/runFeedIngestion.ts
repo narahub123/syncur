@@ -77,7 +77,21 @@ export async function runFeedIngestion(feed: FeedLean) {
      * 5. PERSIST
      */
     currentStage = FEED_EXECUTION_STAGE.PERSIST;
-    const persistResult = await upsertFeedItems(feedId, parsed);
+    const { result: persistResult, createdItems } = await upsertFeedItems(
+      feedId,
+      parsed,
+    );
+
+    /**
+     * USER NOTIFICATION
+     *
+     * 신규 생성된 FeedItem에 대해
+     * 구독자 알림 생성
+     */
+    await notificationService.createFeedItemNotifications({
+      feedId,
+      createdItems,
+    });
 
     /**
      * 6. SUCCESS

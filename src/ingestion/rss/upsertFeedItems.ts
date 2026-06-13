@@ -90,5 +90,29 @@ export async function upsertFeedItems(feedId: string, items: RSSItem[]) {
     matched: result.matchedCount,
   });
 
-  return result;
+  /**
+   * 신규 생성된 FeedItem 추출
+   *
+   * bulkWrite의 upsertedIds는
+   * operation index → 생성된 ObjectId 매핑이다.
+   */
+  const createdItems = Object.entries(result.upsertedIds).map(
+    ([index, objectId]) => {
+      const item = items[Number(index)];
+
+      return {
+        feedItemId: objectId.toString(),
+
+        title: item.title,
+        link: item.link,
+
+        guid: item.guid ?? undefined,
+      };
+    },
+  );
+
+  return {
+    result,
+    createdItems,
+  };
 }

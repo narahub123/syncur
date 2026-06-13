@@ -189,4 +189,21 @@ export class SubscriptionService {
 
     return toSubscriptionDto(doc);
   }
+
+  /**
+   * 특정 Feed 구독자 목록 조회
+   *
+   * @description
+   * FeedItem 생성 후 알림 발송 대상을 조회한다.
+   *
+   * data flow
+   * feedId
+   *   ↓
+   * subscriptions
+   *   ↓
+   * userIds
+   */
+  async getSubscribers(feedId: string) {
+    return this.repository.findByFeedId(feedId);
+  }
 }

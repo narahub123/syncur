@@ -113,4 +113,25 @@ export class SubscriptionRepository {
   async countByUserId(userId: string): Promise<number> {
     return SubscriptionModel.countDocuments({ userId });
   }
+
+  /**
+   * 특정 Feed를 구독 중인 사용자 목록 조회
+   *
+   * @description
+   * FeedItem 생성 후 알림 발송 대상 조회에 사용된다.
+   *
+   * data flow
+   * feedId
+   *   ↓
+   * subscriptions
+   *   ↓
+   * userIds
+   */
+  async findByFeedId(feedId: string): Promise<SubscriptionLean[]> {
+    return SubscriptionModel.find({
+      feedId,
+    })
+      .lean<SubscriptionLean[]>()
+      .exec();
+  }
 }

@@ -27,6 +27,7 @@ import {
 } from "../mappers/toNotificationWithSiteAndFeedExecutionLogDto";
 import { AdminNotificationsQuery } from "@/features/admin/notifiactions/types";
 import { notFound } from "next/navigation";
+import { SubscriptionService } from "@/features/subscriptions/services/SubscriptionService";
 
 /**
  * Notification Service
@@ -37,6 +38,7 @@ export class NotificationService {
   constructor(
     private readonly notificationRepository: NotificationRepository,
     private readonly userService: UserService,
+    private readonly subscriptionService: SubscriptionService,
   ) {}
 
   /**
@@ -217,5 +219,70 @@ export class NotificationService {
       notFound();
     }
     return toNotificationWithSiteAndFeedExecutionLogDto(data);
+  }
+
+  /**
+   * 신규 FeedItem 사용자 알림 생성
+   *
+   * @description
+   * Feed를 구독 중인 모든 사용자에게
+   * 신규 FeedItem 알림을 생성한다.
+   */
+  async createFeedItemNotifications(params: {
+    feedId: string;
+    createdItems: {
+      feedItemId: string;
+      title: string;
+      link: string;
+      guid?: string;
+    }[];
+  }): Promise<void> {
+    const { feedId, createdItems } = params;
+
+    /**
+     * 신규 FeedItem 없음
+     */
+    if (!createdItems.length) {
+      return;
+    }
+
+    /**
+     * Feed 구독자 조회
+     */
+    const subscribers = await this.subscriptionService.getSubscribers(feedId);
+
+    /**
+     * 구독자 없음
+     */
+    if (!subscribers.length) {
+      return;
+    }
+
+    /**
+     * 사용자 알림 생성 목록
+     */
+    const notifications = subscribers.flatMap((subscriber) =>
+      createdItems.map((item) => ({
+        userId: toObjectId(subscriber.userId),
+
+        target: NOTIFICATION_TARGET.USER,
+
+        type: NOTIFICATION_TYPE.NEW_FEED_ITEM,
+
+        title: item.title,
+
+        message: "새로운 글이 등록되었습니다.",
+
+        metadata: {
+          feedId: toObjectId(feedId),
+          feedItemId: toObjectId(item.feedItemId),
+        },
+      })),
+    );
+
+    /**
+     * 알림 일괄 생성
+     */
+    await this.notificationRepository.createMany(notifications);
   }
 }
