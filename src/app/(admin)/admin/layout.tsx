@@ -1,5 +1,8 @@
 import { auth } from "@/auth";
 import AdminHeader from "@/features/admin/components/AdminHeader";
+import NotificationDeniedBanner from "@/features/notifications/components/NotificationDeniedBanner";
+import NotificationPermissionBanner from "@/features/notifications/components/NotificationPermissionBanner";
+import NotificationStatusIndicator from "@/features/notifications/components/NotificationStatusIndicator";
 import { USER_ROLE } from "@/features/users/constants/user-role";
 import { ROUTES } from "@/shared/constants/routes";
 import { redirect } from "next/navigation";
@@ -56,6 +59,12 @@ export default async function AdminLayout({
   return (
     <div className="mt-1 flex flex-1 flex-col border-x border-gray-100">
       <AdminHeader />
+      <NotificationPermissionBanner />
+      <NotificationDeniedBanner />
+
+      {/* optional */}
+      <NotificationStatusIndicator />
+
       <main className="flex flex-1 flex-col">{children}</main>
     </div>
   );

@@ -40,7 +40,7 @@ export const useTheme = () => {
    * - true가 되기 전까지는 theme UI 렌더를 지연시켜
    *   SSR / CSR mismatch 방지
    */
-  /* eslint-disable react-hooks/set-state-in-effect */
+   
   useEffect(() => {
     setMounted(true);
   }, []);
