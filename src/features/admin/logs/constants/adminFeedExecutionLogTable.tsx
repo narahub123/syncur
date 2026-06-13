@@ -6,6 +6,7 @@ import {
   FEED_EXECUTION_REASON_KR,
   FEED_EXECUTION_STAGE_KR,
   FeedExecutionErrorType,
+  FeedExecutionReason,
   FeedExecutionStage,
 } from "@/features/feed-execution-logs/constants/feed-execution-log";
 
@@ -18,37 +19,32 @@ export type AdminFeedExecutionLogTableColumn = {
 
 export const adminFeedExecutionLogTableColumns: AdminFeedExecutionLogTableColumn[] =
   [
-    /**
-     * Site Name (primary sorting key)
-     */
     {
-      key: "siteName" as AdminFeedExecutionLogSort,
+      key: "siteName",
       header: "사이트",
       align: "center",
       render: (log) => log.site?.name ?? "-",
     },
 
-    /**
-     * Status
-     */
     {
       key: "status",
       header: "상태",
       render: (log) => <AdminFeedExecutionLogsStatusCell status={log.status} />,
     },
 
-    /**
-     * Started At
-     */
     {
       key: "startedAt",
       header: "시작",
       render: (log) => new Date(log.startedAt).toLocaleString("ko-KR"),
     },
 
-    /**
-     * Duration
-     */
+    {
+      key: "finishedAt",
+      header: "종료",
+      render: (log) =>
+        log.finishedAt ? new Date(log.finishedAt).toLocaleString("ko-KR") : "-",
+    },
+
     {
       key: "durationMs",
       header: "소요(ms)",
@@ -56,41 +52,8 @@ export const adminFeedExecutionLogTableColumns: AdminFeedExecutionLogTableColumn
       render: (log) => log.durationMs ?? "-",
     },
 
-    /**
-     * Fetched Count
-     */
     {
-      key: "fetchedCount" as AdminFeedExecutionLogSort,
-      header: "수집",
-      align: "center",
-      render: (log) => log.fetchedCount ?? 0,
-    },
-
-    /**
-     * Inserted Count
-     */
-    {
-      key: "insertedCount" as AdminFeedExecutionLogSort,
-      header: "저장",
-      align: "center",
-      render: (log) => log.insertedCount ?? 0,
-    },
-
-    /**
-     * Cache Hit
-     */
-    {
-      key: "cacheHit",
-      header: "캐시",
-      align: "center",
-      render: (log) => (log.cacheHit ? "HIT" : "MISS"),
-    },
-
-    /**
-     * Execution ID (trace key)
-     */
-    {
-      key: "errorType" as AdminFeedExecutionLogSort,
+      key: "errorType",
       header: "에러 타입",
       align: "center",
       render: (log) =>
@@ -99,33 +62,19 @@ export const adminFeedExecutionLogTableColumns: AdminFeedExecutionLogTableColumn
         ] ?? "-",
     },
 
-    /**
-     * Failed Stage (debug 핵심)
-     */
     {
-      key: "failedAtStage" as AdminFeedExecutionLogSort,
+      key: "failedAtStage",
       header: "단계",
       align: "center",
       render: (log) =>
         FEED_EXECUTION_STAGE_KR[log.failedAtStage as FeedExecutionStage] ?? "-",
     },
-    /**
-     * Reason
-     */
+
     {
       key: "reason",
       header: "사유",
       align: "center",
-      render: (log) => FEED_EXECUTION_REASON_KR[log.reason] ?? "-",
-    },
-
-    /**
-     * HTTP Status (RSS fetch 결과)
-     */
-    {
-      key: "httpStatus" as AdminFeedExecutionLogSort,
-      header: "HTTP",
-      align: "center",
-      render: (log) => log.httpStatus ?? "-",
+      render: (log) =>
+        FEED_EXECUTION_REASON_KR[log.reason as FeedExecutionReason] ?? "-",
     },
   ];

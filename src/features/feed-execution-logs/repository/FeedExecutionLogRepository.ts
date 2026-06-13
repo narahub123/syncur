@@ -2,20 +2,7 @@ import { FeedExecutionLogModel } from "../model/feed-execution-log";
 import { FeedExecutionLogWithFeedAndSiteLeanPagedResponse } from "../dto/feedExecutionLogDto";
 import { AdminFeedExecutionLogsQuery } from "../types";
 
-/**
- * Admin Feed Execution Log 조회 Repository
- *
- * 특징:
- * - User / Feed repository와 동일한 pagination pattern 적용
- * - search + sort + pagination + count 동시 지원
- * - Feed + Site join 포함 (admin read model)
- */
 export class FeedExecutionLogRepository {
-  /**
-   * 로그 목록 조회 (페이지네이션 + 검색 + 정렬)
-   *
-   * Admin UI 전용 API
-   */
   async findAllPaginated(
     params: AdminFeedExecutionLogsQuery,
   ): Promise<FeedExecutionLogWithFeedAndSiteLeanPagedResponse> {
@@ -29,34 +16,32 @@ export class FeedExecutionLogRepository {
     } = params;
 
     const skip = (page - 1) * limit;
-
     const mongoOrder = sortOrder === "asc" ? 1 : -1;
 
+    /**
+     * 1. sortMap (LEGACY 제거 완료)
+     */
     const sortMap = {
       siteName: { "site.name": mongoOrder },
       errorType: { "error.type": mongoOrder },
       status: { status: mongoOrder },
       reason: { reason: mongoOrder },
-      httpStatus: { httpStatus: mongoOrder },
       startedAt: { startedAt: mongoOrder },
+      finishedAt: { finishedAt: mongoOrder },
       durationMs: { durationMs: mongoOrder },
-      cacheHit: { cacheHit: mongoOrder },
-      fetchedCount: { fetchedCount: mongoOrder },
-      insertedCount: { insertedCount: mongoOrder },
       failedAtStage: { failedAtStage: mongoOrder },
     } as const;
 
+    /**
+     * 2. searchMap
+     */
     const searchMap = {
       siteName: "site.name",
       status: "status",
       reason: "reason",
       errorType: "error.type",
-      httpStatus: "httpStatus",
     } as const;
 
-    /**
-     * 1. base pipeline (JOIN 먼저)
-     */
     const basePipeline = [
       {
         $lookup: {
@@ -88,9 +73,6 @@ export class FeedExecutionLogRepository {
       },
     ];
 
-    /**
-     * 2. match stage (JOIN 이후 적용!)
-     */
     const matchStage =
       search && search.trim().length > 0
         ? {
@@ -101,9 +83,6 @@ export class FeedExecutionLogRepository {
           }
         : {};
 
-    /**
-     * 3. pipeline (match는 lookup 이후)
-     */
     const pipelineBase = [
       ...basePipeline,
       ...(Object.keys(matchStage).length ? [{ $match: matchStage }] : []),
@@ -112,17 +91,13 @@ export class FeedExecutionLogRepository {
     const [items, countResult] = await Promise.all([
       FeedExecutionLogModel.aggregate([
         ...pipelineBase,
+        { $sort: sortMap[sort] },
+        { $skip: skip },
+        { $limit: limit },
 
-        {
-          $sort: sortMap[sort],
-        },
-        {
-          $skip: skip,
-        },
-        {
-          $limit: limit,
-        },
-
+        /**
+         * 3. FINAL PROJECT
+         */
         {
           $project: {
             _id: 1,
@@ -134,14 +109,8 @@ export class FeedExecutionLogRepository {
             finishedAt: 1,
             durationMs: 1,
 
-            httpStatus: 1,
-            cacheHit: 1,
-
-            fetchedCount: 1,
-            insertedCount: 1,
-
-            error: 1,
             failedAtStage: 1,
+            error: 1,
 
             createdAt: 1,
             updatedAt: 1,

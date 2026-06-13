@@ -7,12 +7,9 @@ export type AdminFeedExecutionLogSort =
   | "errorType"
   | "status"
   | "reason"
-  | "httpStatus"
   | "startedAt"
+  | "finishedAt"
   | "durationMs"
-  | "cacheHit"
-  | "fetchedCount"
-  | "insertedCount"
   | "failedAtStage";
 
 export type AdminFeedExecutionLogPageSize = 10 | 20 | 50 | 100;

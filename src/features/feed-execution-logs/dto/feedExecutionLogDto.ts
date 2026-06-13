@@ -15,28 +15,49 @@ import { PaginatedResponse } from "@/shared/types/pagination";
 export type FeedExecutionLogDto = {
   _id: string;
 
+  /**
+   * Feed / Execution 식별자
+   */
   feedId: string;
   executionId: string;
 
+  /**
+   * 실행 상태
+   */
   status: FeedExecutionStatus;
-  reason: FeedExecutionReason;
+  reason?: FeedExecutionReason | null;
 
+  /**
+   * 실행 시간
+   */
   startedAt: string;
   finishedAt?: string | null;
   durationMs?: number | null;
 
-  httpStatus?: number | null;
-  cacheHit?: boolean;
+  /**
+   * 실패 stage
+   */
+  failedAtStage?: FeedExecutionStage | null;
 
+  /**
+   * Fetch 단계 로그
+   */
   fetch?: FetchLog | null;
+
+  /**
+   * Parse 단계 로그
+   */
   parse?: ParseLog | null;
+
+  /**
+   * Persist 단계 로그
+   */
   persist?: PersistLog | null;
 
-  fetchedCount?: number;
-  insertedCount?: number;
-
+  /**
+   * 에러 정보
+   */
   error?: FeedExecutionError | null;
-  failedAtStage?: FeedExecutionStage | null;
 
   createdAt: string;
   updatedAt: string;
@@ -45,28 +66,44 @@ export type FeedExecutionLogDto = {
 export type FeedExecutionLogWithFeedAndSiteDto = {
   _id: string;
 
+  /**
+   * 실행 식별자
+   */
   executionId: string;
 
+  /**
+   * 실행 상태
+   */
   status: FeedExecutionStatus;
-  reason: FeedExecutionReason;
+  reason?: FeedExecutionReason | null;
 
+  /**
+   * 실행 시간
+   */
   startedAt: string;
   finishedAt: string | null;
   durationMs: number | null;
 
-  httpStatus: number | null;
-  cacheHit: boolean;
+  /**
+   * 실패 stage
+   */
+  failedAtStage: FeedExecutionStage | null;
 
-  fetchedCount: number;
-  insertedCount: number;
+  /**
+   * Fetch / Parse / Persist stage 로그
+   */
+  fetch?: FetchLog | null;
+  parse?: ParseLog | null;
+  persist?: PersistLog | null;
 
+  /**
+   * 에러 정보
+   */
   error: {
     type: string | null;
     message: string | null;
     stack: string | null;
   } | null;
-
-  failedAtStage: FeedExecutionStage | null;
 
   createdAt: string;
   updatedAt: string;

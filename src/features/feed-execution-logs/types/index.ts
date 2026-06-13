@@ -13,9 +13,30 @@ import { SortOrder } from "mongoose";
  */
 export type FetchLog = {
   url: string;
+
   etag?: string;
   lastModified?: string;
-  cacheResult?: "HIT" | "MISS";
+
+  /**
+   * 캐시 결과
+   */
+  cache: {
+    hit: boolean;
+  };
+
+  /**
+   * HTTP 상태 코드 (옵션)
+   */
+  statusCode?: number;
+
+  /**
+   * 응답 크기 or payload size
+   */
+  size?: number;
+
+  /**
+   * 요청 응답 시간
+   */
   responseTimeMs?: number;
 };
 

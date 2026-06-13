@@ -1,3 +1,10 @@
+import {
+  FEED_EXECUTION_ERROR_TYPE,
+  FEED_EXECUTION_REASON,
+  FEED_EXECUTION_STAGE,
+  FEED_EXECUTION_STATUS,
+  FeedExecutionStage,
+} from "@/features/feed-execution-logs/constants/feed-execution-log";
 import { feedExecutionLogService } from "@/features/feed-execution-logs/service/FeedExecutionLogService.instance";
 import { FeedLean } from "@/shared/types/domain-leans";
 import { RSS_CONFIG } from "./rss-config";
@@ -5,12 +12,6 @@ import { fetchRSS } from "./fetchRss";
 import { parseRSS } from "./parseRss";
 import { upsertFeedItems } from "./upsertFeedItems";
 import { feedIngestionService } from "@/features/feeds/service/FeedIngestionService.instance";
-import {
-  FEED_EXECUTION_ERROR_TYPE,
-  FEED_EXECUTION_REASON,
-  FEED_EXECUTION_STATUS,
-  FeedExecutionStage,
-} from "@/features/feed-execution-logs/constants/feed-execution-log";
 import { notificationService } from "@/features/notifications/service/NotificationService.instance";
 
 export async function runFeedIngestion(feed: FeedLean) {
@@ -20,10 +21,7 @@ export async function runFeedIngestion(feed: FeedLean) {
   const executionId = execution.executionId;
   const feedExecutionLogId = execution.id;
 
-  /**
-   * 현재 stage 추적용 변수 (핵심)
-   */
-  let currentStage: FeedExecutionStage = "fetch";
+  let currentStage: FeedExecutionStage = FEED_EXECUTION_STAGE.FETCH;
 
   try {
     /**
@@ -42,16 +40,14 @@ export async function runFeedIngestion(feed: FeedLean) {
     /**
      * 2. FETCH
      */
-    currentStage = "fetch";
-    await feedExecutionLogService.updateStage(executionId, currentStage);
+    currentStage = FEED_EXECUTION_STAGE.FETCH;
 
     const fetchResult = await fetchRSS(feed);
 
     /**
      * 3. CACHE CHECK
      */
-    currentStage = "cache_check";
-    await feedExecutionLogService.updateStage(executionId, currentStage);
+    currentStage = FEED_EXECUTION_STAGE.CACHE_CHECK;
 
     if (fetchResult.type === "NOT_MODIFIED") {
       await feedExecutionLogService.updateExecution(executionId, {
@@ -60,7 +56,9 @@ export async function runFeedIngestion(feed: FeedLean) {
         finishedAt: new Date(),
         fetch: {
           url: feed.feedUrl,
-          cacheResult: "HIT",
+          cache: {
+            hit: true,
+          },
         },
       });
 
@@ -72,17 +70,13 @@ export async function runFeedIngestion(feed: FeedLean) {
     /**
      * 4. PARSE
      */
-    currentStage = "parse";
-    await feedExecutionLogService.updateStage(executionId, currentStage);
-
+    currentStage = FEED_EXECUTION_STAGE.PARSE;
     const parsed = parseRSS(xml);
 
     /**
      * 5. PERSIST
      */
-    currentStage = "persist";
-    await feedExecutionLogService.updateStage(executionId, currentStage);
-
+    currentStage = FEED_EXECUTION_STAGE.PERSIST;
     const persistResult = await upsertFeedItems(feedId, parsed);
 
     /**
@@ -90,16 +84,21 @@ export async function runFeedIngestion(feed: FeedLean) {
      */
     await feedExecutionLogService.updateExecution(executionId, {
       status: FEED_EXECUTION_STATUS.SUCCESS,
-      reason: undefined,
       finishedAt: new Date(),
+
       fetch: {
         url: feed.feedUrl,
         etag,
         lastModified,
+        cache: {
+          hit: false,
+        },
       },
+
       parse: {
         normalizedCount: parsed.length,
       },
+
       persist: {
         upserted: persistResult.upsertedCount ?? 0,
         matched: persistResult.matchedCount ?? 0,
@@ -108,7 +107,7 @@ export async function runFeedIngestion(feed: FeedLean) {
     });
 
     /**
-     * 7. FEED STATE UPDATE (projection)
+     * 7. FEED STATE UPDATE
      */
     await feedIngestionService.handleSuccess({
       feedId,
@@ -116,22 +115,19 @@ export async function runFeedIngestion(feed: FeedLean) {
       lastModified,
     });
   } catch (err) {
-    /**
-     * ERROR → stage 기반으로 결정 (중요)
-     */
     const reason =
-      currentStage === "fetch"
+      currentStage === FEED_EXECUTION_STAGE.FETCH
         ? FEED_EXECUTION_REASON.FETCH_ERROR
-        : currentStage === "cache_check"
-          ? FEED_EXECUTION_REASON.FETCH_ERROR
-          : currentStage === "parse"
-            ? FEED_EXECUTION_REASON.PARSE_ERROR
-            : FEED_EXECUTION_REASON.PERSIST_ERROR;
+        : currentStage === FEED_EXECUTION_STAGE.PARSE
+          ? FEED_EXECUTION_REASON.PARSE_ERROR
+          : currentStage === FEED_EXECUTION_STAGE.PERSIST
+            ? FEED_EXECUTION_REASON.PERSIST_ERROR
+            : FEED_EXECUTION_REASON.FETCH_ERROR;
 
     const errorType =
-      currentStage === "fetch"
+      currentStage === FEED_EXECUTION_STAGE.FETCH
         ? FEED_EXECUTION_ERROR_TYPE.HTTP_ERROR
-        : currentStage === "parse"
+        : currentStage === FEED_EXECUTION_STAGE.PARSE
           ? FEED_EXECUTION_ERROR_TYPE.XML_PARSE_ERROR
           : FEED_EXECUTION_ERROR_TYPE.DB_ERROR;
 
@@ -146,12 +142,12 @@ export async function runFeedIngestion(feed: FeedLean) {
       error: {
         type: errorType,
         message: err instanceof Error ? err.message : String(err),
+        stack: err instanceof Error ? err.stack : undefined,
       },
     });
 
     /**
-     * RSS 실행 중 에러가 발생한 경우
-     * 모든 관리자에게 알림을 전송한다.
+     * ADMIN NOTIFICATION
      */
     await notificationService.createAdminErrorNotification({
       siteId: feed.siteId.toString(),
@@ -162,7 +158,7 @@ export async function runFeedIngestion(feed: FeedLean) {
     });
 
     /**
-     * 9. FEED POLICY UPDATE
+     * FEED FAILURE POLICY
      */
     const result = await feedIngestionService.handleFailure(feedId);
 

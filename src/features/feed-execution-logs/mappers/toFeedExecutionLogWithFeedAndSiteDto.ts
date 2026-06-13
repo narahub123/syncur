@@ -1,4 +1,7 @@
-import { FeedExecutionReason, FeedExecutionStatus } from "../constants/feed-execution-log";
+import {
+  FeedExecutionReason,
+  FeedExecutionStatus,
+} from "../constants/feed-execution-log";
 import { FeedExecutionLogWithFeedAndSiteDto } from "../dto/feedExecutionLogDto";
 import { FeedExecutionLogWithFeedAndSiteLean } from "../types/lean";
 
@@ -11,18 +14,24 @@ export function toFeedExecutionLogWithFeedAndSiteDto(
     executionId: log.executionId,
 
     status: log.status as FeedExecutionStatus,
-    reason: log.reason as FeedExecutionReason,
+    reason: (log.reason as FeedExecutionReason) ?? null,
 
     startedAt: log.startedAt.toISOString(),
     finishedAt: log.finishedAt?.toISOString() ?? null,
     durationMs: log.durationMs ?? null,
 
-    httpStatus: log.httpStatus ?? null,
-    cacheHit: log.cacheHit ?? false,
+    failedAtStage: log.failedAtStage ?? null,
 
-    fetchedCount: log.fetchedCount ?? 0,
-    insertedCount: log.insertedCount ?? 0,
+    /**
+     * stage logs
+     */
+    fetch: log.fetch ?? null,
+    parse: log.parse ?? null,
+    persist: log.persist ?? null,
 
+    /**
+     * error
+     */
     error: log.error
       ? {
           type: log.error.type ?? null,
@@ -31,11 +40,12 @@ export function toFeedExecutionLogWithFeedAndSiteDto(
         }
       : null,
 
-    failedAtStage: log.failedAtStage ?? null,
-
     createdAt: log.createdAt.toISOString(),
     updatedAt: log.updatedAt.toISOString(),
 
+    /**
+     * feed info
+     */
     feed: log.feed
       ? {
           _id: log.feed._id.toString(),
@@ -44,6 +54,9 @@ export function toFeedExecutionLogWithFeedAndSiteDto(
         }
       : null,
 
+    /**
+     * site info
+     */
     site: log.site
       ? {
           _id: log.site._id.toString(),
