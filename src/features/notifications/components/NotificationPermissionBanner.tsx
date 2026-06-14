@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useNotificationPermission } from "../hooks/useNotificationPermission";
 import { Bell, X } from "lucide-react"; // 💡 X 아이콘 임포트
-import { STORAGE_KEY } from "../constants/notification-banner";
+import { storage, STORAGE_KEYS } from "@/shared/utils/storage";
 
 export default function NotificationPermissionBanner() {
   const { isDefault, requestPermission } = useNotificationPermission();
@@ -13,7 +13,7 @@ export default function NotificationPermissionBanner() {
 
   // 컴포넌트 마운트 시 사용자가 이전에 [닫기]를 눌렀었는지 로컬스토리지 확인
   useEffect(() => {
-    const dismissed = localStorage.getItem(STORAGE_KEY.HIDE_PERMISSION_BANNER);
+    const dismissed = storage.get(STORAGE_KEYS.HIDE_PERMISSION_BANNER);
     if (!dismissed) {
       setIsDismissed(false); // 닫은 기록이 없어야 비로소 화면에 보여줍니다.
     }
@@ -24,7 +24,7 @@ export default function NotificationPermissionBanner() {
    */
   const handleDismiss = (e: React.MouseEvent) => {
     e.stopPropagation(); // 버튼 클릭 전파 방지
-    localStorage.setItem("hide_permission_banner", "true"); // 로컬스토리지에 저장
+    storage.set(STORAGE_KEYS.HIDE_PERMISSION_BANNER, true);
     setIsDismissed(true); // 화면에서 즉시 제거
   };
 

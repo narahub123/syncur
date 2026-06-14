@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { RotateCcw, CheckCircle } from "lucide-react";
-import { STORAGE_KEY } from "@/features/notifications/constants/notification-banner";
+import { storage, STORAGE_KEYS } from "@/shared/utils/storage";
 
 export default function NotificationSettingsControl() {
   const [hasHiddenBanners, setHasHiddenBanners] = useState(false);
@@ -10,10 +10,8 @@ export default function NotificationSettingsControl() {
 
   // 현재 브라우저에 숨겨진 배너 기록이 존재하는지 실시간 체크
   const checkStorage = () => {
-    const hidePermission = localStorage.getItem(
-      STORAGE_KEY.HIDE_PERMISSION_BANNER,
-    );
-    const hideDenied = localStorage.getItem(STORAGE_KEY.HIDE_DENIED_BANNER);
+    const hidePermission = storage.get(STORAGE_KEYS.HIDE_PERMISSION_BANNER);
+    const hideDenied = storage.get(STORAGE_KEYS.HIDE_DENIED_BANNER);
     setHasHiddenBanners(!!hidePermission || !!hideDenied);
   };
 
@@ -25,8 +23,8 @@ export default function NotificationSettingsControl() {
    * 숨겨진 배너 기억을 초기화하여 다시 보여주는 핸들러
    */
   const handleResetBanners = () => {
-    localStorage.removeItem(STORAGE_KEY.HIDE_PERMISSION_BANNER);
-    localStorage.removeItem(STORAGE_KEY.HIDE_DENIED_BANNER);
+    storage.remove(STORAGE_KEYS.HIDE_PERMISSION_BANNER);
+    storage.remove(STORAGE_KEYS.HIDE_DENIED_BANNER);
 
     // 시각적 피드백 주기
     setIsResetSuccess(true);

@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useNotificationPermission } from "../hooks/useNotificationPermission";
 import { AlertTriangle, X } from "lucide-react"; // 💡 X 아이콘 임포트
-import { STORAGE_KEY } from "../constants/notification-banner";
+import { storage, STORAGE_KEYS } from "@/shared/utils/storage";
 
 export default function NotificationDeniedBanner() {
   const { isDenied } = useNotificationPermission();
@@ -13,7 +13,7 @@ export default function NotificationDeniedBanner() {
   const [isDismissed, setIsDismissed] = useState(true);
 
   useEffect(() => {
-    const dismissed = localStorage.getItem(STORAGE_KEY.HIDE_DENIED_BANNER);
+    const dismissed = storage.get(STORAGE_KEYS.HIDE_DENIED_BANNER);
     if (!dismissed) {
       setIsDismissed(false);
     }
@@ -24,7 +24,7 @@ export default function NotificationDeniedBanner() {
    */
   const handleDismiss = (e: React.MouseEvent) => {
     e.stopPropagation();
-    localStorage.setItem("hide_denied_banner", "true");
+    storage.set(STORAGE_KEYS.HIDE_DENIED_BANNER, true);
     setIsDismissed(true);
   };
 
