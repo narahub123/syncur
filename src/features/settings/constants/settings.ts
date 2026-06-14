@@ -17,4 +17,9 @@ export const SETTINGS_LIST: SettingsMenuItemType[] = [
     label: "화면 설정",
     href: ROUTES.SETTINGS_APPEARANCE,
   },
+  {
+    category: "extra",
+    label: "기타 설정",
+    href: ROUTES.SETTINGS_EXTRA,
+  },
 ];
