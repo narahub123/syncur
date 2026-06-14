@@ -24,6 +24,13 @@ export const ROUTES = {
   SETTINGS_SUBSCRIPTIONS: "/settings/subscriptions",
   SETTINGS_EXTRA: "/settings/extra",
 
+  SUPPORT: "/support",
+  SUPPORT_CONTACT: "/support/contact",
+  SUPPORT_REQUESTS: "/support/requests",
+  SUPPORT_BUG_REPORT: "/support/bug-report",
+  SUPPORT_NOTICES: "/support/notices",
+  SUPPORT_FAQ: "/support/faq",
+
   HIDDEN: "/hidden",
 
   ADMIN_DASHBOARD: "/admin",

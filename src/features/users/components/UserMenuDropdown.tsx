@@ -19,6 +19,10 @@ const UserMenuDropdown = () => {
     router.push(ROUTES.SETTINGS);
   };
 
+  const handleSupportClick = () => {
+    router.push(ROUTES.SUPPORT);
+  };
+
   const handleLogoutClick = async () => {
     try {
       await signOut({ redirectTo: ROUTES.HOME });
@@ -43,6 +47,9 @@ const UserMenuDropdown = () => {
       >
         <DropdownMenuItem onClick={handleSettingClick}>
           설정 열기
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={handleSupportClick}>
+          고객 관리
         </DropdownMenuItem>
 
         <DropdownMenuItem variant="destructive" onClick={handleLogoutClick}>
