@@ -148,6 +148,10 @@ const NotificationSchema = new Schema<NotificationDocument>(
         type: Schema.Types.ObjectId,
         ref: "feedExecutionLog",
       },
+
+      originUrl: {
+        type: String,
+      },
     },
   },
   {

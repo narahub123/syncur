@@ -12,22 +12,27 @@ export interface NotificationMetadata {
   /**
    * 관련 피드 ID
    */
-  feedId?: Types.ObjectId;
+  feedId?: Types.ObjectId | string;
 
   /**
    * 관련 게시글 ID
    */
-  feedItemId?: Types.ObjectId;
+  feedItemId?: Types.ObjectId | string;
 
   /**
    * 관련 사이트 ID
    */
-  siteId?: Types.ObjectId;
+  siteId?: Types.ObjectId | string;
 
   /**
    * 관련 RSS 실행 로그 ID
    */
-  feedExecutionLogId?: Types.ObjectId;
+  feedExecutionLogId?: Types.ObjectId | string;
+
+  /**
+   * 💡 RSS 아이템의 실제 외부 원문 링크 URL 주소
+   */
+  originUrl?: string; // 형식을 안정적으로 받아오기 위해 string 타입 추가
 }
 
 /**

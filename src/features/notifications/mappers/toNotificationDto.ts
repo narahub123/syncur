@@ -34,7 +34,7 @@ export function toNotificationDto(
     metadata: notification.metadata
       ? {
           feedId: notification.metadata.feedId?.toString(),
-          postId: notification.metadata.postId?.toString(),
+          feedItemId: notification.metadata.feedItemId?.toString(),
           siteId: notification.metadata.siteId?.toString(),
           feedExecutionLogId:
             notification.metadata.feedExecutionLogId?.toString(),

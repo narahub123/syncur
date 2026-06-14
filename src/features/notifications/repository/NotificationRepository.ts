@@ -5,7 +5,7 @@ import {
   NotificationWithSiteAndFeedExecutionLogLeanPagedResponse,
 } from "../types/notification-leans";
 import { CreateNotificationDto } from "../types";
-import { NotificationModel } from "../model/notification";
+import { NotificationDocument, NotificationModel } from "../model/notification";
 import { AdminNotificationsQuery } from "@/features/admin/notifiactions/types";
 import { toObjectId } from "@/shared/utils/toObjectId";
 import {
@@ -409,18 +409,20 @@ export class NotificationRepository {
    * FeedItem 신규 등록 시
    * 다수 사용자에게 알림을 생성하기 위해 사용한다.
    */
-  async createMany(notifications: CreateNotificationDto[]): Promise<void> {
+  async createMany(
+    notifications: CreateNotificationDto[],
+  ): Promise<NotificationDocument[]> {
     /**
      * 생성 대상 없음
      */
     if (!notifications.length) {
-      return;
+      return [];
     }
 
     /**
      * 알림 일괄 생성
      */
-    await NotificationModel.insertMany(notifications, {
+    return await NotificationModel.insertMany(notifications, {
       ordered: false,
     });
   }

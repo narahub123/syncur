@@ -16,7 +16,7 @@ export interface NotificationMetadataLean {
   /**
    * 관련 게시글 ID
    */
-  postId?: Types.ObjectId;
+  feedItemId?: Types.ObjectId;
 
   /**
    * 관련 사이트 ID

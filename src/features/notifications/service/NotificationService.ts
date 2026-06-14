@@ -31,6 +31,8 @@ import {
 import { AdminNotificationsQuery } from "@/features/admin/notifiactions/types";
 import { notFound } from "next/navigation";
 import { SubscriptionService } from "@/features/subscriptions/services/SubscriptionService";
+import { API_ROUTES } from "@/shared/sse/sse-api-routes";
+import { sendBulkSseNotifications } from "@/shared/api/sse-client";
 
 /**
  * Notification Service
@@ -155,8 +157,19 @@ export class NotificationService {
     stage: FeedExecutionStage;
     errorMessage: string;
   }): Promise<void> {
+    /**
+     * 1. 관리자 목록 조회
+     */
     const admins = await this.userService.findAdmins();
 
+    /**
+     * 2. 관리자 없음
+     */
+    if (!admins.length) return;
+
+    /**
+     * 3. 제목 생성 (stage 기반)
+     */
     const title =
       params.stage === FEED_EXECUTION_STAGE.FETCH
         ? "RSS 수집 실패"
@@ -164,32 +177,62 @@ export class NotificationService {
           ? "RSS 파싱 실패"
           : "RSS 저장 실패";
 
+    /**
+     * 4. 메시지 생성
+     */
     const message = [
       `Feed ID: ${params.feedId}`,
       `Stage: ${params.stage}`,
       `Error: ${params.errorMessage}`,
     ].join("\n");
 
-    await Promise.all(
-      admins.map((admin) =>
-        this.notificationRepository.create({
-          userId: toObjectId(admin._id),
+    /**
+     * 5. DB 저장용 데이터 생성
+     */
+    const notifications = admins.map((admin) => ({
+      userId: toObjectId(admin._id),
+      target: NOTIFICATION_TARGET.ADMIN,
+      type: NOTIFICATION_TYPE.RSS_FAILED,
+      title,
+      message,
+      metadata: {
+        feedId: toObjectId(params.feedId),
+        feedExecutionLogId: toObjectId(params.feedExecutionLogId),
+        siteId: toObjectId(params.siteId),
+      },
+    }));
 
-          target: NOTIFICATION_TARGET.ADMIN,
+    /**
+     * 6. DB 저장
+     */
+    const savedNotifications =
+      await this.notificationRepository.createMany(notifications);
 
-          type: NOTIFICATION_TYPE.RSS_FAILED,
-
-          title,
-          message,
-
-          metadata: {
-            feedId: toObjectId(params.feedId),
-            feedExecutionLogId: toObjectId(params.feedExecutionLogId),
-            siteId: toObjectId(params.siteId),
-          },
-        }),
-      ),
-    );
+    /**
+     * 7. SSE 브로드캐스트 (완전히 분리)
+     *    → Promise.all 없이 순차 처리 (안정성 목적)
+     */
+    /**
+     * 7. SSE 브로드캐스트 (내부 API 브릿지 호출 방식으로 전면 교체)
+     */
+    /**
+     * 6. SSE 브로드캐스트 (최종 마스터 정제 버전)
+     */
+    /**
+     * 7. SSE 브로드캐스트 (최종 마스터 정제 버전)
+     */
+    await sendBulkSseNotifications({
+      url: API_ROUTES.SSE.ADMIN,
+      savedNotifications,
+      target: NOTIFICATION_TARGET.ADMIN,
+      type: NOTIFICATION_TYPE.RSS_FAILED,
+      channelName: "관리자 에러 알림",
+      extraMeta: {
+        feedId: params.feedId,
+        siteId: params.siteId,
+        feedExecutionLogId: params.feedExecutionLogId,
+      },
+    });
   }
 
   /**
@@ -249,49 +292,59 @@ export class NotificationService {
     const { feedId, createdItems } = params;
 
     /**
-     * 신규 FeedItem 없음
+     * 1. 신규 FeedItem 없음
      */
-    if (!createdItems.length) {
-      return;
-    }
+    if (!createdItems.length) return;
 
     /**
-     * Feed 구독자 조회
+     * 2. 구독자 조회
      */
     const subscribers = await this.subscriptionService.getSubscribers(feedId);
 
     /**
-     * 구독자 없음
+     * 3. 구독자 없음
      */
-    if (!subscribers.length) {
-      return;
-    }
+    if (!subscribers.length) return;
 
     /**
-     * 사용자 알림 생성 목록
+     * 4. 알림 데이터 생성 (DB 저장용)
      */
     const notifications = subscribers.flatMap((subscriber) =>
       createdItems.map((item) => ({
         userId: toObjectId(subscriber.userId),
-
         target: NOTIFICATION_TARGET.USER,
-
         type: NOTIFICATION_TYPE.NEW_FEED_ITEM,
-
         title: item.title,
-
         message: "새로운 글이 등록되었습니다.",
-
         metadata: {
           feedId: toObjectId(feedId),
           feedItemId: toObjectId(item.feedItemId),
+          originUrl: item.link,
         },
       })),
     );
 
     /**
-     * 알림 일괄 생성
+     * 5. DB 저장
      */
-    await this.notificationRepository.createMany(notifications);
+    const savedNotifications =
+      await this.notificationRepository.createMany(notifications);
+    /**
+     * 6. SSE 브로드캐스트 (내부 API 브릿지 호출 방식으로 전면 교체)
+     */
+    console.log(
+      `📢 [User Feed SSE] 발송 대상 개수: ${savedNotifications.length}개`,
+    );
+
+    /**
+     * 6. SSE 브로드캐스트 (최종 마스터 정제 버전)
+     */
+    await sendBulkSseNotifications({
+      url: API_ROUTES.SSE.USER,
+      savedNotifications,
+      target: NOTIFICATION_TARGET.USER,
+      type: NOTIFICATION_TYPE.NEW_FEED_ITEM,
+      channelName: "유저 피드 알림",
+    });
   }
 }

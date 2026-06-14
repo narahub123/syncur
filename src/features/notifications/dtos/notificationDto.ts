@@ -7,30 +7,20 @@ import {
   FeedExecutionStage,
   FeedExecutionStatus,
 } from "@/features/feed-execution-logs/constants/feed-execution-log";
+import { NotificationMetadata } from "../types";
 
-/**
- * Notification 관련 리소스 정보
- */
-export interface NotificationMetadataDto {
-  /**
-   * 관련 피드 ID
-   */
-  feedId?: string;
+export interface NotificationMessageDTO {
+  id: string;
 
-  /**
-   * 관련 게시글 ID
-   */
-  postId?: string;
+  target: NotificationTarget;
+  type: NotificationType;
 
-  /**
-   * 관련 사이트 ID
-   */
-  siteId?: string;
+  title: string;
+  message: string;
 
-  /**
-   * 관련 RSS 실행 로그 ID
-   */
-  feedExecutionLogId?: string;
+  createdAt: number;
+
+  meta?: NotificationMetadata;
 }
 
 /**
@@ -77,7 +67,7 @@ export interface NotificationDto {
   /**
    * 관련 리소스 정보
    */
-  metadata?: NotificationMetadataDto;
+  metadata?: NotificationMetadata;
 
   /**
    * 생성일시
