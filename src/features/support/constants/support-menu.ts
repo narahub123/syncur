@@ -1,11 +1,11 @@
 import { ROUTES } from "@/shared/constants/routes";
 
 export const SUPPORT_MENU = {
-  CONTACT: "문의하기",
-  BUG_REPORT: "오류 신고",
+  INQUIRIES: "문의하기",
+  BUG_REPORTS: "오류 신고",
   REQUESTS: "내 문의",
   NOTICES: "공지사항",
-  FAQ: "FAQ",
+  FAQS: "FAQ",
 } as const;
 
 export type SupportNavItem = {
@@ -15,12 +15,12 @@ export type SupportNavItem = {
 
 export const SUPPORT_NAV_ITEMS: SupportNavItem[] = [
   {
-    label: SUPPORT_MENU.CONTACT,
-    href: ROUTES.SUPPORT_CONTACT,
+    label: SUPPORT_MENU.INQUIRIES,
+    href: ROUTES.SUPPORT_INQUIRIES,
   },
   {
-    label: SUPPORT_MENU.BUG_REPORT,
-    href: ROUTES.SUPPORT_BUG_REPORT,
+    label: SUPPORT_MENU.BUG_REPORTS,
+    href: ROUTES.SUPPORT_BUG_REPORTS,
   },
   {
     label: SUPPORT_MENU.REQUESTS,
@@ -31,7 +31,7 @@ export const SUPPORT_NAV_ITEMS: SupportNavItem[] = [
     href: ROUTES.SUPPORT_NOTICES,
   },
   {
-    label: SUPPORT_MENU.FAQ,
-    href: ROUTES.SUPPORT_FAQ,
+    label: SUPPORT_MENU.FAQS,
+    href: ROUTES.SUPPORT_FAQS,
   },
 ];

@@ -25,11 +25,11 @@ export const ROUTES = {
   SETTINGS_EXTRA: "/settings/extra",
 
   SUPPORT: "/support",
-  SUPPORT_CONTACT: "/support/contact",
+  SUPPORT_INQUIRIES: "/support/inquiries",
   SUPPORT_REQUESTS: "/support/requests",
-  SUPPORT_BUG_REPORT: "/support/bug-report",
+  SUPPORT_BUG_REPORTS: "/support/bug-reports",
   SUPPORT_NOTICES: "/support/notices",
-  SUPPORT_FAQ: "/support/faq",
+  SUPPORT_FAQS: "/support/faqs",
 
   HIDDEN: "/hidden",
 
