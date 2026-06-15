@@ -15,3 +15,7 @@ export const toFaqDto = (lean: FaqLean): FaqResponseDTO => {
     updatedAt: lean.updatedAt.toISOString(),
   };
 };
+
+export const toFaqDtos = (items: FaqLean[]) => {
+  return items.map(toFaqDto);
+};
