@@ -9,6 +9,9 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { ROUTES } from "@/shared/constants/routes";
+import { DeleteButton } from "@/shared/components/common/DeleteButton";
+import { Button } from "@base-ui/react";
+import { useDeleteFaqMutation } from "@/features/support/faqs/hooks/useDeleteFaqMutation";
 
 interface AdminFAQNewClientProps {
   faqId?: string;
@@ -62,7 +65,7 @@ export default function AdminFAQNewClient({
     }
   };
 
-  console.log("initial", initialData);
+  const { mutate: deleteFaq } = useDeleteFaqMutation();
 
   return (
     <div className="bg-background mx-auto w-full max-w-2xl rounded-xl border p-6 shadow-sm">
@@ -89,6 +92,11 @@ export default function AdminFAQNewClient({
         onSubmit={handleFaqSubmit}
         initialValues={initialData}
         submitLabel={isEditMode ? "FAQ 수정 완료" : "FAQ 등록하기"}
+        footer={
+          isEditMode ? (
+            <DeleteButton onDelete={() => deleteFaq(faqId!)} />
+          ) : null
+        }
       />
     </div>
   );

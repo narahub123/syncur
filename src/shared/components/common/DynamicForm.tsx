@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react"; // ◀ useEffect 추가
+import { useEffect } from "react";
 import {
   DefaultValues,
   FieldValues,
@@ -35,18 +35,20 @@ interface DynamicFormProps<T extends FieldValues> {
   configs: FormFieldConfig[];
   onSubmit: (data: T) => void;
   submitLabel?: string;
-  initialValues?: DefaultValues<T>; // 수정 모드를 위한 초기값
+  initialValues?: DefaultValues<T>;
+  footer?: React.ReactNode; // 💡 폼 하단부 커스텀 영역(삭제 버튼 등 배치용)
 }
 
 export function DynamicForm<T extends FieldValues>({
   configs,
   onSubmit,
   submitLabel = "제출하기",
-  initialValues, // ◀ Props 받아오기
+  initialValues,
+  footer, // 💡 Props로 전달받음
 }: DynamicFormProps<T>) {
   const formSchema = createDynamicSchema(configs);
 
-  // 2. 기본값 계산할 때 initialValues가 있으면 그걸 먼저 쓰고, 없으면 빈 문자열("") 세팅
+  // 기본값 설정: 초기값이 있으면 적용, 없으면 빈 문자열로 초기화
   const defaultValues = configs.reduce((acc, field) => {
     const fallbackValue = initialValues
       ? (initialValues as Record<string, unknown>)[field.name]
@@ -59,7 +61,7 @@ export function DynamicForm<T extends FieldValues>({
     defaultValues,
   });
 
-  // ◀ 3. 서버에서 데이터를 뒤늦게 받아오는 경우(비동기)를 위해 reset 로직 추가
+  // 서버 데이터 비동기 로딩 대응: initialValues 변경 시 폼 상태 리셋
   useEffect(() => {
     if (initialValues) {
       form.reset(initialValues as DefaultValues<FieldValues>);
@@ -76,6 +78,7 @@ export function DynamicForm<T extends FieldValues>({
         onSubmit={form.handleSubmit(handleFormSubmit)}
         className="space-y-6"
       >
+        {/* 폼 필드 렌더링 */}
         {configs.map((field) => (
           <FormField
             key={field.name}
@@ -99,7 +102,6 @@ export function DynamicForm<T extends FieldValues>({
                             {...formField}
                           />
                         );
-
                       case "textarea":
                         return (
                           <Textarea
@@ -107,13 +109,12 @@ export function DynamicForm<T extends FieldValues>({
                             {...formField}
                           />
                         );
-
                       case "select":
                         return (
                           <Select
                             onValueChange={formField.onChange}
                             defaultValue={formField.value}
-                            value={formField.value} // ◀ 비동기 데이터 매핑용 value 명시
+                            value={formField.value}
                           >
                             <SelectTrigger>
                               <SelectValue
@@ -131,7 +132,6 @@ export function DynamicForm<T extends FieldValues>({
                             </SelectContent>
                           </Select>
                         );
-
                       case "file":
                         return (
                           <Input
@@ -144,7 +144,6 @@ export function DynamicForm<T extends FieldValues>({
                             }
                           />
                         );
-
                       default:
                         return <input type="hidden" {...formField} />;
                     }
@@ -156,13 +155,18 @@ export function DynamicForm<T extends FieldValues>({
           />
         ))}
 
-        <Button
-          type="submit"
-          className="w-full"
-          disabled={form.formState.isSubmitting}
-        >
-          {form.formState.isSubmitting ? "전송 중..." : submitLabel}
-        </Button>
+        {/* 💡 하단 푸터 영역: 폼 제출 버튼과 분리된 기능(삭제 버튼 등)을 렌더링 */}
+        <div className="border-t pt-4">
+          <div className="flex w-full items-center justify-between">
+            {/* 왼쪽: 삭제 버튼 등이 위치하는 푸터 영역 */}
+            <div className="flex items-center">{footer}</div>
+
+            {/* 오른쪽: 제출 버튼 (항상 노출) */}
+            <Button type="submit" disabled={form.formState.isSubmitting}>
+              {form.formState.isSubmitting ? "전송 중..." : submitLabel}
+            </Button>
+          </div>
+        </div>
       </form>
     </Form>
   );

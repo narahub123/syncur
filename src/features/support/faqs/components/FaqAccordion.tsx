@@ -12,7 +12,7 @@ export function FaqAccordion() {
   if (error) return <div>FAQ를 불러올 수 없습니다.</div>;
 
   return (
-    <Accordion type="single" collapsible>
+    <Accordion type="single" collapsible className="p-4">
       {/* 2. 데이터가 있을 때만 map 실행 */}
       {faqs?.map((faq) => (
         <FaqAccordionItem
