@@ -1,0 +1,18 @@
+import { NoticeResponseDTO } from "../dtos";
+import { NoticeLean } from "../types/lean";
+
+/**
+ * Notice 원본 Lean 객체를 직렬화된 NoticeResponseDTO로 변환합니다.
+ */
+export const toNoticeDto = (lean: NoticeLean): NoticeResponseDTO => {
+  return {
+    id: lean._id.toString(),
+    title: lean.title,
+    content: lean.content,
+    isPinned: lean.isPinned,
+    views: lean.views,
+    createdBy: lean.createdBy.toString(),
+    createdAt: lean.createdAt.toISOString(),
+    updatedAt: lean.updatedAt.toISOString(),
+  };
+};

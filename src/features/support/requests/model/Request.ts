@@ -1,0 +1,180 @@
+// server/models/Request.ts
+import mongoose, { Schema, Types, Document } from "mongoose";
+import {
+  REQUEST_STATUS,
+  REQUEST_TYPE,
+  RequestStatus,
+  RequestType,
+} from "../constants/request-type";
+import { RequestAdminReplyLean, RequestMetadata } from "../types/lean";
+
+/**
+ * Request Document
+ */
+export interface RequestDocument extends Document {
+  /**
+   * 요청 작성 사용자 ID
+   */
+  userId: Types.ObjectId;
+
+  /**
+   * 사용자 이메일
+   */
+  userEmail: string;
+
+  /**
+   * 요청 유형 (일반 문의 혹은 버그 제보)
+   */
+  type: RequestType;
+
+  /**
+   * 요청 제목
+   */
+  title: string;
+
+  /**
+   * 요청 본문 내용
+   */
+  content: string;
+
+  /**
+   * 처리 상태
+   */
+  status: RequestStatus;
+
+  /**
+   * BUG 유형일 때만 바인딩되는 가변 메타데이터
+   */
+  metadata?: RequestMetadata;
+
+  /**
+   * 관리자 답변 정보 (종속 임베디드 데이터)
+   */
+  adminReply?: RequestAdminReplyLean | null;
+
+  /**
+   * 생성일시
+   */
+  createdAt: Date;
+
+  /**
+   * 수정일시
+   */
+  updatedAt: Date;
+}
+
+/**
+ * Request Schema
+ */
+const RequestSchema = new Schema<RequestDocument>(
+  {
+    /**
+     * 요청 작성 사용자
+     */
+    userId: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+
+    /**
+     * 사용자 이메일 (빠른 확인용 식별 필드)
+     */
+    userEmail: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+
+    /**
+     * 요청 유형
+     */
+    type: {
+      type: String,
+      enum: Object.values(REQUEST_TYPE),
+      required: true,
+    },
+
+    /**
+     * 요청 제목
+     */
+    title: {
+      type: String,
+      required: true,
+      trim: true,
+      maxlength: 200,
+    },
+
+    /**
+     * 요청 본문 내용
+     */
+    content: {
+      type: String,
+      required: true,
+    },
+
+    /**
+     * 처리 상태
+     */
+    status: {
+      type: String,
+      enum: Object.values(REQUEST_STATUS),
+      default: REQUEST_STATUS.PENDING,
+    },
+
+    /**
+     * 버그 제보 시 확장 환경 정보 메타데이터
+     */
+    metadata: {
+      os: { type: String, trim: true },
+      browser: { type: String, trim: true },
+      fileUrls: {
+        type: [String],
+        default: [],
+      },
+      issueTrackerUrl: { type: String, trim: true },
+    },
+
+    /**
+     * 관리자 답변 영역 (답변 완료 시 활성화)
+     */
+    adminReply: {
+      type: {
+        replyContent: { type: String, required: true },
+        repliedAt: { type: Date, default: Date.now },
+        repliedUpdatedAt: { type: Date, default: Date.now },
+        repliedBy: {
+          type: Schema.Types.ObjectId,
+          ref: "User",
+          required: true,
+        },
+      },
+      default: null,
+    },
+  },
+  {
+    timestamps: true,
+    versionKey: false,
+  },
+);
+
+/**
+ * 유저 본인의 마이페이지 요청 내역 최신순 조회 인덱스
+ */
+RequestSchema.index({
+  userId: 1,
+  createdAt: -1,
+});
+
+/**
+ * 어드민 전용 필터링 및 정렬 복합 인덱스 (유형별, 상태별 대응)
+ */
+RequestSchema.index({
+  type: 1,
+  status: 1,
+  createdAt: -1,
+});
+
+export const RequestModel =
+  mongoose.models.Request ||
+  mongoose.model<RequestDocument>("Request", RequestSchema);

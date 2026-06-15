@@ -1,5 +1,5 @@
 // types/form.ts
-export type FieldType = "text" | "textarea" | "select" | "file";
+export type FieldType = "text" | "textarea" | "select" | "file" | "editor";
 
 export interface FormFieldConfig {
   name: string;

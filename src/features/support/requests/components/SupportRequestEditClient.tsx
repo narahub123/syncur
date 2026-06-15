@@ -5,6 +5,7 @@ import { inquiryFormConfig } from "../../inquiries/types/inquiries";
 import { bugReportFormConfig } from "../../bug-reports/types/bugReport";
 import { BugEditFormValues, InquiryEditFormValues } from "../types";
 import { useEffect, useState } from "react";
+import { REQUEST_TYPE, RequestType } from "../constants/request-type";
 
 interface SupportRequestEditClientProps {
   requestId: string;
@@ -13,9 +14,7 @@ interface SupportRequestEditClientProps {
 const SupportRequestEditClient = ({
   requestId,
 }: SupportRequestEditClientProps) => {
-  const [requestType, setRequestType] = useState<"INQUIRY" | "BUG" | null>(
-    null,
-  );
+  const [requestType, setRequestType] = useState<RequestType | null>(null);
 
   // 💡 any 대신 두 가지 타입 중 하나이거나 초기값인 null이 될 수 있음을 명시
   const [initialData, setInitialData] = useState<
@@ -27,7 +26,7 @@ const SupportRequestEditClient = ({
     //실제로는 axios나 fetch로 /api/support/requests/${requestId} 를 찌르게 됩니다.
 
     // 예시: 버그 신고 데이터가 서버에서 날아왔다고 가정
-    setRequestType("BUG");
+    setRequestType(REQUEST_TYPE.BUG_REPORT);
     setInitialData({
       title: "대시보드 진입 시 무한 로딩이 걸립니다.",
       content:
@@ -59,10 +58,12 @@ const SupportRequestEditClient = ({
     <div className="mx-auto w-full max-w-xl space-y-4 p-6">
       <div>
         <h1 className="text-xl font-bold">
-          {requestType === "BUG" ? "버그 제보 수정" : "1:1 문의 내용 수정"}
+          {requestType === REQUEST_TYPE.BUG_REPORT
+            ? "버그 제보 수정"
+            : "1:1 문의 내용 수정"}
         </h1>
         <p className="text-muted-foreground text-xs">
-          {requestType === "BUG"
+          {requestType === REQUEST_TYPE.BUG_REPORT
             ? "제보하셨던 에러 내용을 정정합니다."
             : "작성하셨던 문의 내용을 수정합니다."}
         </p>
@@ -70,7 +71,9 @@ const SupportRequestEditClient = ({
 
       <DynamicForm
         configs={
-          requestType === "BUG" ? bugReportFormConfig : inquiryFormConfig
+          requestType === REQUEST_TYPE.BUG_REPORT
+            ? bugReportFormConfig
+            : inquiryFormConfig
         }
         onSubmit={handleEditSubmit}
         initialValues={initialData}

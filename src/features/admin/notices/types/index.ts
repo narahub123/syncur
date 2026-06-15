@@ -29,7 +29,7 @@ export const noticeFormConfig: FormFieldConfig[] = [
   {
     name: "content",
     label: "공지 내용",
-    type: "textarea",
+    type: "editor",
     placeholder: "공지할 상세 내용을 입력해 주세요.",
     required: true,
   },

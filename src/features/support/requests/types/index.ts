@@ -15,4 +15,4 @@ export interface BugEditFormValues {
 // 3. 서버에서 클라이언트로 내려줄 통합 데이터 인터페이스
 export type SupportRequestDetail =
   | { id: string; type: "INQUIRY"; data: InquiryEditFormValues }
-  | { id: string; type: "BUG"; data: BugEditFormValues };
+  | { id: string; type: "BUG_REPORT"; data: BugEditFormValues };
