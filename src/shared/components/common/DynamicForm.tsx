@@ -30,6 +30,7 @@ import {
 import { Button } from "@/shared/components/ui/button";
 import { FormFieldConfig } from "@/shared/types/form";
 import { createDynamicSchema } from "@/shared/lib/validations/schemaBuilder";
+import { RichEditor } from "./RichEditor";
 
 interface DynamicFormProps<T extends FieldValues> {
   configs: FormFieldConfig[];
@@ -142,6 +143,14 @@ export function DynamicForm<T extends FieldValues>({
                             onChange={(e) =>
                               formField.onChange(e.target.files?.[0])
                             }
+                          />
+                        );
+                      case "editor":
+                        return (
+                          <RichEditor
+                            value={formField.value || ""}
+                            onChange={formField.onChange}
+                            placeholder={field.placeholder}
                           />
                         );
                       default:
