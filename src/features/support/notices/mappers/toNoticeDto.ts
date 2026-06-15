@@ -16,3 +16,7 @@ export const toNoticeDto = (lean: NoticeLean): NoticeResponseDTO => {
     updatedAt: lean.updatedAt.toISOString(),
   };
 };
+
+export const toNoticeDtos = (items: NoticeLean[]) => {
+  return items.map(toNoticeDto);
+};
