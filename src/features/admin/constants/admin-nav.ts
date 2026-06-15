@@ -6,4 +6,8 @@ export const ADMIN_NAV_LIST = [
   { label: "Feeds", href: ROUTES.ADMIN_FEEDS },
   { label: "Logs", href: ROUTES.ADMIN_LOGS },
   { label: "알림", href: ROUTES.ADMIN_NOTIFICATIONS },
+  { label: "공지", href: ROUTES.ADMIN_NOTICES },
+  { label: "문의", href: ROUTES.ADMIN_INQUIRIES },
+  { label: "버그", href: ROUTES.ADMIN_BUG_REPORTS },
+  { label: "FAQs", href: ROUTES.ADMIN_FAQS },
 ];
