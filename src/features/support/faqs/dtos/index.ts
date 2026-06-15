@@ -1,15 +1,40 @@
+import { PaginatedResponse } from "@/shared/types/pagination";
+
 /**
  * 프론트엔드로 전송하기 위한 FAQ 응답 DTO
  */
 export interface FaqResponseDTO {
-  id: string; // 💡 Types.ObjectId -> string 변환
+  _id: string;
+  userId: string;
   category: string;
   question: string;
   answer: string;
   sortOrder: number;
-  createdAt: string; // 💡 Date -> ISO String 변환
+  isPublished: boolean;
+  createdAt: string;
   updatedAt: string;
 }
+
+/**
+ * FAQ 목록 조회용 DTO
+ */
+export interface FaqWithUserDto extends FaqResponseDTO {
+  /**
+   * 관련 작성자
+   */
+  user: {
+    _id: string;
+    name: string | null;
+    email: string;
+    image: string | null;
+    role: string;
+  } | null;
+}
+
+/**
+ * FAQ 페이지 응답 DTO
+ */
+export type FaqWithUserDtoPagedResponse = PaginatedResponse<FaqWithUserDto>;
 
 /**
  * FAQ 생성용 DTO (Server Action ➔ Service)
@@ -19,6 +44,7 @@ export interface CreateFaqDto {
   question: string;
   answer: string;
   sortOrder?: number;
+  isPublished?: boolean;
 }
 
 /**
@@ -29,4 +55,5 @@ export interface UpdateFaqDto {
   question?: string;
   answer?: string;
   sortOrder?: number;
+  isPublished?: boolean;
 }

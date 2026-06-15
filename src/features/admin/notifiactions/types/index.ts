@@ -1,5 +1,4 @@
-import { SortOrder } from "mongoose";
-
+import { SortOrder } from "@/shared/types/pagination";
 /**
  * 관리자 알림 검색 필드
  */

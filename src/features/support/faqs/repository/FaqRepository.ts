@@ -1,8 +1,13 @@
 import { Types } from "mongoose";
 import { FaqModel } from "../model/Faq";
-import { FaqLean } from "../types/lean";
+import {
+  FaqLean,
+  FaqWithUserLean,
+  FaqWithUserLeanPagedResponse,
+} from "../types/lean";
 import { toObjectId } from "@/shared/utils/toObjectId";
 import { CreateFaqDto, UpdateFaqDto } from "../dtos";
+import { AdminFaqsQuery } from "../types/search";
 
 /**
  * Faq Repository
@@ -15,9 +20,21 @@ export class FaqRepository {
    * * @param dto 생성할 FAQ 데이터 규격 (카테고리, 질문, 답변, 정렬 순서 등)
    * @returns Mongoose 도큐먼트가 Plain Object로 변환된 FAQ Lean 객체
    */
-  async create(dto: CreateFaqDto): Promise<FaqLean> {
-    const faq = await FaqModel.create(dto);
+  async create(
+    userId: string | Types.ObjectId,
+    dto: CreateFaqDto,
+  ): Promise<FaqLean> {
+    const faq = await FaqModel.create({
+      ...dto,
+      userId: toObjectId(userId),
+    });
     return faq.toObject();
+  }
+
+  async getAllFaq(isPublishedOnly: boolean = false): Promise<FaqLean[]> {
+    const query = isPublishedOnly ? { isPublished: true } : {};
+
+    return await FaqModel.find(query).sort({ sortOrder: 1 }).lean();
   }
 
   /**
@@ -66,5 +83,56 @@ export class FaqRepository {
   async deleteById(id: Types.ObjectId | string): Promise<boolean> {
     const result = await FaqModel.deleteOne({ _id: toObjectId(id) });
     return result.deletedCount > 0;
+  }
+
+  async findAllPaginated(
+    query: AdminFaqsQuery,
+  ): Promise<FaqWithUserLeanPagedResponse> {
+    const {
+      page,
+      limit,
+      search,
+      sort = "createdAt",
+      sortOrder = "desc",
+    } = query;
+    const skip = (page - 1) * limit;
+
+    const matchStage = search
+      ? { question: { $regex: search, $options: "i" } }
+      : {};
+
+    const mongoOrder = sortOrder === "asc" ? 1 : -1;
+
+    const sortMap = {
+      question: { question: mongoOrder },
+      category: { category: mongoOrder },
+      isPublished: { isPublished: mongoOrder },
+      sortOrder: { sortOrder: mongoOrder }, // FAQ의 우선순위 필드
+      createdAt: { createdAt: mongoOrder },
+    } as const;
+
+    const sortQuery =
+      sortMap[sort as keyof typeof sortMap] || sortMap.createdAt;
+
+    const [items, countResult] = await Promise.all([
+      FaqModel.aggregate<FaqWithUserLean>([
+        { $match: matchStage },
+        {
+          $lookup: {
+            from: "users",
+            localField: "userId",
+            foreignField: "_id",
+            as: "author",
+          },
+        },
+        { $unwind: { path: "$author", preserveNullAndEmptyArrays: true } },
+        { $sort: sortQuery },
+        { $skip: skip },
+        { $limit: limit },
+      ]),
+      FaqModel.countDocuments(matchStage),
+    ]);
+
+    return { items, totalCount: countResult };
   }
 }

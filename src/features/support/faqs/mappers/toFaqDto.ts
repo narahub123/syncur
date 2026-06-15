@@ -6,11 +6,13 @@ import { FaqLean } from "../types/lean";
  */
 export const toFaqDto = (lean: FaqLean): FaqResponseDTO => {
   return {
-    id: lean._id.toString(),
+    _id: lean._id.toString(),
+    userId: lean.userId.toString(),
     category: lean.category,
     question: lean.question,
     answer: lean.answer,
     sortOrder: lean.sortOrder,
+    isPublished: lean.isPublished,
     createdAt: lean.createdAt.toISOString(),
     updatedAt: lean.updatedAt.toISOString(),
   };

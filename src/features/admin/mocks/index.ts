@@ -2,7 +2,6 @@ import {
   AdminBugReportDetail,
   BugAnswerFormValues,
 } from "../bug-reports/types";
-import { FaqFormValues } from "../faqs/types";
 import { AnswerFormValues, UserInquiryData } from "../inquiries/types";
 
 export const mockInquiryExample: UserInquiryData = {
@@ -25,15 +24,6 @@ export const mockBugReportExample: AdminBugReportDetail = {
     "https://storage.syncur.com/uploads/bug-reports/2026/06/dashboard-error-screenshot.png", // 첨부파일 주소 (없으면 null)
   createdAt: "2026-06-15 10:24",
   currentStatus: "접수대기", // '접수대기' | '확인중' | '수정중' | '해결완료'
-};
-
-export const mockFaqExample: FaqFormValues = {
-  id: "1",
-  category: "결제/환불",
-  question: "구독 플랜을 변경하면 남은 기간의 금액은 어떻게 정산되나요?",
-  answerContent: `구독 중인 플랜을 상위 등급으로 업그레이드하시는 경우, 기존 플랜의 잔여 일수만큼 금액이 일할 계산(Pro-rata)되어 차액만 즉시 결제됩니다.\n\n반대로 다운그레이드하시는 경우에는 현재 결제 주기가 종료되는 시점까지 기존 플랜 기능이 유지되며, 다음 결제일부로 새 플랜 금액이 적용됩니다.`,
-  sortOrder: "1", // 목록 가장 처음에 노출하기 위해 1 세팅
-  isPublished: "공개",
 };
 
 export const mockInquiryExistingAnswer: AnswerFormValues = {

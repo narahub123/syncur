@@ -1,6 +1,4 @@
-import { Faq } from "../types";
-
-export const FAQS: Faq[] = [
+export const FAQS = [
   {
     value: "add-feed",
     question: "피드는 어떻게 추가하나요?",

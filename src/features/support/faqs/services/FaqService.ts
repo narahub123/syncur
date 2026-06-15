@@ -1,6 +1,14 @@
-import { CreateFaqDto, FaqResponseDTO, UpdateFaqDto } from "../dtos";
+import {
+  CreateFaqDto,
+  FaqResponseDTO,
+  FaqWithUserDtoPagedResponse,
+  UpdateFaqDto,
+} from "../dtos";
 import { toFaqDto, toFaqDtos } from "../mappers/toFaqDto";
+import { toFaqWithUserDtoS } from "../mappers/toFaqWithUserDto";
 import { FaqRepository } from "../repository/FaqRepository";
+import { faqRepository } from "../repository/FaqRepository.instance";
+import { AdminFaqsQuery } from "../types/search";
 
 /**
  * Faq Service
@@ -11,12 +19,22 @@ export class FaqService {
   constructor(private readonly faqRepository: FaqRepository) {}
 
   /**
+   * FAQ 목록 조회
+   * @param isPublishedOnly - true면 공개된 것만, false면 전체 조회
+   */
+  async getAllFaq(isPublishedOnly: boolean = false): Promise<FaqResponseDTO[]> {
+    const faqs = await faqRepository.getAllFaq(isPublishedOnly);
+
+    return toFaqDtos(faqs);
+  }
+
+  /**
    * FAQ 생성 (어드민 전용)
    * * @param dto 신규 FAQ 등록을 위한 데이터 규격
    * @returns 직렬화된 FAQ 응답 DTO
    */
-  async createFaq(dto: CreateFaqDto): Promise<FaqResponseDTO> {
-    const faq = await this.faqRepository.create(dto);
+  async createFaq(userId: string, dto: CreateFaqDto): Promise<FaqResponseDTO> {
+    const faq = await this.faqRepository.create(userId, dto);
     return toFaqDto(faq);
   }
 
@@ -50,5 +68,28 @@ export class FaqService {
    */
   async deleteFaq(id: string): Promise<boolean> {
     return this.faqRepository.deleteById(id);
+  }
+
+  getFaqById = async (id: string) => {
+    const faq = await this.faqRepository.findById(id);
+    if (!faq) throw new Error("FAQ를 찾을 수 없습니다.");
+    return toFaqDto(faq);
+  };
+
+  async findAllPaginated(
+    query: AdminFaqsQuery,
+  ): Promise<FaqWithUserDtoPagedResponse> {
+    const { items, totalCount } =
+      await this.faqRepository.findAllPaginated(query);
+
+    return {
+      items: toFaqWithUserDtoS(items), // 기존에 작성하시던 변환 함수
+      pagination: {
+        page: query.page,
+        limit: query.limit,
+        totalCount,
+        totalPages: Math.ceil(totalCount / query.limit),
+      },
+    };
   }
 }

@@ -1,10 +1,11 @@
 // server/models/Faq.ts
-import mongoose, { Schema, Document } from "mongoose";
+import mongoose, { Schema, Document, Types } from "mongoose";
 
 /**
  * Faq Document
  */
 export interface FaqDocument extends Document {
+  userId: Types.ObjectId;
   /**
    * FAQ 카테고리 (예: 결제, 이용문의, 버그신고 등)
    */
@@ -34,6 +35,8 @@ export interface FaqDocument extends Document {
    * 수정일시
    */
   updatedAt: Date;
+
+  isPublished: boolean;
 }
 
 /**
@@ -41,6 +44,14 @@ export interface FaqDocument extends Document {
  */
 const FaqSchema = new Schema<FaqDocument>(
   {
+    /**
+     * 작성자
+     */
+    userId: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
     /**
      * FAQ 카테고리
      */
@@ -75,6 +86,12 @@ const FaqSchema = new Schema<FaqDocument>(
     sortOrder: {
       type: Number,
       default: 0,
+    },
+
+    isPublished: {
+      type: Boolean,
+      default: true,
+      index: true,
     },
   },
   {

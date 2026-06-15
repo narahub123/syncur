@@ -3,15 +3,17 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/shared/components/ui/accordion";
-import { Faq } from "../types";
+import { FaqResponseDTO } from "../dtos";
 
-type Props = { faq: Faq };
+type Props = { faq: FaqResponseDTO };
 
 const FaqAccordionItem = ({ faq }: Props) => {
   return (
-    <AccordionItem value={faq.value}>
-      <AccordionTrigger>{faq.question}</AccordionTrigger>
-      <AccordionContent>{faq.answer}</AccordionContent>
+    <AccordionItem value={faq._id}>
+      <AccordionTrigger className="hover:bg-accent cursor-pointer px-2">
+        {faq.question}
+      </AccordionTrigger>
+      <AccordionContent className="p-2">{faq.answer}</AccordionContent>
     </AccordionItem>
   );
 };
