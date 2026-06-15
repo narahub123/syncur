@@ -33,3 +33,7 @@ export const toRequestDto = (lean: RequestLean): RequestResponseDTO => {
     updatedAt: lean.updatedAt.toISOString(),
   };
 };
+
+export const toRequestDtos = (items: RequestLean[]) => {
+  return items.map(toRequestDto);
+};

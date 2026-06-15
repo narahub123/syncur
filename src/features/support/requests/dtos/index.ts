@@ -27,3 +27,13 @@ export interface RequestResponseDTO {
   createdAt: string;
   updatedAt: string;
 }
+
+/**
+ * 유저 제보 생성용 DTO (유저가 폼 입력 시 전송)
+ */
+export interface CreateRequestDto {
+  type: RequestType;
+  title: string;
+  content: string;
+  metadata?: RequestMetadata;
+}
