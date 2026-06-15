@@ -2,6 +2,7 @@
 @import "../shared/styles/input.css";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
+@plugin "@tailwindcss/typography";
 /*---break---
  */
 @custom-variant dark (&:is(.dark *));
@@ -331,4 +332,12 @@ body {
   html {
     @apply font-sans;
   }
+}
+
+.tiptap p.is-editor-empty:first-child::before {
+  color: #adb5bd; /* placeholder 색상 */
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  pointer-events: none;
 }
