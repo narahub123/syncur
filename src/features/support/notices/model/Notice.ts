@@ -1,3 +1,7 @@
+import {
+  ImageInfo,
+  ImageInfoSchema,
+} from "@/shared/lib/cloudinary/image-info.model";
 import mongoose, { Schema, Document, Types } from "mongoose";
 
 /**
@@ -38,6 +42,10 @@ export interface NoticeDocument extends Document {
    * 수정일시
    */
   updatedAt: Date;
+  /**
+   * 이미지 배열
+   */
+  images: ImageInfo[];
 }
 
 /**
@@ -86,6 +94,11 @@ const NoticeSchema = new Schema<NoticeDocument>(
     views: {
       type: Number,
       default: 0,
+    },
+
+    images: {
+      type: [ImageInfoSchema],
+      default: [],
     },
   },
   {

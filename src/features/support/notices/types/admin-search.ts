@@ -1,3 +1,4 @@
+import { ImageInfo } from "@/shared/lib/cloudinary/image-info.model";
 import { UserLean } from "@/shared/types/domain-leans";
 import { SortOrder } from "@/shared/types/pagination";
 
@@ -27,6 +28,7 @@ export interface NoticeWithUserLean {
   views: number;
   isPinned: boolean;
   createdBy: string; // 원본 ID
+  images: ImageInfo[];
   createdAt: Date;
   updatedAt: Date;
   // 💡 작성자 어드민 정보 전체 결합
@@ -50,6 +52,7 @@ export interface AdminNoticeResponseDTO {
   content: string;
   views: number;
   isPinned: boolean;
+  images: ImageInfo[];
   createdAt: string;
   updatedAt: string;
   author: {

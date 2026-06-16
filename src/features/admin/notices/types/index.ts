@@ -1,3 +1,5 @@
+import { CLOUDINARY_FOLDERS } from "@/shared/lib/cloudinary/cloudinary.constant";
+import { ImageInfo } from "@/shared/lib/cloudinary/image-info.model";
 import { FormFieldConfig } from "@/shared/types/form";
 
 // ==========================================
@@ -8,6 +10,7 @@ export interface NoticeFormValues {
   category: "일반" | "점검" | "이벤트" | "업데이트";
   content: string;
   isPinned: "일반 공지" | "상단 고정";
+  images: ImageInfo[];
 }
 
 export const noticeFormConfig: FormFieldConfig[] = [
@@ -32,6 +35,12 @@ export const noticeFormConfig: FormFieldConfig[] = [
     type: "editor",
     placeholder: "공지할 상세 내용을 입력해 주세요.",
     required: true,
+    folderName: CLOUDINARY_FOLDERS.NOTICES,
+  },
+  {
+    name: "images", // 폼 상태에 포함시키기 위해 추가
+    label: "이미지 목록",
+    type: "hidden", // DynamicForm에서 별도로 렌더링하지 않도록 타입 지정
   },
   {
     name: "isPinned",

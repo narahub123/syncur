@@ -12,6 +12,7 @@ export const toNoticeDto = (lean: NoticeLean): NoticeResponseDTO => {
     isPinned: lean.isPinned,
     views: lean.views,
     createdBy: lean.createdBy.toString(),
+    images: lean.images,
     createdAt: lean.createdAt.toISOString(),
     updatedAt: lean.updatedAt.toISOString(),
   };

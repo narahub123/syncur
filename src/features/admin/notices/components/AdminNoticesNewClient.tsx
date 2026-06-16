@@ -2,6 +2,9 @@
 
 import { DynamicForm } from "@/shared/components/common/DynamicForm";
 import { noticeFormConfig, NoticeFormValues } from "../types";
+import { useCreateNoticeMutation } from "../hooks/useCreateNoticeMutation";
+import { CreateNoticeDto } from "@/features/support/notices/dtos";
+import { toast } from "sonner";
 
 interface AdminNoticesNewClientProps {
   noticeId?: string; // 주어지면 '수정 모드', 없으면 '생성 모드'
@@ -14,23 +17,34 @@ export default function AdminNoticesNewClient({
 }: AdminNoticesNewClientProps) {
   const isEditMode = Boolean(noticeId);
 
+  const { mutate: createNotice, isPending } = useCreateNoticeMutation();
+
   const handleNoticeSubmit = async (data: NoticeFormValues) => {
-    try {
-      if (isEditMode) {
-        // 📝 수정 API 호출 (PATCH / PUT)
-        console.log(`공지사항 ${noticeId}번 수정 전송:`, data);
-        // await fetch(`/api/admin/notices/${noticeId}`, { method: 'PATCH', body: JSON.stringify(data) });
-        alert("공지사항이 성공적으로 수정되었습니다.");
-      } else {
-        // ➕ 생성 API 호출 (POST)
-        console.log("새 공지사항 등록 전송:", data);
-        // await fetch(`/api/admin/notices`, { method: 'POST', body: JSON.stringify(data) });
-        alert("새로운 공지사항이 등록되었습니다.");
-      }
-    } catch (error) {
-      console.error("공지사항 처리 실패:", error);
-      alert("오류가 발생했습니다.");
+    if (isEditMode) {
+      // 수정 로직 (나중에 훅 구현)
+      toast.info("수정 기능은 현재 준비 중입니다.");
+      return;
     }
+
+    const isPinnedBoolean = data.isPinned === "상단 고정";
+    const dto: CreateNoticeDto = {
+      title: data.title,
+      content: data.content,
+      isPinned: isPinnedBoolean,
+      images: data.images || [],
+    };
+
+    // 💡 생성 처리 및 Sonner 피드백
+    createNotice(dto, {
+      onSuccess: () => {
+        toast.success("게시글이 성공적으로 작성되었습니다.");
+        // router.push("/notices"); // 필요 시 페이지 이동
+      },
+      onError: (error) => {
+        toast.error("게시글 작성 중 오류가 발생했습니다.");
+        console.error(error);
+      },
+    });
   };
 
   return (

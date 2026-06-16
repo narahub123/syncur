@@ -10,7 +10,6 @@ import { ArrowLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { ROUTES } from "@/shared/constants/routes";
 import { DeleteButton } from "@/shared/components/common/DeleteButton";
-import { Button } from "@base-ui/react";
 import { useDeleteFaqMutation } from "@/features/support/faqs/hooks/useDeleteFaqMutation";
 
 interface AdminFAQNewClientProps {

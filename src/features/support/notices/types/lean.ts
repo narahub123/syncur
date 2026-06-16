@@ -1,3 +1,4 @@
+import { ImageInfo } from "@/shared/lib/cloudinary/image-info.model";
 import { Types } from "mongoose";
 
 /**
@@ -10,6 +11,7 @@ export interface NoticeLean {
   isPinned: boolean;
   views: number;
   createdBy: Types.ObjectId;
+  images: ImageInfo[];
   createdAt: Date;
   updatedAt: Date;
 }

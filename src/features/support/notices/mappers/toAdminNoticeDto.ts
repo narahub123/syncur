@@ -15,6 +15,8 @@ export function toAdminNoticeDto(
     content: lean.content,
     views: lean.views,
     isPinned: lean.isPinned,
+    images: lean.images,
+
     createdAt: lean.createdAt.toISOString(),
     updatedAt: lean.updatedAt.toISOString(),
 

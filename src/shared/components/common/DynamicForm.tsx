@@ -7,6 +7,7 @@ import {
   useForm,
   Path,
   SubmitHandler,
+  useWatch,
 } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
@@ -31,6 +32,7 @@ import { Button } from "@/shared/components/ui/button";
 import { FormFieldConfig } from "@/shared/types/form";
 import { createDynamicSchema } from "@/shared/lib/validations/schemaBuilder";
 import { RichEditor } from "./RichEditor";
+import { CLOUDINARY_FOLDERS } from "@/shared/lib/cloudinary/cloudinary.constant";
 
 interface DynamicFormProps<T extends FieldValues> {
   configs: FormFieldConfig[];
@@ -72,6 +74,12 @@ export function DynamicForm<T extends FieldValues>({
   const handleFormSubmit: SubmitHandler<FieldValues> = (data) => {
     onSubmit(data as T);
   };
+
+  const images =
+    useWatch({
+      control: form.control,
+      name: "images",
+    }) || [];
 
   return (
     <Form {...form}>
@@ -143,6 +151,7 @@ export function DynamicForm<T extends FieldValues>({
                             onChange={(e) =>
                               formField.onChange(e.target.files?.[0])
                             }
+                            multiple
                           />
                         );
                       case "editor":
@@ -151,6 +160,26 @@ export function DynamicForm<T extends FieldValues>({
                             value={formField.value || ""}
                             onChange={formField.onChange}
                             placeholder={field.placeholder}
+                            images={images}
+                            onImagesChange={(newImages) =>
+                              form.setValue("images", newImages)
+                            }
+                            folderName={
+                              field.folderName || CLOUDINARY_FOLDERS.DEFAULT
+                            }
+                          />
+                        );
+                      case "hidden":
+                        return (
+                          <input
+                            type="hidden"
+                            {...formField}
+                            // 리액트 훅 폼의 값을 강제로 동기화하기 위한 명시적 처리
+                            value={
+                              Array.isArray(formField.value)
+                                ? JSON.stringify(formField.value)
+                                : formField.value
+                            }
                           />
                         );
                       default:
