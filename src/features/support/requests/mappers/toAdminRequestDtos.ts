@@ -15,7 +15,7 @@ export function toAdminRequestDto(
 ): AdminRequestResponseDTO {
   return {
     // 💡 RequestWithUserAndAdminLean 인터페이스 스펙상 _id가 이미 string이므로 toString() 생략 가능
-    id: lean._id,
+    _id: lean._id,
     userEmail: lean.userEmail,
     type: lean.type,
     title: lean.title,

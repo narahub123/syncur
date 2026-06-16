@@ -6,7 +6,7 @@ import { RequestLean } from "../types/lean";
  */
 export const toRequestDto = (lean: RequestLean): RequestResponseDTO => {
   return {
-    id: lean._id.toString(),
+    _id: lean._id.toString(),
     userId: lean.userId.toString(),
     userEmail: lean.userEmail,
     type: lean.type,

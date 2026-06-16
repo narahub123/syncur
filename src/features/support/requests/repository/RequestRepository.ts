@@ -257,4 +257,15 @@ export class RequestRepository {
 
     return { items, totalCount };
   }
+
+  async countByStatus(status: RequestStatus): Promise<number> {
+    return RequestModel.countDocuments({ status });
+  }
+
+  async countByUserIdAndStatus(
+    userId: string,
+    status: RequestStatus,
+  ): Promise<number> {
+    return RequestModel.countDocuments({ userId: toObjectId(userId), status });
+  }
 }

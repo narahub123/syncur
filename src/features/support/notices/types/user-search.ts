@@ -13,8 +13,8 @@ export type UserNoticeSort = "title" | "views" | "createdAt" | "category";
 export interface UserNoticeQuery {
   page: number;
   limit: number;
-  search?: string;
-  searchField?: UserNoticeSearchField;
+  search: string;
+  searchField: UserNoticeSearchField;
   sort?: UserNoticeSort;
   sortOrder?: SortOrder;
 }

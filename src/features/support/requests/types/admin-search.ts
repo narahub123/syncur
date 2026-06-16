@@ -60,7 +60,7 @@ export interface RequestAdminLeanPagedResponse {
  * 최종 클라이언트 전달용 어드민 응답 DTO
  */
 export interface AdminRequestResponseDTO {
-  id: string;
+  _id: string;
   userEmail: string;
   type: RequestType;
   title: string;

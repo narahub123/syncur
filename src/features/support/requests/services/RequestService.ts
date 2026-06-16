@@ -148,4 +148,18 @@ export class RequestService {
       pagination: { page, limit, totalCount, totalPages },
     };
   }
+  /**
+   * 문의 내역 상세 조회
+   * * @param requestId 문의 고유 ID
+   * @returns 조회된 문의 내역 DTO
+   */
+  async getRequestById(requestId: string): Promise<RequestResponseDTO> {
+    const request = await this.requestRepository.findById(requestId);
+
+    if (!request) {
+      throw new Error("존재하지 않는 문의 내역입니다.");
+    }
+
+    return toRequestDto(request);
+  }
 }

@@ -15,7 +15,7 @@ export interface RequestAdminReplyDTO {
  * 1:1 문의 및 버그 제보 통합 응답 DTO
  */
 export interface RequestResponseDTO {
-  id: string;
+  _id: string;
   userId: string;
   userEmail: string;
   type: RequestType;
