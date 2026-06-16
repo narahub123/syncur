@@ -1,3 +1,4 @@
+import { FieldValues } from "react-hook-form";
 import { CloudinaryFolder } from "../lib/cloudinary/cloudinary.constant";
 
 // types/form.ts
@@ -23,4 +24,7 @@ export interface FormFieldConfig {
   options?: FormFieldOptionType[]; // select 타입일 때 사용
   folderName?: CloudinaryFolder;
   isMultiple?: boolean;
+  accept?: string;
+  maxFiles?: number;
+  visible?: (values: FieldValues) => boolean;
 }

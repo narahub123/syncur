@@ -1,14 +1,16 @@
 import { Types } from "mongoose";
 import { RequestStatus, RequestType } from "../constants/request-type";
 import { OSType } from "../../bug-reports/types/bugReport";
+import { ImageInfo } from "@/shared/lib/cloudinary/image-info.model";
 
 /**
  * 몽고디비 원본 타입을 그대로 유지하는 Request 서브 메타데이터
  */
 export interface RequestMetadata {
+  category: string;
   os?: OSType;
   browser?: string;
-  fileUrls: string[];
+  images: ImageInfo[];
   issueTrackerUrl?: string;
 }
 

@@ -34,6 +34,8 @@ import { createDynamicSchema } from "@/shared/lib/validations/schemaBuilder";
 import { RichEditor } from "./RichEditor";
 import { CLOUDINARY_FOLDERS } from "@/shared/lib/cloudinary/cloudinary.constant";
 import { ImageInfo } from "@/shared/lib/cloudinary/image-info.model";
+import { ImagePreview } from "./ImagePreview";
+import { uploadCloudinaryImage } from "@/shared/lib/cloudinary/cloudinary.utils";
 
 interface DynamicFormProps<T extends FieldValues> {
   configs: FormFieldConfig[];
@@ -155,10 +157,56 @@ export function DynamicForm<T extends FieldValues>({
                             name={formField.name}
                             ref={formField.ref}
                             onBlur={formField.onBlur}
-                            onChange={(e) =>
-                              formField.onChange(e.target.files?.[0])
-                            }
-                            multiple
+                            // 1. 설정값 동적 바인딩
+                            accept={field.accept || "image/*"}
+                            multiple={field.isMultiple || false}
+                            onChange={async (e) => {
+                              const files = e.target.files;
+                              if (!files || files.length === 0) return;
+
+                              const currentImages =
+                                form.getValues("images") || [];
+                              const filesArray = Array.from(files);
+
+                              // 2. 개수 제한 검증
+                              if (field.maxFiles) {
+                                const totalAfterUpload =
+                                  currentImages.length + filesArray.length;
+                                if (totalAfterUpload > field.maxFiles) {
+                                  alert(
+                                    `최대 ${field.maxFiles}개까지만 업로드 가능합니다. (현재: ${currentImages.length}개)`,
+                                  );
+                                  return;
+                                }
+                              }
+
+                              try {
+                                // 3. 업로드 로직 (기존 유지)
+                                const uploadPromises = filesArray.map(
+                                  async (file) => {
+                                    const formData = new FormData();
+                                    formData.append("file", file);
+                                    return await uploadCloudinaryImage(
+                                      formData,
+                                      field.folderName ||
+                                        CLOUDINARY_FOLDERS.DEFAULT,
+                                    );
+                                  },
+                                );
+
+                                const newImages =
+                                  await Promise.all(uploadPromises);
+
+                                // 4. 상태 업데이트
+                                form.setValue("images", [
+                                  ...currentImages,
+                                  ...newImages,
+                                ]);
+                              } catch (err) {
+                                console.error("파일 업로드 실패:", err);
+                                alert("파일 업로드 중 오류가 발생했습니다.");
+                              }
+                            }}
                           />
                         );
                       case "editor":
@@ -200,6 +248,15 @@ export function DynamicForm<T extends FieldValues>({
           />
         ))}
 
+        {/* 이미지 미리보기 영역 추가 */}
+        {images.length > 0 && (
+          <ImagePreview
+            images={images}
+            onDelete={(newImages) => {
+              form.setValue("images", newImages); // 폼 상태 업데이트
+            }}
+          />
+        )}
         {/* 💡 하단 푸터 영역: 폼 제출 버튼과 분리된 기능(삭제 버튼 등)을 렌더링 */}
         <div className="border-t pt-4">
           <div className="flex w-full items-center justify-between">

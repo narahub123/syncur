@@ -2,35 +2,44 @@
 
 import { DynamicForm } from "@/shared/components/common/DynamicForm";
 import { bugReportFormConfig, BugReportFormValues } from "../types/bugReport";
+import { useCreateRequestMutation } from "../../requests/hooks/useCreateRequestMutation";
+import { toast } from "sonner";
 
 const SupportBugReportClient = () => {
+  const { mutate: submitRequest } = useCreateRequestMutation();
+
   const handleBugReportSubmit = async (data: BugReportFormValues) => {
+    // 1. 서버 DTO 구조에 맞게 페이로드 구성
+    const payload = {
+      type: "BUG_REPORT" as const,
+      title: data.title,
+      content: data.content,
+      // 필요 시 email 필드 추가 가능
+      metadata: {
+        category: data.category,
+        os: data.os,
+        browser: data.browser,
+        images: data.images,
+      },
+    };
+
     try {
-      console.log("제출된 버그 신고 데이터:", data);
+      console.log("제출된 버그 신고 데이터:", payload);
 
-      const formData = new FormData();
-      formData.append("title", data.title);
-      formData.append("os", data.os); // 변경된 필드명 적용
-      formData.append("browser", data.browser); // 추가된 필드 적용
-      formData.append("content", data.content);
-
-      // fileUrls가 배열이므로 반복문으로 추가 (서버에서 여러 파일 수용 시)
-      if (data.fileUrls && data.fileUrls.length > 0) {
-        data.fileUrls.forEach((file) => {
-          formData.append("fileUrls", file);
-        });
-      }
-
-      // API 전송 로직 예시
-      // const res = await fetch("/api/support/bugs", {
-      //   method: "POST",
-      //   body: formData,
-      // });
-
-      alert("버그 신고가 정상적으로 접수되었습니다.");
+      // 2. 공용 mutation 실행
+      submitRequest(payload, {
+        onSuccess: () => {
+          toast.success("버그 신고가 성공적으로 접수되었습니다!");
+          // 필요시 폼 초기화 로직
+        },
+        onError: (error) => {
+          console.error("전송 실패:", error);
+          toast.error("전송 중 오류가 발생했습니다.");
+        },
+      });
     } catch (error) {
-      console.error("접수 실패:", error);
-      alert("전송 중 오류가 발생했습니다.");
+      console.error("예기치 않은 오류:", error);
+      toast.error("예기치 않은 오류가 발생했습니다.");
     }
   };
 

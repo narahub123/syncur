@@ -34,6 +34,7 @@ export interface RequestResponseDTO {
 export interface CreateRequestDto {
   type: RequestType;
   title: string;
+  email?: string;
   content: string;
   metadata?: RequestMetadata;
 }

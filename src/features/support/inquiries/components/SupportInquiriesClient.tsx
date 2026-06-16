@@ -2,23 +2,42 @@
 
 import { DynamicForm } from "@/shared/components/common/DynamicForm";
 import { inquiryFormConfig, InquiryFormValues } from "../types/inquiries";
+import { toast } from "sonner";
+import { useCreateRequestMutation } from "../../requests/hooks/useCreateRequestMutation";
 
 const SupportInquiriesClient = () => {
-  // any 없이 엄격하게 타입을 보장받는 핸들러 함수
+  const { mutate: submitInquiry } = useCreateRequestMutation();
+
   const handleInquirySubmit = async (data: InquiryFormValues) => {
+    // 2. 서버 DTO 구조에 맞게 페이로드 구성
+    const payload = {
+      type: "INQUIRY" as const, // DTO 타입과 일치시킴
+      title: data.title,
+      content: data.content,
+      email: data.email,
+      metadata: {
+        category: data.category,
+        images: data.images,
+      },
+    };
+
     try {
-      console.log("제출된 문의 데이터:", data);
+      console.log("제출된 문의 데이터:", payload);
 
-      // API 전송 로직 예시
-      // const res = await fetch("/api/inquiries", {
-      //   method: "POST",
-      //   body: JSON.stringify(data),
-      // });
-
-      alert("문의가 성공적으로 접수되었습니다!");
+      // 3. mutation 실행
+      submitInquiry(payload, {
+        onSuccess: () => {
+          toast.success("문의가 성공적으로 접수되었습니다!");
+          // 필요시 폼 초기화 로직 추가
+        },
+        onError: (error) => {
+          console.error(error);
+          toast.error("전송 중 오류가 발생했습니다.");
+        },
+      });
     } catch (error) {
       console.error(error);
-      alert("전송 중 오류가 발생했습니다.");
+      toast.error("예기치 않은 오류가 발생했습니다.");
     }
   };
 

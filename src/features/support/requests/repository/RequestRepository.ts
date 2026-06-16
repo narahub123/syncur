@@ -19,7 +19,7 @@ import { UserRequestQuery } from "../../notices/types/user-search";
 export class RequestRepository {
   /**
    * 유저 문의 및 버그 제보 생성 (초기 status 주입)
-   * * @param dto 생성할 제보 본문, 가변 메타데이터(다중 fileUrls 배열 포함) 및 식별 정보 결합 객체
+   * * @param dto 생성할 제보 본문, 가변 메타데이터(다중 images 배열 포함) 및 식별 정보 결합 객체
    * @returns Mongoose 도큐먼트가 Plain Object로 변환된 제보 내역 Lean 객체
    */
   async create(

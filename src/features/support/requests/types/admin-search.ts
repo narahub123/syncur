@@ -33,7 +33,7 @@ export interface RequestWithUserAndAdminLean {
   metadata?: {
     os?: string;
     browser?: string;
-    fileUrls: string[];
+    images: string[];
   };
   createdAt: Date;
   updatedAt: Date;
@@ -69,7 +69,7 @@ export interface AdminRequestResponseDTO {
   metadata?: {
     os?: string;
     browser?: string;
-    fileUrls: string[];
+    images: string[];
   };
   createdAt: string;
   updatedAt: string;

@@ -8,7 +8,7 @@ export function createDynamicSchema(configs: FormFieldConfig[]) {
     // 1. 타입에 따른 기본 Zod 검증기 설정
     let validator: z.ZodTypeAny;
 
-    if (field.type === "hidden" && field.name === "images") {
+    if (field.name === "images") {
       // images는 배열 타입으로 정의
       validator = z.array(
         z.object({

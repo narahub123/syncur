@@ -17,7 +17,7 @@ export const toRequestDto = (lean: RequestLean): RequestResponseDTO => {
     metadata: lean.metadata
       ? {
           ...lean.metadata,
-          fileUrls: [...lean.metadata.fileUrls], // 배열 복사
+          images: [...lean.metadata.images], // 배열 복사
         }
       : undefined,
     // 내부 서브 다큐먼트 Date 객체 직렬화 분기 처리

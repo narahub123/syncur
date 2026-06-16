@@ -7,6 +7,7 @@ import {
   RequestType,
 } from "../constants/request-type";
 import { RequestAdminReplyLean, RequestMetadata } from "../types/lean";
+import { ImageInfoSchema } from "@/shared/lib/cloudinary/image-info.model";
 
 /**
  * Request Document
@@ -126,10 +127,15 @@ const RequestSchema = new Schema<RequestDocument>(
      * 버그 제보 시 확장 환경 정보 메타데이터
      */
     metadata: {
+      category: {
+        type: String,
+        required: true,
+        trim: true,
+      },
       os: { type: String, trim: true },
       browser: { type: String, trim: true },
-      fileUrls: {
-        type: [String],
+      images: {
+        type: [ImageInfoSchema],
         default: [],
       },
       issueTrackerUrl: { type: String, trim: true },

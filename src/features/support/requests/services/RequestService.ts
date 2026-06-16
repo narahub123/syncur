@@ -30,7 +30,7 @@ export class RequestService {
       metadata: dto.metadata
         ? {
             ...dto.metadata,
-            fileUrls: dto.metadata.fileUrls ?? [], // 💡 다중 이미지 배열 보장
+            images: dto.metadata.images ?? [], // 💡 다중 이미지 배열 보장
           }
         : undefined,
     });
