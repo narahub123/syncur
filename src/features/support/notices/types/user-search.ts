@@ -8,7 +8,7 @@ import {
  * 1. 유저용 공지사항(Notice) 쿼리 규격
  */
 export type UserNoticeSearchField = "title" | "content";
-export type UserNoticeSort = "title" | "views" | "createdAt";
+export type UserNoticeSort = "title" | "views" | "createdAt" | "category";
 
 export interface UserNoticeQuery {
   page: number;

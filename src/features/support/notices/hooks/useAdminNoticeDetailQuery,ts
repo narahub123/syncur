@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { getAdminNoticeDetailAction } from "../actions/getAdminNoticeDetailAction";
 
-export function useAdminNoticeDetail(id: string) {
+export function useAdminNoticeDetailQuery(id: string) {
   return useQuery({
     queryKey: ["admin-notice", id],
     queryFn: () => getAdminNoticeDetailAction(id),
