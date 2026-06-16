@@ -54,10 +54,17 @@ export function DynamicForm<T extends FieldValues>({
 
   // 기본값 설정: 초기값이 있으면 적용, 없으면 빈 문자열로 초기화
   const defaultValues = configs.reduce((acc, field) => {
-    const fallbackValue = initialValues
+    // initialValues에서 값을 찾거나, 없을 경우 필드 타입에 따라 기본값 결정
+    let value = initialValues
       ? (initialValues as Record<string, unknown>)[field.name]
-      : "";
-    return { ...acc, [field.name]: fallbackValue ?? "" };
+      : undefined;
+
+    // images 필드라면 빈 배열을 기본값으로 설정
+    if (value === undefined || value === null) {
+      value = field.name === "images" ? [] : "";
+    }
+
+    return { ...acc, [field.name]: value };
   }, {} as DefaultValues<FieldValues>);
 
   const form = useForm<FieldValues>({
@@ -76,11 +83,10 @@ export function DynamicForm<T extends FieldValues>({
     onSubmit(data as T);
   };
 
-  const images =
-    (useWatch<FieldValues, "images">({
-      control: form.control,
-      name: "images",
-    }) as ImageInfo[]) || [];
+  const images = (useWatch({
+    control: form.control,
+    name: "images",
+  }) ?? []) as ImageInfo[];
 
   return (
     <Form {...form}>
