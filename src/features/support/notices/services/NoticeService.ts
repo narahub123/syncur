@@ -48,12 +48,14 @@ export class NoticeService {
    */
   async getNoticeDetail(id: string): Promise<NoticeResponseDTO> {
     const noticeId = new Types.ObjectId(id);
-    const updatedNotice = await this.noticeRepository.incrementViews(noticeId);
+    const notice = await this.noticeRepository.findById(noticeId); // 그냥 조회만!
+    if (!notice) throw new Error("존재하지 않는 공지사항입니다.");
+    return toNoticeDto(notice);
+  }
 
-    if (!updatedNotice) {
-      throw new Error("존재하지 않는 공지사항입니다.");
-    }
-    return toNoticeDto(updatedNotice);
+  async incrementNoticeViews(id: string): Promise<void> {
+    const noticeId = new Types.ObjectId(id);
+    await this.noticeRepository.incrementViews(noticeId);
   }
 
   /**

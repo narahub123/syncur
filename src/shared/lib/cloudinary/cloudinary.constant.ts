@@ -1,8 +1,7 @@
 export const CLOUDINARY_FOLDERS = {
-  NOTICES: "notices",
-  PROFILES: "profiles",
-  POSTS: "posts",
-  DEFAULT: "default", // 💡 여기 추가
+  NOTICES: "syncur/notices",
+  PROFILES: "syncur/profiles",
+  DEFAULT: "syncur/",
 } as const;
 
 export type CloudinaryFolder =

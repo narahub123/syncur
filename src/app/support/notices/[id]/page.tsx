@@ -9,7 +9,6 @@ export default async function SupportNoticeDetailPage({
 }) {
   const { id } = await params;
 
-  // 서버에서 데이터 조회
   const notice = await getNoticeDetailAction(id);
 
   if (!notice) {

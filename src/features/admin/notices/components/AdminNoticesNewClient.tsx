@@ -10,6 +10,7 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { DeleteButton } from "@/shared/components/common/DeleteButton";
+import { extractPublicIdsFromHtml } from "@/shared/utils/extractPublicIdsFromHtml";
 
 interface AdminNoticesNewClientProps {
   noticeId?: string;
@@ -28,16 +29,29 @@ export default function AdminNoticesNewClient({
   const { mutate: deleteNotice } = useDeleteNoticeMutation();
 
   const handleNoticeSubmit = async (data: NoticeFormValues) => {
-    // 1. 공통 데이터 가공 (DTO 변환)
+    // 1. 에디터 컨텐츠에서 현재 사용 중인 이미지 ID 추출
+    const usedPublicIds = extractPublicIdsFromHtml(data.content);
+
+    // 2. 이미지 분류 (유지할 것 / 삭제할 것)
+    const currentImages = Array.isArray(data.images) ? data.images : [];
+
+    const imagesToKeep = currentImages.filter((img) =>
+      usedPublicIds.includes(img.publicId),
+    );
+
+    const deletedImages = currentImages.filter(
+      (img) => !usedPublicIds.includes(img.publicId),
+    );
+
+    // 3. payload 구성 (DB에는 유지할 이미지만 저장)
     const payload = {
       title: data.title,
       content: data.content,
       category: data.category,
       isPinned: data.isPinned === "fixed",
-      images: Array.isArray(data.images) ? data.images : [],
+      images: imagesToKeep,
+      deletedImages,
     };
-
-    console.log(payload);
 
     if (isEditMode && noticeId) {
       // 💡 [수정] id와 함께 전송

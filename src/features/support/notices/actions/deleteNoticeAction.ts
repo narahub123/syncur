@@ -17,6 +17,7 @@ export async function deleteNoticeAction(id: string) {
     // 삭제 후 목록 페이지의 캐시를 갱신합니다.
     revalidatePath(ROUTES.ADMIN_NOTICES);
   } catch (error) {
+    console.error("공지 삭제 실패", error);
     return { success: false, error: "삭제 실패" };
   }
 }

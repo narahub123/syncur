@@ -1,4 +1,4 @@
-import { CreateNoticeDto } from "@/features/support/notices/dtos";
+import { CreateNoticeRequestDto } from "@/features/support/notices/dtos";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { createNoticeAction } from "../actions/createNoticeAction";
 
@@ -9,7 +9,7 @@ export function useCreateNoticeMutation() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (dto: CreateNoticeDto) => createNoticeAction(dto),
+    mutationFn: (dto: CreateNoticeRequestDto) => createNoticeAction(dto),
 
     // 데이터가 성공적으로 생성되면 관련 공지사항 캐시 목록 갱신
     onSuccess: () => {

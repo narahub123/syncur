@@ -1,4 +1,3 @@
-import { SortOrder } from "@/shared/types/pagination";
 import { UserNoticeSearchField } from "../types/user-search";
 
 /**

@@ -2,17 +2,27 @@
 
 import { connectMongo } from "@/shared/lib/db/mongoose";
 import { noticeService } from "@/features/support/notices/services/NoticeService.instance";
-import { CreateNoticeDto } from "@/features/support/notices/dtos";
+import { CreateNoticeRequestDto } from "@/features/support/notices/dtos";
 import { deleteCloudinaryImage } from "@/shared/lib/cloudinary/cloudinary.utils";
 import { requireAdmin } from "@/features/admin/lib/requireAdmin";
 
-export async function createNoticeAction(data: CreateNoticeDto) {
+export async function createNoticeAction(data: CreateNoticeRequestDto) {
   try {
     await connectMongo();
 
     const session = await requireAdmin();
 
-    return await noticeService.createNotice(data, session.user.id);
+    const { deletedImages, ...rest } = data;
+
+    // 1. 삭제해야 할 이미지가 있다면 삭제 실행
+    if (deletedImages && deletedImages.length > 0) {
+      await Promise.all(
+        deletedImages.map((img) => deleteCloudinaryImage(img.publicId)),
+      );
+    }
+
+    // 2. 게시글 생성
+    return await noticeService.createNotice(rest, session.user.id);
   } catch (error) {
     console.error("Notice 생성 실패:", error);
 

@@ -5,6 +5,7 @@ import { Button } from "@/shared/components/ui/button"; // 프로젝트 공통 �
 import { ArrowLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useNoticeDetailQuery } from "../actions/useNoticeDetailQuery";
+import { useIncreaseViewCount } from "../hooks/useIncreaseViewCount";
 
 type Props = {
   initialData: NoticeResponseDTO;
@@ -12,6 +13,8 @@ type Props = {
 
 const SupportNoticeDetailClient = ({ initialData }: Props) => {
   const router = useRouter();
+
+  useIncreaseViewCount(initialData._id);
 
   // 서버로부터 전달받은 initialData를 사용하여 캐시 초기화
   const { data } = useNoticeDetailQuery(initialData._id);

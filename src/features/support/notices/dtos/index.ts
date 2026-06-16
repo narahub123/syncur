@@ -27,6 +27,10 @@ export interface CreateNoticeDto {
   images: ImageInfo[];
 }
 
+export interface CreateNoticeRequestDto extends CreateNoticeDto {
+  deletedImages: ImageInfo[];
+}
+
 /**
  * 공지사항 수정용 DTO
  */
@@ -36,4 +40,8 @@ export interface UpdateNoticeDto {
   category?: string;
   isPinned?: boolean;
   images?: ImageInfo[];
+}
+
+export interface UpdateNoticeRequestDto extends UpdateNoticeDto {
+  deletedImages: ImageInfo[];
 }
