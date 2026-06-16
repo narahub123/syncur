@@ -1,27 +1,38 @@
 // shared/types/adminBug.ts
 import { FormFieldConfig } from "@/shared/types/form";
 
-// 1. 데이터베이스 또는 API에서 넘어오는 유저의 원본 버그 신고 상세 데이터 타입
+// 1. 상태 타입 정의
+export type BugStatus = "접수대기" | "확인중" | "수정중" | "해결완료";
+
+// 2. 관리자용 상태 옵션 정의 (DynamicForm 및 Select에서 사용)
+export const BUG_STATUS_OPTIONS: { label: string; value: BugStatus }[] = [
+  { label: "접수대기", value: "접수대기" },
+  { label: "확인중", value: "확인중" },
+  { label: "수정중", value: "수정중" },
+  { label: "해결완료", value: "해결완료" },
+];
+
+// 3. 데이터베이스 또는 API에서 넘어오는 유저의 원본 버그 신고 상세 데이터 타입
 export interface AdminBugReportDetail {
   id: string;
   userEmail: string;
   title: string;
   content: string;
-  os: string; // 유저 환경: OS (e.g., Windows, macOS, iOS)
-  browser: string; // 유저 환경: 브라우저 (e.g., Chrome, Safari)
-  fileUrl: string | null; // 유저가 첨부한 스크린샷 등 파일 경로
+  os: string;
+  browser: string;
+  fileUrl: string | null;
   createdAt: string;
-  currentStatus: "접수대기" | "확인중" | "수정중" | "해결완료";
+  currentStatus: BugStatus; // string 대신 BugStatus 타입 적용
 }
 
-// 2. 관리자가 답변 작성 및 상태 변경 시 사용할 Form Values 타입
+// 4. 관리자가 답변 작성 및 상태 변경 시 사용할 Form Values 타입
 export interface BugAnswerFormValues {
   replyContent: string;
-  status: "확인중" | "수정중" | "해결완료";
-  issueTrackerUrl?: string; // (선택) Jira나 GitHub Issue 링크 연동용
+  status: BugStatus; // string 대신 BugStatus 타입 적용
+  issueTrackerUrl?: string;
 }
 
-// 3. DynamicForm에 주입할 관리자 전용 설정
+// 5. DynamicForm에 주입할 관리자 전용 설정
 export const bugAnswerFormConfig: FormFieldConfig[] = [
   {
     name: "replyContent",
@@ -36,7 +47,7 @@ export const bugAnswerFormConfig: FormFieldConfig[] = [
     label: "진행 상태 변경",
     type: "select",
     placeholder: "버그 처리 상태를 선택하세요.",
-    options: ["확인중", "수정중", "해결완료"],
+    options: BUG_STATUS_OPTIONS, // 고정된 배열 대신 타입 안전한 옵션 사용
     required: true,
   },
   {

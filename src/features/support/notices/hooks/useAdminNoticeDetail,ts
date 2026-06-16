@@ -1,0 +1,10 @@
+import { useQuery } from "@tanstack/react-query";
+import { getAdminNoticeDetailAction } from "../actions/getAdminNoticeDetailAction";
+
+export function useAdminNoticeDetail(id: string) {
+  return useQuery({
+    queryKey: ["admin-notice", id],
+    queryFn: () => getAdminNoticeDetailAction(id),
+    enabled: !!id, // ID가 있을 때만 실행
+  });
+}

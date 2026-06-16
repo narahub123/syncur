@@ -20,7 +20,7 @@ export async function getFaqAction(id: string): Promise<FaqFormValues | null> {
     question: faq.question,
     answer: faq.answer,
     sortOrder: faq.sortOrder.toString(), // 폼은 string을 기대하므로 맞춰줍니다
-    isPublished: faq.isPublished ? "공개" : "비공개", // Boolean -> "공개"|"비공개" 변환
+    isPublished: faq.isPublished ? "published" : "secure", // Boolean -> "공개"|"비공개" 변환
     createdAt: faq.createdAt,
   };
 }

@@ -2,14 +2,39 @@ import { CLOUDINARY_FOLDERS } from "@/shared/lib/cloudinary/cloudinary.constant"
 import { ImageInfo } from "@/shared/lib/cloudinary/image-info.model";
 import { FormFieldConfig } from "@/shared/types/form";
 
+export type NoticeCategory = "GENERAL" | "SERVICE" | "EVENT" | "MAINTENANCE";
+
+// 1. 타입과 한글 라벨을 매핑
+export const NoticeCategoryLabels: Record<NoticeCategory, string> = {
+  GENERAL: "일반 공지",
+  SERVICE: "서비스 안내",
+  EVENT: "이벤트",
+  MAINTENANCE: "점검 안내",
+};
+
+// 2. value(타입 값)와 label(한글)을 가진 배열 생성
+export const NoticeCategoryOptions = (
+  Object.keys(NoticeCategoryLabels) as NoticeCategory[]
+).map((key) => ({
+  value: key,
+  label: NoticeCategoryLabels[key],
+}));
+
+export const NoticeStatusOptions = [
+  { value: "fixed", label: "상단 고정" },
+  { value: "normal", label: "일반 공지" },
+];
+
+export type NoticePinStatus = "fixed" | "normal";
+
 // ==========================================
 // 1. 공지사항(Notice) 타입 및 설정
 // ==========================================
 export interface NoticeFormValues {
   title: string;
-  category: "일반" | "점검" | "이벤트" | "업데이트";
+  category: NoticeCategory;
   content: string;
-  isPinned: "일반 공지" | "상단 고정";
+  isPinned: NoticePinStatus;
   images: ImageInfo[];
 }
 
@@ -26,7 +51,7 @@ export const noticeFormConfig: FormFieldConfig[] = [
     label: "공지 분류",
     type: "select",
     placeholder: "분류를 선택해 주세요.",
-    options: ["일반", "점검", "이벤트", "업데이트"],
+    options: NoticeCategoryOptions,
     required: true,
   },
   {
@@ -47,7 +72,7 @@ export const noticeFormConfig: FormFieldConfig[] = [
     label: "상단 고정 여부",
     type: "select",
     placeholder: "고정 여부를 선택해 주세요.",
-    options: ["일반 공지", "상단 고정"],
+    options: NoticeStatusOptions,
     required: true,
   },
 ];

@@ -1,11 +1,12 @@
 import { Types } from "mongoose";
 import { RequestStatus, RequestType } from "../constants/request-type";
+import { OSType } from "../../bug-reports/types/bugReport";
 
 /**
  * 몽고디비 원본 타입을 그대로 유지하는 Request 서브 메타데이터
  */
 export interface RequestMetadata {
-  os?: string;
+  os?: OSType;
   browser?: string;
   fileUrls: string[];
   issueTrackerUrl?: string;

@@ -22,6 +22,12 @@ export const FAQ_CATEGORY_OPTIONS = Object.entries(FAQ_CATEGORY_MAP).map(
   }),
 );
 
+export const FaqPublishOptions = [
+  { value: "published", label: "공개" },
+  { value: "secure", label: "비공개" },
+];
+
+export type FaqPinStatus = "published" | "secure";
 // 1. FAQ 등록/수정 시 사용할 Form Values 타입
 export interface FaqFormValues {
   id: string;
@@ -30,7 +36,7 @@ export interface FaqFormValues {
   question: string;
   answer: string;
   sortOrder: string; // 폼 입력값은 기본적으로 문자열로 들어오므로 string 처리 (제출 시 숫자로 변환)
-  isPublished: "공개" | "비공개";
+  isPublished: FaqPinStatus;
   createdAt: string;
 }
 
@@ -41,7 +47,7 @@ export const faqFormConfig: FormFieldConfig[] = [
     label: "FAQ 카테고리",
     type: "select",
     placeholder: "카테고리를 선택해 주세요.",
-    options: Object.values(FAQ_CATEGORY_MAP),
+    options: FAQ_CATEGORY_OPTIONS,
     required: true,
   },
   {
@@ -71,7 +77,7 @@ export const faqFormConfig: FormFieldConfig[] = [
     label: "공개 여부",
     type: "select",
     placeholder: "공개 상태를 설정해 주세요.",
-    options: ["공개", "비공개"],
+    options: FaqPublishOptions,
     required: true,
   },
 ];

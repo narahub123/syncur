@@ -33,6 +33,7 @@ import { FormFieldConfig } from "@/shared/types/form";
 import { createDynamicSchema } from "@/shared/lib/validations/schemaBuilder";
 import { RichEditor } from "./RichEditor";
 import { CLOUDINARY_FOLDERS } from "@/shared/lib/cloudinary/cloudinary.constant";
+import { ImageInfo } from "@/shared/lib/cloudinary/image-info.model";
 
 interface DynamicFormProps<T extends FieldValues> {
   configs: FormFieldConfig[];
@@ -76,10 +77,10 @@ export function DynamicForm<T extends FieldValues>({
   };
 
   const images =
-    useWatch({
+    (useWatch<FieldValues, "images">({
       control: form.control,
       name: "images",
-    }) || [];
+    }) as ImageInfo[]) || [];
 
   return (
     <Form {...form}>
@@ -134,8 +135,8 @@ export function DynamicForm<T extends FieldValues>({
                             </SelectTrigger>
                             <SelectContent>
                               {field.options?.map((opt) => (
-                                <SelectItem key={opt} value={opt}>
-                                  {opt}
+                                <SelectItem key={opt.value} value={opt.value}>
+                                  {opt.label}
                                 </SelectItem>
                               ))}
                             </SelectContent>

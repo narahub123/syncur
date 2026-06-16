@@ -8,6 +8,7 @@ export interface NoticeLean {
   _id: Types.ObjectId;
   title: string;
   content: string;
+  category: string;
   isPinned: boolean;
   views: number;
   createdBy: Types.ObjectId;

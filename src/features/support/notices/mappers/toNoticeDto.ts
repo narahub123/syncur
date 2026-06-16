@@ -6,9 +6,10 @@ import { NoticeLean } from "../types/lean";
  */
 export const toNoticeDto = (lean: NoticeLean): NoticeResponseDTO => {
   return {
-    id: lean._id.toString(),
+    _id: lean._id.toString(),
     title: lean.title,
     content: lean.content,
+    category: lean.category,
     isPinned: lean.isPinned,
     views: lean.views,
     createdBy: lean.createdBy.toString(),

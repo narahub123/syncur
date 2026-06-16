@@ -1,10 +1,10 @@
 "use server";
 
 import { connectMongo } from "@/shared/lib/db/mongoose";
-import { requireAdmin } from "../../lib/requireAdmin";
 import { noticeService } from "@/features/support/notices/services/NoticeService.instance";
 import { CreateNoticeDto } from "@/features/support/notices/dtos";
 import { deleteCloudinaryImage } from "@/shared/lib/cloudinary/cloudinary.utils";
+import { requireAdmin } from "@/features/admin/lib/requireAdmin";
 
 export async function createNoticeAction(data: CreateNoticeDto) {
   try {

@@ -9,12 +9,18 @@ export type FieldType =
   | "editor"
   | "hidden";
 
+export type FormFieldOptionType = {
+  label: string;
+  value: string;
+};
+
 export interface FormFieldConfig {
   name: string;
   label: string;
   type: FieldType;
   placeholder?: string;
   required?: boolean;
-  options?: string[]; // select 타입일 때 사용
+  options?: FormFieldOptionType[]; // select 타입일 때 사용
   folderName?: CloudinaryFolder;
+  isMultiple?: boolean;
 }

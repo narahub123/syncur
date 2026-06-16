@@ -10,9 +10,10 @@ export function toAdminNoticeDto(
   lean: NoticeWithUserLean,
 ): AdminNoticeResponseDTO {
   return {
-    id: lean._id, // NoticeWithUserLean의 _id가 string 스펙이므로 그대로 바인딩
+    _id: lean._id.toString(), // NoticeWithUserLean의 _id가 string 스펙이므로 그대로 바인딩
     title: lean.title,
     content: lean.content,
+    category: lean.category,
     views: lean.views,
     isPinned: lean.isPinned,
     images: lean.images,
@@ -22,7 +23,7 @@ export function toAdminNoticeDto(
 
     author: lean.author
       ? {
-          id: lean.author._id.toString(), // Types.ObjectId 문자열화
+          _id: lean.author._id.toString(), // Types.ObjectId 문자열화
           email: lean.author.email,
           name: lean.author.name, // string | null 매칭 성공
           image: lean.author.image, // string | null 매칭 성공

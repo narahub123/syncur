@@ -7,7 +7,10 @@ import {
   AdminNoticeResponseDTO,
 } from "../types/admin-search";
 import { PaginatedResponse } from "@/shared/types/pagination";
-import { toAdminNoticeDtos } from "../mappers/toAdminNoticeDto";
+import {
+  toAdminNoticeDto,
+  toAdminNoticeDtos,
+} from "../mappers/toAdminNoticeDto";
 import { UserNoticeQuery } from "../types/user-search";
 
 /**
@@ -120,6 +123,19 @@ export class NoticeService {
         totalPages,
       },
     };
+  }
+
+  /**
+   * 관리자용 상세 조회 (조회수 증가 X, 작성자 정보 포함)
+   */
+  async getAdminNoticeDetail(id: string): Promise<AdminNoticeResponseDTO> {
+    const notice = await this.noticeRepository.findDetailForAdmin(id);
+
+    if (!notice) {
+      throw new Error("해당 공지사항을 찾을 수 없습니다.");
+    }
+
+    return toAdminNoticeDto(notice);
   }
 
   /**

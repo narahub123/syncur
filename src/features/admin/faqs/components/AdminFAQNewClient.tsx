@@ -34,7 +34,7 @@ export default function AdminFAQNewClient({
     const payload = {
       ...data,
       sortOrder: parseInt(data.sortOrder, 10) || 10,
-      isPublished: data.isPublished === "공개",
+      isPublished: data.isPublished === "published",
     };
 
     if (isEditMode) {

@@ -6,13 +6,19 @@ import { SortOrder } from "@/shared/types/pagination";
  * 관리자 공지사항 검색 및 정렬 조건 규격
  */
 export type AdminNoticeSearchField = "title" | "content";
-export type AdminNoticeSort = "title" | "views" | "isPinned" | "createdAt";
+export type AdminNoticeSort =
+  | "title"
+  | "category"
+  | "views"
+  | "isPinned"
+  | "createdAt"
+  | "createdBy";
 
 export interface AdminNoticeQuery {
   page: number;
   limit: number;
-  search?: string;
-  searchField?: AdminNoticeSearchField;
+  search: string;
+  searchField: AdminNoticeSearchField;
   sort?: AdminNoticeSort;
   sortOrder?: SortOrder;
   isPinned?: boolean; // 고정글만 필터링 기능 추가
@@ -25,6 +31,7 @@ export interface NoticeWithUserLean {
   _id: string;
   title: string;
   content: string;
+  category: string;
   views: number;
   isPinned: boolean;
   createdBy: string; // 원본 ID
@@ -47,16 +54,17 @@ export interface NoticeAdminLeanPagedResponse {
  * 최종 클라이언트 전달용 어드민 공지사항 응답 DTO
  */
 export interface AdminNoticeResponseDTO {
-  id: string;
+  _id: string;
   title: string;
   content: string;
+  category: string;
   views: number;
   isPinned: boolean;
   images: ImageInfo[];
   createdAt: string;
   updatedAt: string;
   author: {
-    id: string;
+    _id: string;
     email: string;
     name: string | null;
     image: string | null;

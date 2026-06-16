@@ -2,53 +2,82 @@
 
 import { DynamicForm } from "@/shared/components/common/DynamicForm";
 import { noticeFormConfig, NoticeFormValues } from "../types";
-import { useCreateNoticeMutation } from "../hooks/useCreateNoticeMutation";
-import { CreateNoticeDto } from "@/features/support/notices/dtos";
+import { useCreateNoticeMutation } from "@/features/support/notices/hooks/useCreateNoticeMutation";
+import { useUpdateNoticeMutation } from "@/features/support/notices/hooks/useUpdateNoticeMutation";
+import { useDeleteNoticeMutation } from "@/features/support/notices/hooks/useDeleteNoticeMutation";
 import { toast } from "sonner";
+import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { DeleteButton } from "@/shared/components/common/DeleteButton";
 
 interface AdminNoticesNewClientProps {
-  noticeId?: string; // 주어지면 '수정 모드', 없으면 '생성 모드'
-  initialData?: NoticeFormValues; // 수정 모드일 때 서버에서 받아온 기존 데이터
+  noticeId?: string;
+  initialData?: NoticeFormValues;
 }
 
 export default function AdminNoticesNewClient({
   noticeId,
   initialData,
 }: AdminNoticesNewClientProps) {
+  const router = useRouter();
   const isEditMode = Boolean(noticeId);
 
-  const { mutate: createNotice, isPending } = useCreateNoticeMutation();
+  const { mutate: createNotice } = useCreateNoticeMutation();
+  const { mutate: updateNotice } = useUpdateNoticeMutation();
+  const { mutate: deleteNotice } = useDeleteNoticeMutation();
 
   const handleNoticeSubmit = async (data: NoticeFormValues) => {
-    if (isEditMode) {
-      // 수정 로직 (나중에 훅 구현)
-      toast.info("수정 기능은 현재 준비 중입니다.");
-      return;
-    }
-
-    const isPinnedBoolean = data.isPinned === "상단 고정";
-    const dto: CreateNoticeDto = {
+    // 1. 공통 데이터 가공 (DTO 변환)
+    const payload = {
       title: data.title,
       content: data.content,
-      isPinned: isPinnedBoolean,
-      images: data.images || [],
+      category: data.category,
+      isPinned: data.isPinned === "fixed",
+      images: Array.isArray(data.images) ? data.images : [],
     };
 
-    // 💡 생성 처리 및 Sonner 피드백
-    createNotice(dto, {
-      onSuccess: () => {
-        toast.success("게시글이 성공적으로 작성되었습니다.");
-        // router.push("/notices"); // 필요 시 페이지 이동
-      },
-      onError: (error) => {
-        toast.error("게시글 작성 중 오류가 발생했습니다.");
-        console.error(error);
-      },
-    });
+    console.log(payload);
+
+    if (isEditMode && noticeId) {
+      // 💡 [수정] id와 함께 전송
+      updateNotice(
+        { id: noticeId, dto: payload },
+        {
+          onSuccess: () => {
+            toast.success("공지사항이 성공적으로 수정되었습니다.");
+          },
+          onError: (error) => {
+            console.error(error);
+            toast.error("공지사항 수정 중 오류가 발생했습니다.");
+          },
+        },
+      );
+    } else {
+      // 💡 [등록]
+      createNotice(payload, {
+        onSuccess: () => {
+          toast.success("공지사항이 성공적으로 게시되었습니다.");
+          router.push("/admin/notices"); // 등록 후 목록으로 이동
+        },
+        onError: (error) => {
+          console.error(error);
+          toast.error("공지사항 등록 중 오류가 발생했습니다.");
+        },
+      });
+    }
   };
 
   return (
     <div className="bg-background mx-auto w-full max-w-2xl rounded-xl border p-6 shadow-sm">
+      <Link
+        href="/admin/notices"
+        className="text-muted-foreground hover:text-foreground mb-6 flex items-center gap-1 text-sm transition"
+      >
+        <ArrowLeft size={16} />
+        <span>공지사항 목록으로 돌아가기</span>
+      </Link>
+
       <div className="mb-6">
         <h1 className="text-2xl font-bold tracking-tight">
           {isEditMode ? "공지사항 수정하기" : "새 공지사항 등록"}
@@ -65,6 +94,11 @@ export default function AdminNoticesNewClient({
         onSubmit={handleNoticeSubmit}
         initialValues={initialData}
         submitLabel={isEditMode ? "수정 완료" : "공지사항 게시"}
+        footer={
+          isEditMode ? (
+            <DeleteButton onDelete={() => deleteNotice(noticeId!)} />
+          ) : null
+        }
       />
     </div>
   );

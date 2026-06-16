@@ -118,8 +118,10 @@ export class NoticeRepository {
     const sortMap: Record<string, Record<string, 1 | -1>> = {
       title: { title: mongoOrder },
       views: { views: mongoOrder },
+      category: { category: mongoOrder },
       isPinned: { isPinned: mongoOrder },
       createdAt: { createdAt: mongoOrder },
+      createdBy: { "author.name": mongoOrder },
     };
 
     const matchStage: Record<string, unknown> = {};
@@ -152,6 +154,7 @@ export class NoticeRepository {
             _id: 1,
             title: 1,
             content: 1,
+            category: 1,
             views: 1,
             isPinned: 1,
             createdBy: 1,
@@ -170,6 +173,48 @@ export class NoticeRepository {
     ]);
 
     return { items, totalCount: countResult[0]?.totalCount ?? 0 };
+  }
+
+  /**
+   * 관리자용 공지사항 상세 조회 (작성자 JOIN 포함)
+   */
+  async findDetailForAdmin(
+    id: Types.ObjectId | string,
+  ): Promise<NoticeWithUserLean | null> {
+    const result = await NoticeModel.aggregate<NoticeWithUserLean>([
+      { $match: { _id: toObjectId(id) } },
+      {
+        $lookup: {
+          from: "users",
+          localField: "createdBy",
+          foreignField: "_id",
+          as: "author",
+        },
+      },
+      { $unwind: { path: "$author", preserveNullAndEmptyArrays: true } },
+      {
+        $project: {
+          _id: 1,
+          title: 1,
+          content: 1,
+          category: 1,
+          views: 1,
+          isPinned: 1,
+          images: 1,
+          createdAt: 1,
+          updatedAt: 1,
+          author: {
+            // 필요한 유저 정보만 추출
+            _id: 1,
+            name: 1,
+            email: 1,
+            image: 1,
+          },
+        },
+      },
+    ]);
+
+    return result[0] || null;
   }
 
   /**

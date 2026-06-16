@@ -18,6 +18,8 @@ export interface NoticeDocument extends Document {
    */
   content: string;
 
+  category: "GENERAL" | "SERVICE" | "EVENT" | "MAINTENANCE";
+
   /**
    * 상단 고정 여부
    */
@@ -69,6 +71,13 @@ const NoticeSchema = new Schema<NoticeDocument>(
     content: {
       type: String,
       required: true,
+    },
+
+    category: {
+      type: String,
+      required: true,
+      enum: ["GENERAL", "SERVICE", "EVENT", "MAINTENANCE"], // 데이터 무결성 보장
+      default: "GENERAL",
     },
 
     /**

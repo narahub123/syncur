@@ -4,9 +4,10 @@ import { ImageInfo } from "@/shared/lib/cloudinary/image-info.model";
  * 프론트엔드로 전송하기 위한 공지사항 응답 DTO
  */
 export interface NoticeResponseDTO {
-  id: string; // 💡 Types.ObjectId -> string 변환
+  _id: string; // 💡 Types.ObjectId -> string 변환
   title: string;
   content: string;
+  category: string;
   isPinned: boolean;
   views: number;
   createdBy: string;
@@ -21,6 +22,7 @@ export interface NoticeResponseDTO {
 export interface CreateNoticeDto {
   title: string;
   content: string; // 리치 에디터 HTML/Markdown 데이터
+  category: string;
   isPinned?: boolean; // 상단 고정 여부
   images: ImageInfo[];
 }
@@ -31,6 +33,7 @@ export interface CreateNoticeDto {
 export interface UpdateNoticeDto {
   title?: string;
   content?: string;
+  category?: string;
   isPinned?: boolean;
   images?: ImageInfo[];
 }
