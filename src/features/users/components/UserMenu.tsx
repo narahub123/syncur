@@ -1,8 +1,7 @@
 "use client";
 
+import { Avatar } from "@/shared/components/common/Avartar";
 import { useSession } from "next-auth/react";
-
-import UserAvatar from "./UserAvatar";
 
 const UserMenu = () => {
   const { data, status } = useSession();
@@ -27,12 +26,9 @@ const UserMenu = () => {
   return (
     <div className="m-2 flex cursor-pointer items-center gap-2">
       {data?.user?.image && (
-        <UserAvatar
-          src={data.user.image}
-          profileImage={data.user.profileImage}
-          alt={
-            data.user.name ? `${data.user.name}의 프로필 사진` : "프로필 사진"
-          }
+        <Avatar
+          src={data.user.profileImage || data.user.image}
+          name={data.user.name}
         />
       )}
 

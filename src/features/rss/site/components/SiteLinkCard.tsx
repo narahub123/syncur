@@ -1,8 +1,8 @@
 "use client";
 
+import { Avatar } from "@/shared/components/common/Avartar";
 import Link from "next/link";
 import { MouseEvent } from "react";
-import SiteAvatar from "@/features/rss/site/components/SiteAvatar";
 
 export type SiteLinkCardDto = {
   favicon_url: string | null;
@@ -26,7 +26,7 @@ const SiteLinkCard = ({ site, onClick }: Props) => {
       onClick={onClick}
       className="hover:bg-accent focus-visible:bg-accent flex items-center gap-2 rounded-md px-2 py-1"
     >
-      <SiteAvatar favicon_url={favicon_url} name={name} />
+      <Avatar src={favicon_url} name={name} />
 
       <span className="truncate text-sm font-medium">{name}</span>
     </Link>

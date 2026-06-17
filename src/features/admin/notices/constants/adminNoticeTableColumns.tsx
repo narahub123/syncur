@@ -4,7 +4,7 @@ import {
 } from "@/features/support/notices/types/admin-search";
 
 import { NoticeCategory, NoticeCategoryLabels } from "../types";
-import UserAvatar from "@/features/users/components/UserAvatar";
+import { Avatar } from "@/shared/components/common/Avartar";
 
 export type AdminNoticeTableColumn = {
   key: AdminNoticeSort;
@@ -39,10 +39,9 @@ export const adminNoticeTableColumns: AdminNoticeTableColumn[] = [
     header: "작성자",
     render: (n) => (
       <div className="flex items-center gap-2">
-        <UserAvatar
-          src={n.author?.image}
+        <Avatar
+          src={n.author?.profileImage || n.author?.image}
           name={n.author?.name}
-          profileImage={n.author?.profileImage}
           className="h-6 w-6"
         />
         <span>{n.author?.name || "알 수 없음"}</span>

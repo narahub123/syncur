@@ -12,7 +12,7 @@ import {
 } from "@/shared/lib/cloudinary/cloudinary.utils";
 import { CLOUDINARY_FOLDERS } from "@/shared/lib/cloudinary/cloudinary.constant";
 import { useUpdateProfile } from "@/features/users/hooks/useUpdateProfile";
-import UserAvatar from "@/features/users/components/UserAvatar";
+import { Avatar } from "@/shared/components/common/Avartar";
 
 const profileSchema = z.object({
   name: z.string().min(1, "이름은 필수입니다."),
@@ -113,9 +113,9 @@ export function ProfileEditForm({ user, onCancel }: Props) {
         <div className="flex flex-1 gap-6">
           <div className="flex flex-col items-center gap-2">
             <div className="relative h-20 w-20 overflow-hidden rounded-full border border-gray-200 bg-gray-50">
-              <UserAvatar
-                src={user.image}
-                profileImage={user.profileImage}
+              <Avatar
+                src={user.profileImage || user.image}
+                name={user.name}
                 className="h-full w-full"
               />
               {/* 오버레이 버튼: 사진 변경을 더 자연스럽게 */}

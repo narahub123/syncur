@@ -12,7 +12,7 @@ import { DynamicForm } from "@/shared/components/common/DynamicForm";
 import { useAdminReplyMutation } from "@/features/support/requests/hooks/useAdminReplyMutation";
 import { ImagePreview } from "@/shared/components/common/ImagePreview";
 import { useState } from "react";
-import UserAvatar from "@/features/users/components/UserAvatar";
+import { Avatar } from "@/shared/components/common/Avartar";
 
 interface AdminBugReplyClientProps {
   bugReport: AdminBugReportDetail;
@@ -65,9 +65,8 @@ export default function AdminBugReplyClient({
           <div className="bg-muted/30 space-y-4 rounded-xl border p-6">
             <div className="space-y-1">
               <div className="flex items-center gap-3">
-                <UserAvatar
-                  src={bugReport.user?.image}
-                  profileImage={bugReport.user?.profileImage}
+                <Avatar
+                  src={bugReport.user?.profileImage || bugReport.user?.image}
                   name={bugReport.user?.name}
                   className="h-9 w-9"
                 />

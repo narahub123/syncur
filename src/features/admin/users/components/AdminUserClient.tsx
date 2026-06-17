@@ -4,9 +4,9 @@ import { useState } from "react";
 import { UserRole } from "@/features/users/constants/user-role";
 import AdminUserRoleSelect from "./AdminUserRoleSelect";
 import AdminUserRoleConfirmDialog from "./AdminUserRoleConfirmDialog";
-import UserAvatar from "@/features/users/components/UserAvatar";
 import { useUserById } from "../hooks/useUserById";
 import { useUpdateUserRoleMutation } from "../hooks/useUpdateUserRoleMutation";
+import { Avatar } from "@/shared/components/common/Avartar";
 
 interface Props {
   userId: string;
@@ -45,9 +45,8 @@ const AdminUserClient = ({ userId }: Props) => {
       <h1 className="mb-6 text-xl font-bold">사용자 상세 정보</h1>
 
       <div className="flex items-center gap-6 rounded-lg border p-4">
-        <UserAvatar
-          profileImage={user.profileImage}
-          src={user.image}
+        <Avatar
+          src={user.profileImage || user.image}
           name={user.name}
           className="h-20 w-20"
         />

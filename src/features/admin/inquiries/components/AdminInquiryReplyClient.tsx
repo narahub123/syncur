@@ -14,7 +14,7 @@ import {
   UserInquiryData,
 } from "../types";
 import { ImageInfo } from "@/shared/lib/cloudinary/image-info.model";
-import UserAvatar from "@/features/users/components/UserAvatar";
+import { Avatar } from "@/shared/components/common/Avartar";
 
 interface AdminInquiryReplyClientProps {
   inquiry: UserInquiryData;
@@ -69,9 +69,8 @@ export default function AdminInquiryReplyClient({
 
         <div className="bg-muted/30 mb-6 flex items-center justify-between rounded-lg border p-3">
           <div className="flex items-center gap-3">
-            <UserAvatar
-              src={inquiry.user?.image}
-              profileImage={inquiry.user?.profileImage}
+            <Avatar
+              src={inquiry.user?.profileImage || inquiry.user?.image}
               name={inquiry.user?.name}
               className="h-9 w-9"
             />
