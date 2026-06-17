@@ -1,5 +1,5 @@
+import { UserLean } from "@/features/users/types/lean";
 import { ImageInfo } from "@/shared/lib/cloudinary/image-info.model";
-import { UserLean } from "@/shared/types/domain-leans";
 import { SortOrder } from "@/shared/types/pagination";
 
 /**

@@ -1,5 +1,5 @@
-import { UserLean } from "@/shared/types/domain-leans";
 import { UserDto } from "../dto/userDto";
+import { UserLean } from "../types/lean";
 
 /**
  * User -> UserResponse DTO Mapper
@@ -22,6 +22,8 @@ export function toUserDto(user: UserLean): UserDto {
     emailVerified: user.emailVerified ? user.emailVerified.toISOString() : null,
 
     image: user.image,
+
+    profileImage: user.profileImage,
 
     onboardingCompleted: user.onboardingCompleted,
     onboardingCompletedAt: user.onboardingCompletedAt

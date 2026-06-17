@@ -1,7 +1,7 @@
 import { UserRole } from "@/features/users/constants/user-role";
-import { UserLean } from "@/shared/types/domain-leans";
+import { ImageInfo } from "@/shared/lib/cloudinary/image-info.model";
 import { PaginatedResponse } from "@/shared/types/pagination";
-import { Types } from "mongoose";
+import { UserLean } from "../types/lean";
 
 /**
  * User API Response Type
@@ -37,6 +37,8 @@ export type UserDto = {
    */
   image: string | null;
 
+  profileImage: ImageInfo | null;
+
   /**
    * 관심사 온보딩 완료 여부
    */
@@ -62,20 +64,12 @@ export type UserLeanPaagedResponse = {
 };
 export type UserDtoPagedResponse = PaginatedResponse<UserDto>;
 
-// DB Lean 조회용 타입
-export interface UserBasicLean {
-  _id: Types.ObjectId;
-  email: string;
-  name: string;
-  image: string | null;
-  role: UserRole;
-}
-
 // 프론트엔드용 공통 DTO
 export interface UserBasicDto {
   _id: string;
   email: string;
   name: string;
   image: string | null;
+  profileImage: ImageInfo | null;
   role: UserRole;
 }

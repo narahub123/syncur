@@ -1,4 +1,4 @@
-import { UserLean } from "@/shared/types/domain-leans";
+import { UserLean } from "@/features/users/types/lean";
 import { Types } from "mongoose";
 
 /**

@@ -32,6 +32,7 @@ export function toAdminRequestDto(
           email: lean.user.email,
           name: lean.user.name,
           image: lean.user.image,
+          profileImage: lean.user.profileImage,
           role: lean.user.role,
         }
       : null,

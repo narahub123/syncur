@@ -1,5 +1,8 @@
+"use server";
+
 import { requireAuth } from "@/shared/lib/auth/requireAuth";
 import { userService } from "@/features/users/services/UserService.instance";
+import { connectMongo } from "@/shared/lib/db/mongoose";
 
 /**
  * 현재 로그인 사용자의 정보를 조회한다 (Action Layer)
@@ -12,6 +15,8 @@ import { userService } from "@/features/users/services/UserService.instance";
  */
 export async function getCurrentUserAction() {
   try {
+    await connectMongo();
+
     const session = await requireAuth();
 
     const email = session.user?.email;

@@ -18,6 +18,7 @@ export const ROUTES = {
   BOOKMARKS: "/bookmarks",
 
   SETTINGS: "/settings",
+  SETTINGS_ACCOUNT: "/settings/account",
   SETTINGS_PROFILE: "/settings/profile",
   SETTINGS_INTERESTS: "/settings/interests",
   SETTINGS_APPEARANCE: "/settings/appearance",

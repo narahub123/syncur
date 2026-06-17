@@ -1,5 +1,4 @@
 import User from "@/features/users/models/User";
-import type { UserLean } from "@/shared/types/domain-leans";
 import type { UserLeanPaagedResponse } from "../dto/userDto";
 import {
   AdminUserSearchField,
@@ -7,6 +6,8 @@ import {
 } from "@/features/admin/users/types";
 import { SortOrder } from "@/shared/types/pagination";
 import { USER_ROLE } from "../constants/user-role";
+import { UserLean } from "../types/lean";
+import { ImageInfo } from "@/shared/lib/cloudinary/image-info.model";
 
 /**
  * User Repository
@@ -189,5 +190,30 @@ export class UserRepository {
     return User.find({
       role: USER_ROLE.ADMIN,
     }).lean();
+  }
+
+  /**
+   * 사용자 프로필 업데이트
+   * * @param userId 사용자 ObjectId
+   * @param data 업데이트할 데이터 (name, profileImage)
+   */
+  async updateProfile(
+    userId: string,
+    data: { name: string; profileImage: ImageInfo | null },
+  ): Promise<UserLean | null> {
+    console.log("repo", data);
+
+    return User.findByIdAndUpdate(
+      userId,
+      {
+        $set: {
+          name: data.name,
+          profileImage: data.profileImage, // 우리가 새로 정의한 필드명
+        },
+      },
+      { returnDocument: "after" },
+    )
+      .lean<UserLean>()
+      .exec();
   }
 }

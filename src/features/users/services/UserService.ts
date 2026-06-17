@@ -6,6 +6,8 @@ import { ADMIN_CONFIG } from "@/features/admin/constants/admin-config";
 import { PAGINATION } from "@/shared/constants/pagination";
 import { AdminUsersQuery } from "@/features/admin/users/types";
 import { USER_ROLE } from "../constants/user-role";
+import { ImageInfo } from "@/shared/lib/cloudinary/image-info.model";
+import { deleteCloudinaryImage } from "@/shared/lib/cloudinary/cloudinary.utils";
 
 /**
  * User Service
@@ -138,5 +140,30 @@ export class UserService {
     const admins = await this.userRepository.findAdmins();
 
     return toUserDtos(admins);
+  }
+
+  async updateProfile(
+    userId: string,
+    data: { name: string; profileImage: ImageInfo | null },
+  ): Promise<UserDto> {
+    // 1. 현재 사용자 조회 (기존 프로필 이미지의 publicId를 알기 위해)
+    const currentUser = await this.userRepository.findById(userId);
+
+    // 2. DB 업데이트
+    const updatedUser = await this.userRepository.updateProfile(userId, data);
+
+    if (!updatedUser) {
+      throw new Error("사용자 프로필 업데이트에 실패했습니다.");
+    }
+    // 3. 기존 이미지 삭제 (새 이미지로 변경되었고, 기존 이미지가 존재했다면)
+    if (
+      currentUser?.profileImage &&
+      data.profileImage &&
+      currentUser.profileImage.publicId !== data.profileImage.publicId
+    ) {
+      await deleteCloudinaryImage(currentUser.profileImage.publicId);
+    }
+
+    return toUserDto(updatedUser);
   }
 }

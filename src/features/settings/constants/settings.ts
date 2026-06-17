@@ -3,6 +3,11 @@ import { SettingsMenuItemType } from "../types/settings";
 
 export const SETTINGS_LIST: SettingsMenuItemType[] = [
   {
+    category: "account",
+    label: "계정 관리",
+    href: ROUTES.SETTINGS_ACCOUNT,
+  },
+  {
     category: "subscriptions",
     label: "구독 관리",
     href: ROUTES.SETTINGS_SUBSCRIPTIONS,

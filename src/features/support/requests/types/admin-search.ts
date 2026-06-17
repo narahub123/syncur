@@ -1,10 +1,10 @@
 import { SortOrder } from "@/shared/types/pagination";
 import { RequestStatus, RequestType } from "../constants/request-type";
-import { UserLean } from "@/shared/types/domain-leans";
-import { UserBasicDto, UserBasicLean } from "@/features/users/dto/userDto";
+import { UserBasicDto } from "@/features/users/dto/userDto";
 import { ImageInfo } from "@/shared/lib/cloudinary/image-info.model";
 import { OSType } from "../../bug-reports/types/bugReport";
 import { Types } from "mongoose";
+import { UserBasicLean, UserLean } from "@/features/users/types/lean";
 
 /**
  * 관리자 1:1 문의 검색 및 정렬 조건 규격

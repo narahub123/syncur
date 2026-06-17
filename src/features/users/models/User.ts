@@ -1,5 +1,9 @@
 import { Schema, model, models, Document } from "mongoose";
 import { USER_ROLE, UserRole } from "../constants/user-role";
+import {
+  ImageInfo,
+  ImageInfoSchema,
+} from "@/shared/lib/cloudinary/image-info.model";
 
 /**
  * User Document
@@ -37,6 +41,8 @@ export interface UserDocument extends Document {
    * Google OAuth 로그인 시 저장됨
    */
   image: string | null;
+
+  profileImage: ImageInfo | null;
 
   /**
    * 관심사 온보딩 완료 여부
@@ -116,6 +122,11 @@ const userSchema = new Schema<UserDocument>(
      */
     image: {
       type: String,
+      default: null,
+    },
+
+    profileImage: {
+      type: ImageInfoSchema,
       default: null,
     },
 
