@@ -1,18 +1,21 @@
 "use client";
 
 import { Badge } from "@/shared/components/ui/badge";
-import { Button } from "@/shared/components/ui/button";
-import { FileIcon, LaptopIcon } from "lucide-react";
+import { LaptopIcon } from "lucide-react";
 import {
   AdminBugReportDetail,
+  BUG_STATUS,
   bugAnswerFormConfig,
   BugAnswerFormValues,
 } from "../types";
 import { DynamicForm } from "@/shared/components/common/DynamicForm";
+import { useAdminReplyMutation } from "@/features/support/requests/hooks/useAdminReplyMutation";
+import { ImagePreview } from "@/shared/components/common/ImagePreview";
+import { useState } from "react";
 
 interface AdminBugReplyClientProps {
   bugReport: AdminBugReportDetail;
-  existingAnswer?: BugAnswerFormValues | null; // 기존 버그 분석/답변 데이터가 존재하면 수정 모드
+  existingAnswer?: BugAnswerFormValues | null;
 }
 
 export default function AdminBugReplyClient({
@@ -20,36 +23,22 @@ export default function AdminBugReplyClient({
   existingAnswer,
 }: AdminBugReplyClientProps) {
   const isEditMode = Boolean(existingAnswer);
+  const [images, setImages] = useState(bugReport.metadata?.images || []);
 
-  const handleBugReplySubmit = async (data: BugAnswerFormValues) => {
-    try {
-      if (isEditMode) {
-        // 🔄 버그 답변/상태 수정 API 호출 (PATCH)
-        console.log(`버그 ID ${bugReport.id}번 기존 피드백 수정 전송:`, data);
-        // await fetch(`/api/admin/bug-reports/${bugReport.id}/reply`, { method: 'PATCH', body: JSON.stringify(data) });
-        alert("버그 처리 내역 및 답변이 정상적으로 수정되었습니다.");
-      } else {
-        // ➕ 최초 버그 답변 등록 API 호출 (POST)
-        console.log(`버그 ID ${bugReport.id}번 최초 처리 전송:`, data);
-        // await fetch(`/api/admin/bug-reports/${bugReport.id}/reply`, { method: 'POST', body: JSON.stringify(data) });
-        alert("버그 처리 상태가 등록되었습니다.");
-      }
-    } catch (error) {
-      console.error("버그 처리 업데이트 실패:", error);
-      alert("오류가 발생했습니다.");
-    }
+  // 훅에서 onSuccess 시 토스트 처리
+  const { mutate: reply } = useAdminReplyMutation(isEditMode);
+
+  const handleBugReplySubmit = (data: BugAnswerFormValues) => {
+    reply({
+      requestId: bugReport._id,
+      replyContent: data.replyContent,
+      status: data.status,
+      images: data.images || [],
+    });
   };
-
-  const statusVariantMap = {
-    접수대기: "destructive",
-    확인중: "secondary",
-    수정중: "outline",
-    해결완료: "default",
-  } as const;
-
+  const userInitial = bugReport.user?.name?.charAt(0).toUpperCase() || "U";
   return (
     <div className="mx-auto w-full max-w-4xl space-y-6 p-6">
-      {/* 헤더 영역 */}
       <div className="flex items-center justify-between border-b pb-4">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">
@@ -59,96 +48,86 @@ export default function AdminBugReplyClient({
             유저 제보 환경을 분석하고 처리 프로세스를 기록합니다.
           </p>
         </div>
-        <Badge variant={statusVariantMap[bugReport.currentStatus] || "default"}>
+        <Badge
+          variant={
+            bugReport.currentStatus === BUG_STATUS.COMPLETED
+              ? "default"
+              : "secondary"
+          }
+        >
           {bugReport.currentStatus}
         </Badge>
       </div>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        {/* 유저 제보 상세 내역 (Read-Only) */}
         <div className="space-y-4 lg:col-span-2">
           <div className="bg-muted/30 space-y-4 rounded-xl border p-6">
             <div className="space-y-1">
-              <span className="text-muted-foreground text-xs">
-                제보자: {bugReport.userEmail} | {bugReport.createdAt}
-              </span>
+              <div className="flex items-center gap-3">
+                {bugReport.user?.image ? (
+                  <img
+                    src={bugReport.user.image}
+                    alt={bugReport.user.name}
+                    className="h-9 w-9 rounded-full border object-cover"
+                  />
+                ) : (
+                  <div className="bg-primary text-primary-foreground flex h-9 w-9 items-center justify-center rounded-full border font-semibold">
+                    {userInitial}
+                  </div>
+                )}
+                <div>
+                  <p className="text-sm font-medium">
+                    {bugReport.user?.name ?? "사용자"}
+                  </p>
+                  <p className="text-muted-foreground text-xs">
+                    {bugReport.user?.email}
+                  </p>
+                </div>
+              </div>
               <h2 className="text-lg font-semibold">{bugReport.title}</h2>
             </div>
-            <p className="text-foreground/90 bg-background min-h-37.5 rounded-lg border p-4 text-sm leading-relaxed whitespace-pre-wrap">
+            <p className="text-foreground/90 bg-background rounded-lg border p-4 text-sm leading-relaxed whitespace-pre-wrap">
               {bugReport.content}
             </p>
+
+            <ImagePreview
+              images={images}
+              onDelete={setImages}
+              canDelete={false}
+            />
           </div>
 
-          {/* 기기 및 파일 인포 정보 */}
           <div className="bg-background grid grid-cols-1 gap-4 rounded-xl border p-4 md:grid-cols-2">
             <div className="bg-muted/20 flex items-start gap-3 rounded-lg p-3">
               <LaptopIcon className="text-muted-foreground mt-0.5 h-5 w-5" />
-              <div className="space-y-1">
-                <div className="text-muted-foreground text-xs font-semibold">
+              <div className="space-y-1 text-sm">
+                <div className="text-muted-foreground font-semibold">
                   유저 실행 환경
                 </div>
-                <div className="text-sm font-medium">OS: {bugReport.os}</div>
-                <div className="text-sm font-medium">
-                  Browser: {bugReport.browser}
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-muted/20 flex items-start gap-3 rounded-lg p-3">
-              <FileIcon className="text-muted-foreground mt-0.5 h-5 w-5" />
-              <div className="w-full space-y-1">
-                <div className="text-muted-foreground text-xs font-semibold">
-                  첨부 파일 / 스크린샷
-                </div>
-                {bugReport.fileUrl ? (
-                  <div className="pt-1">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      asChild
-                      className="h-8 w-full"
-                    >
-                      <a
-                        href={bugReport.fileUrl}
-                        target="_blank"
-                        rel="noreferrer"
-                      >
-                        파일 다운로드 / 보기
-                      </a>
-                    </Button>
-                  </div>
-                ) : (
-                  <div className="text-muted-foreground pt-1 text-sm italic">
-                    첨부된 파일이 없습니다.
-                  </div>
-                )}
+                <div>OS: {bugReport.metadata?.os}</div>
+                <div>Browser: {bugReport.metadata?.browser}</div>
               </div>
             </div>
           </div>
         </div>
 
-        {/* 관리자 답변/수정 대응 폼 */}
+        {/* 답변 폼 */}
         <div className="bg-background h-fit space-y-4 rounded-xl border p-6 shadow-sm">
-          <div>
-            <h3 className="text-md font-bold">
-              {isEditMode ? "버그 처리 내역 수정" : "버그 대응 폼"}
-            </h3>
-            <p className="text-muted-foreground text-xs">
-              {isEditMode
-                ? "등록된 디버깅 피드백 및 이슈 링크를 수정합니다."
-                : "진행 상황을 변경하고 피드백을 기록하세요."}
-            </p>
-          </div>
-
+          <h3 className="text-md font-bold">
+            {isEditMode ? "버그 처리 내역 수정" : "버그 대응 폼"}
+          </h3>
           <DynamicForm<BugAnswerFormValues>
-            configs={bugAnswerFormConfig}
+            configs={bugAnswerFormConfig} // 설정 내에 반드시 images 필드 포함
             onSubmit={handleBugReplySubmit}
             submitLabel={
               isEditMode ? "처리 내역 수정 완료" : "처리 상태 업데이트"
             }
-            // 💡 기존 피드백/답변 정보 유무에 따른 initialValues 주입 분기
             initialValues={
-              existingAnswer || { status: "확인중", replyContent: "" }
+              existingAnswer || {
+                status: BUG_STATUS.CHECKING,
+                replyContent: "",
+                images: [],
+              }
             }
           />
         </div>

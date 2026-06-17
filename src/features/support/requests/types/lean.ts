@@ -7,11 +7,10 @@ import { ImageInfo } from "@/shared/lib/cloudinary/image-info.model";
  * 몽고디비 원본 타입을 그대로 유지하는 Request 서브 메타데이터
  */
 export interface RequestMetadata {
-  category: string;
+  category?: string;
   os?: OSType;
   browser?: string;
   images: ImageInfo[];
-  issueTrackerUrl?: string;
 }
 
 /**
@@ -22,6 +21,7 @@ export interface RequestAdminReplyLean {
   repliedAt: Date;
   repliedUpdatedAt: Date;
   repliedBy: Types.ObjectId;
+  images: ImageInfo[];
 }
 
 /**

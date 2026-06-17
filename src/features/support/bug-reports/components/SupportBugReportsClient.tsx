@@ -4,8 +4,11 @@ import { DynamicForm } from "@/shared/components/common/DynamicForm";
 import { bugReportFormConfig, BugReportFormValues } from "../types/bugReport";
 import { useCreateRequestMutation } from "../../requests/hooks/useCreateRequestMutation";
 import { toast } from "sonner";
+import { useRouter } from "next/navigation";
+import { ROUTES } from "@/shared/constants/routes";
 
 const SupportBugReportClient = () => {
+  const router = useRouter();
   const { mutate: submitRequest } = useCreateRequestMutation();
 
   const handleBugReportSubmit = async (data: BugReportFormValues) => {
@@ -30,7 +33,8 @@ const SupportBugReportClient = () => {
       submitRequest(payload, {
         onSuccess: () => {
           toast.success("버그 신고가 성공적으로 접수되었습니다!");
-          // 필요시 폼 초기화 로직
+
+          router.push(`${ROUTES.SUPPORT_REQUESTS}`);
         },
         onError: (error) => {
           console.error("전송 실패:", error);

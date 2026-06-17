@@ -1,6 +1,7 @@
 import { UserRole } from "@/features/users/constants/user-role";
 import { UserLean } from "@/shared/types/domain-leans";
 import { PaginatedResponse } from "@/shared/types/pagination";
+import { Types } from "mongoose";
 
 /**
  * User API Response Type
@@ -60,3 +61,21 @@ export type UserLeanPaagedResponse = {
   totalCount: number;
 };
 export type UserDtoPagedResponse = PaginatedResponse<UserDto>;
+
+// DB Lean 조회용 타입
+export interface UserBasicLean {
+  _id: Types.ObjectId;
+  email: string;
+  name: string;
+  image: string | null;
+  role: UserRole;
+}
+
+// 프론트엔드용 공통 DTO
+export interface UserBasicDto {
+  _id: string;
+  email: string;
+  name: string;
+  image: string | null;
+  role: UserRole;
+}

@@ -22,7 +22,7 @@ export async function createRequestAction(data: CreateRequestDto) {
     return await requestService.createRequest(
       data,
       userId,
-      data.email ?? userEmail,
+      data.email || userEmail,
     );
   } catch (error) {
     console.error("문의/제보 생성 실패:", error);

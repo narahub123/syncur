@@ -138,7 +138,6 @@ const RequestSchema = new Schema<RequestDocument>(
         type: [ImageInfoSchema],
         default: [],
       },
-      issueTrackerUrl: { type: String, trim: true },
     },
 
     /**
@@ -153,6 +152,10 @@ const RequestSchema = new Schema<RequestDocument>(
           type: Schema.Types.ObjectId,
           ref: "User",
           required: true,
+        },
+        images: {
+          type: [ImageInfoSchema],
+          default: [],
         },
       },
       default: null,

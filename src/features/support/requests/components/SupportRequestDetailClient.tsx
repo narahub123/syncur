@@ -4,20 +4,31 @@ import {
   REQUEST_STATUS,
   REQUEST_TYPE,
 } from "@/features/support/requests/constants/request-type";
-import { useRequestDetailQuery } from "../actions/useRequestDetailQuery";
+import { useRequestDetailQuery } from "../hooks/useRequestDetailQuery";
 import { BUG_CATEGORY_OPTIONS } from "../../bug-reports/types/bugReport";
 import { INQUIRY_CATEGORIES_OPTIONS } from "../../inquiries/types/inquiries";
+import { useRouter } from "next/navigation";
+import { ROUTES } from "@/shared/constants/routes";
+import { Button } from "@/shared/components/ui/button";
+import { ImagePreview } from "@/shared/components/common/ImagePreview";
 
 export default function SupportRequestDetailClient({
   requestId,
 }: {
   requestId: string;
 }) {
+  const router = useRouter();
   const { data: request, isLoading, error } = useRequestDetailQuery(requestId);
 
   if (isLoading) return <div className="p-6">불러오는 중...</div>;
   if (error || !request)
     return <div className="p-6">문의 내역을 찾을 수 없습니다.</div>;
+
+  console.log("사아ㅇㄴ으ㅜㄴ일나ㅣ런ㅇㄹ", request.adminReply?.images);
+  const handleEdit = () => {
+    if (!request) return;
+    router.push(`${ROUTES.SUPPORT_REQUESTS}/${request._id}/edit`);
+  };
 
   return (
     <div className="mx-auto w-full max-w-3xl space-y-6 p-6">
@@ -57,7 +68,14 @@ export default function SupportRequestDetailClient({
           </span>
         </div>
 
-        <h1 className="text-2xl font-bold">{request.title}</h1>
+        <div className="flex items-center justify-between">
+          <h1 className="text-2xl font-bold">{request.title}</h1>
+          {!request.adminReply && (
+            <Button variant="outline" onClick={handleEdit}>
+              수정하기
+            </Button>
+          )}
+        </div>
       </div>
 
       {/* 2. 문의 본문 */}
@@ -66,6 +84,11 @@ export default function SupportRequestDetailClient({
           문의 내용
         </h2>
         <p className="whitespace-pre-wrap">{request.content}</p>
+        <ImagePreview
+          images={request.metadata?.images || []}
+          onDelete={() => {}}
+          canDelete={false}
+        />
       </div>
 
       {/* 3. 관리자 답변 영역 (답변이 있는 경우에만) */}
@@ -77,7 +100,12 @@ export default function SupportRequestDetailClient({
         {request.status === REQUEST_STATUS.COMPLETED ? (
           // 답변이 완료된 경우
           <div className="whitespace-pre-wrap text-gray-700">
-            {request.adminReply?.replyContent}
+            <div>{request.adminReply?.replyContent}</div>
+            <ImagePreview
+              images={request.adminReply?.images || []}
+              onDelete={() => {}}
+              canDelete={false}
+            />
           </div>
         ) : (
           // 답변이 대기 중인 경우

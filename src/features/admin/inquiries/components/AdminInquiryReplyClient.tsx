@@ -1,27 +1,27 @@
 "use client";
 
+import { useState } from "react";
 import { Badge } from "@/shared/components/ui/badge";
-import { answerFormConfig, AnswerFormValues } from "../types";
+import { ImagePreview } from "@/shared/components/common/ImagePreview";
 import { DynamicForm } from "@/shared/components/common/DynamicForm";
-
-interface UserInquiryData {
-  id: string;
-  userEmail: string;
-  title: string;
-  content: string;
-  createdAt: string;
-  currentStatus: "대기중" | "처리중" | "답변완료";
-}
-
-// 📝 기존에 달아놓은 답변 데이터가 있다면 받아올 타입 정의
-interface ExistingAnswerData {
-  replyContent: string;
-  status: "처리중" | "답변완료";
-}
+import { useAdminReplyMutation } from "@/features/support/requests/hooks/useAdminReplyMutation";
+import { RequestStatus } from "@/features/support/requests/constants/request-type";
+import {
+  ANSWER_STATUS,
+  answerFormConfig,
+  AnswerFormValues,
+  AnswerStatus,
+  UserInquiryData,
+} from "../types";
+import { ImageInfo } from "@/shared/lib/cloudinary/image-info.model";
 
 interface AdminInquiryReplyClientProps {
   inquiry: UserInquiryData;
-  existingAnswer?: ExistingAnswerData | null; // 답변이 존재하면 수정 모드로 진입
+  existingAnswer?: {
+    replyContent: string;
+    images: ImageInfo[];
+    status: AnswerStatus;
+  } | null;
 }
 
 export default function AdminInquiryReplyClient({
@@ -29,75 +29,99 @@ export default function AdminInquiryReplyClient({
   existingAnswer,
 }: AdminInquiryReplyClientProps) {
   const isEditMode = Boolean(existingAnswer);
+  const [images, setImages] = useState(inquiry.metadata?.images || []);
 
-  const handleReplySubmit = async (data: AnswerFormValues) => {
-    try {
-      if (isEditMode) {
-        // 🔄 답변 수정 API 호출 (PATCH)
-        console.log(`문의 ID ${inquiry.id}번 기존 답변 수정 전송:`, data);
-        // await fetch(`/api/admin/requests/${inquiry.id}/reply`, { method: 'PATCH', body: JSON.stringify(data) });
-        alert("유저 문의 답변이 정상적으로 수정되었습니다.");
-      } else {
-        // ➕ 최초 답변 등록 API 호출 (POST)
-        console.log(`문의 ID ${inquiry.id}번 최초 답변 등록 전송:`, data);
-        // await fetch(`/api/admin/requests/${inquiry.id}/reply`, { method: 'POST', body: JSON.stringify(data) });
-        alert("최초 답변이 정상적으로 등록되었습니다.");
-      }
-    } catch (error) {
-      console.error("답변 처리 실패:", error);
-      alert("오류가 발생했습니다.");
-    }
+  const { mutate: reply } = useAdminReplyMutation(isEditMode);
+
+  const userInitial = inquiry.user?.name?.charAt(0).toUpperCase() || "U";
+
+  const handleReplySubmit = (data: AnswerFormValues) => {
+    reply({
+      requestId: inquiry.id,
+      replyContent: data.replyContent,
+      status: data.status as RequestStatus,
+      images: data.images || [],
+    });
   };
 
   return (
     <div className="mx-auto w-full max-w-3xl space-y-6 p-6">
-      {/* 1. 유저 원본 문의 내용 보기 (상단 고정) */}
-      <div className="bg-muted/40 space-y-4 rounded-xl border p-6">
-        <div className="flex items-center justify-between border-b pb-3">
+      {/* 1. 문의 상세 정보 */}
+      <div className="bg-card rounded-xl border p-6 shadow-sm">
+        <div className="mb-6 flex items-start justify-between">
           <div className="space-y-1">
-            <span className="text-muted-foreground text-xs">
-              작성자: {inquiry.userEmail}
-            </span>
-            <h2 className="text-lg font-semibold">{inquiry.title}</h2>
-          </div>
-          <div className="space-y-1 text-right">
-            <div className="text-muted-foreground text-xs">
-              {inquiry.createdAt}
+            <h2 className="text-xl font-bold tracking-tight">
+              {inquiry.title}
+            </h2>
+            <div className="text-muted-foreground flex items-center gap-2 text-sm">
+              <span>{inquiry.createdAt}</span>
+              <span>•</span>
+              <span>ID: {inquiry.id.slice(-6)}</span>
             </div>
-            <Badge
-              variant={
-                inquiry.currentStatus === "대기중" ? "destructive" : "default"
-              }
-            >
-              {inquiry.currentStatus}
-            </Badge>
           </div>
+          <Badge
+            variant={
+              inquiry.currentStatus === "PENDING" ? "destructive" : "default"
+            }
+          >
+            {inquiry.currentStatus}
+          </Badge>
         </div>
-        <p className="text-foreground/90 min-h-25 text-sm leading-relaxed whitespace-pre-wrap">
-          {inquiry.content}
-        </p>
+
+        <div className="bg-muted/30 mb-6 flex items-center justify-between rounded-lg border p-3">
+          <div className="flex items-center gap-3">
+            {inquiry.user?.image ? (
+              <img
+                src={inquiry.user.image}
+                alt={inquiry.user.name}
+                className="h-9 w-9 rounded-full border object-cover"
+              />
+            ) : (
+              <div className="bg-primary text-primary-foreground flex h-9 w-9 items-center justify-center rounded-full border font-semibold">
+                {userInitial}
+              </div>
+            )}
+            <div>
+              <p className="text-sm font-medium">
+                {inquiry.user?.name ?? "사용자"}
+              </p>
+              <p className="text-muted-foreground text-xs">
+                {inquiry.user?.email}
+              </p>
+            </div>
+          </div>
+          <button className="text-primary text-xs font-medium hover:underline">
+            사용자 상세 보기
+          </button>
+        </div>
+
+        <div className="bg-background rounded-lg border p-4">
+          <p className="text-foreground/90 text-sm leading-relaxed whitespace-pre-wrap">
+            {inquiry.content}
+          </p>
+          {/* 문의 이미지 */}
+          <ImagePreview
+            images={images}
+            onDelete={setImages}
+            canDelete={false}
+          />
+        </div>
       </div>
 
-      {/* 2. 관리자 답변 등록/수정 폼 (DynamicForm 재사용) */}
-      <div className="bg-background space-y-4 rounded-xl border p-6 shadow-sm">
-        <div>
-          <h3 className="text-lg font-bold">
-            {isEditMode ? "작성된 답변 수정하기" : "답변 등록 및 상태 제어"}
-          </h3>
-          <p className="text-muted-foreground text-xs">
-            {isEditMode
-              ? "기존에 전송한 피드백 내용을 정정합니다."
-              : "유저에게 발송될 최초 답변을 작성합니다."}
-          </p>
-        </div>
-
+      {/* 2. 관리자 답변 폼 */}
+      <div className="bg-card rounded-xl border p-6 shadow-sm">
+        <h3 className="mb-4 text-lg font-bold">
+          {isEditMode ? "답변 수정" : "관리자 답변 등록"}
+        </h3>
         <DynamicForm<AnswerFormValues>
           configs={answerFormConfig}
           onSubmit={handleReplySubmit}
-          submitLabel={isEditMode ? "답변 수정 완료" : "답변 전송 및 저장"}
-          // 💡 기존 답변이 있으면 폼에 채워주고, 없으면 기본값 세팅
+          submitLabel={isEditMode ? "수정 완료" : "답변 전송"}
           initialValues={
-            existingAnswer || { status: "답변완료", replyContent: "" }
+            existingAnswer || {
+              status: ANSWER_STATUS.COMPLETED,
+              replyContent: "",
+            }
           }
         />
       </div>

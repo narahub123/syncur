@@ -1,3 +1,4 @@
+import { getRequestAction } from "@/features/support/requests/actions/getRequestAction";
 import SupportRequestEditClient from "@/features/support/requests/components/SupportRequestEditClient";
 
 export default async function SupportReuuestEditPage({
@@ -5,6 +6,9 @@ export default async function SupportReuuestEditPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
-  const { id } = await params; // 서버에서 id 추출
-  return <SupportRequestEditClient requestId={id} />;
+  const { id } = await params;
+
+  const request = await getRequestAction(id);
+
+  return <SupportRequestEditClient request={request} />;
 }

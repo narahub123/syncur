@@ -15,7 +15,7 @@ export function toAdminRequestDto(
 ): AdminRequestResponseDTO {
   return {
     // 💡 RequestWithUserAndAdminLean 인터페이스 스펙상 _id가 이미 string이므로 toString() 생략 가능
-    _id: lean._id,
+    _id: lean._id.toString(),
     userEmail: lean.userEmail,
     type: lean.type,
     title: lean.title,
@@ -28,10 +28,11 @@ export function toAdminRequestDto(
     // 💡 UserLean 타입 구조 스펙(Types.ObjectId)에 기반한 안전한 객체 파싱
     user: lean.user
       ? {
-          id: lean.user._id.toString(), // Types.ObjectId 캐스팅
+          _id: lean.user._id.toString(), // Types.ObjectId 캐스팅
           email: lean.user.email,
           name: lean.user.name,
-          image: lean.user.image, // 필요 시 프로필 이미지 추가 바인딩 가능
+          image: lean.user.image,
+          role: lean.user.role,
         }
       : null,
 
@@ -48,6 +49,7 @@ export function toAdminRequestDto(
                 name: lean.adminReply.repliedByAdmin.name,
               }
             : null,
+          images: lean.adminReply.images,
         }
       : null,
   };

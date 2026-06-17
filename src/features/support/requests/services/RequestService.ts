@@ -1,15 +1,19 @@
 import { Types } from "mongoose";
 import { RequestRepository } from "../repository/RequestRepository";
 import { CreateRequestDto, RequestResponseDTO } from "../dtos";
-import { REQUEST_STATUS } from "../constants/request-type";
+import { REQUEST_STATUS, RequestStatus } from "../constants/request-type";
 import { toRequestDto, toRequestDtos } from "../mappers/toRequestDto";
 import {
   AdminRequestQuery,
   AdminRequestResponseDTO,
 } from "../types/admin-search";
 import { PaginatedResponse } from "@/shared/types/pagination";
-import { toAdminRequestDtos } from "../mappers/toAdminRequestDtos";
+import {
+  toAdminRequestDto,
+  toAdminRequestDtos,
+} from "../mappers/toAdminRequestDtos";
 import { UserRequestQuery } from "../../notices/types/user-search";
+import { ImageInfo } from "@/shared/lib/cloudinary/image-info.model";
 
 export class RequestService {
   constructor(private readonly requestRepository: RequestRepository) {}
@@ -51,19 +55,18 @@ export class RequestService {
   async replyToRequest(params: {
     requestId: string;
     replyContent: string;
+    images: ImageInfo[];
     adminId: string;
-    isBugResolved?: boolean;
+    status: RequestStatus;
   }): Promise<RequestResponseDTO> {
     // 버그 리포트의 경우 해결 여부에 따라 상태 매핑 분기 처리
-    const targetStatus = params.isBugResolved
-      ? REQUEST_STATUS.RESOLVED
-      : REQUEST_STATUS.COMPLETED;
 
     const updated = await this.requestRepository.submitAdminReply({
       requestId: params.requestId,
       replyContent: params.replyContent,
+      images: params.images,
       repliedBy: params.adminId,
-      status: targetStatus,
+      status: params.status,
     });
 
     if (!updated) throw new Error("존재하지 않는 문의 요청입니다.");
@@ -160,6 +163,74 @@ export class RequestService {
       throw new Error("존재하지 않는 문의 내역입니다.");
     }
 
+    return toRequestDto(request);
+  }
+
+  /**
+   * 관리자 전용 문의 상세 조회 (작성자 및 답변자 정보 포함)
+   */
+  async getRequestByIdForAdmin(
+    requestId: string,
+  ): Promise<AdminRequestResponseDTO> {
+    const request = await this.requestRepository.findByIdForAdmin(requestId);
+
+    if (!request) {
+      throw new Error("존재하지 않는 문의 내역입니다.");
+    }
+
+    // toAdminRequestDtos가 배열을 처리하므로, 단일 객체 매퍼를 사용하거나
+    // 배열 형태로 감싸서 처리 후 첫 번째 요소를 반환
+    return toAdminRequestDto(request);
+  }
+
+  /**
+   * 사용자 요청 수정 비즈니스 로직
+   */
+  async updateRequest(params: {
+    requestId: string;
+    userId: string; // 수정 요청한 사용자 ID
+    title: string;
+    content: string;
+    metadata: {
+      category: string;
+      os?: string;
+      browser?: string;
+      images: ImageInfo[];
+    };
+  }) {
+    // 1. 기존 데이터 조회
+    const existingRequest = await this.requestRepository.findById(
+      params.requestId,
+    );
+
+    if (!existingRequest) {
+      throw new Error("요청을 찾을 수 없습니다.");
+    }
+
+    // 2. 권한 검증: 작성자 본인 확인
+    if (existingRequest.userId.toString() !== params.userId) {
+      throw new Error("본인의 요청만 수정할 수 있습니다.");
+    }
+
+    // 3. 비즈니스 규칙 검증: 이미 답변이 달린 경우 수정 제한 (선택 사항)
+    if (existingRequest.status === REQUEST_STATUS.COMPLETED) {
+      throw new Error("이미 답변이 작성된 문의는 수정할 수 없습니다.");
+    }
+
+    const request = await this.requestRepository.updateUserRequest({
+      requestId: params.requestId,
+      title: params.title,
+      content: params.content,
+      metadata: params.metadata,
+    });
+
+    console.log("업데이트반환 값", request);
+
+    if (!request) {
+      throw new Error("수정에 실패했습니다.");
+    }
+
+    // 4. 레포지토리 호출하여 업데이트
     return toRequestDto(request);
   }
 }

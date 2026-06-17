@@ -1,83 +1,88 @@
 "use client";
 
 import { DynamicForm } from "@/shared/components/common/DynamicForm";
+import { toast } from "sonner";
+import { REQUEST_TYPE } from "@/features/support/requests/constants/request-type";
+import {
+  bugReportFormConfig,
+  BugReportFormValues,
+} from "../../bug-reports/types/bugReport";
 import { inquiryFormConfig } from "../../inquiries/types/inquiries";
-import { bugReportFormConfig } from "../../bug-reports/types/bugReport";
-import { BugEditFormValues, InquiryEditFormValues } from "../types";
-import { useEffect, useState } from "react";
-import { REQUEST_TYPE, RequestType } from "../constants/request-type";
+import { AdminRequestResponseDTO } from "../types/admin-search";
+import { useUpdateRequestMutation } from "../hooks/useUpdateRequestMutation";
 
 interface SupportRequestEditClientProps {
-  requestId: string;
+  request: AdminRequestResponseDTO; // 서버에서 가져온 전체 Request 데이터 (DTO)
 }
 
 const SupportRequestEditClient = ({
-  requestId,
+  request,
 }: SupportRequestEditClientProps) => {
-  const [requestType, setRequestType] = useState<RequestType | null>(null);
+  const { mutate: updateRequest } = useUpdateRequestMutation();
+  const isBugReport = request.type === REQUEST_TYPE.BUG_REPORT;
 
-  // 💡 any 대신 두 가지 타입 중 하나이거나 초기값인 null이 될 수 있음을 명시
-  const [initialData, setInitialData] = useState<
-    InquiryEditFormValues | BugEditFormValues | null
-  >(null);
+  // 1. 기존 데이터 -> 폼 타입으로 매핑
+  const initialValues = isBugReport
+    ? {
+        title: request.title,
+        content: request.content,
+        category: request.metadata?.category,
+        os: request.metadata?.os,
+        browser: request.metadata?.browser,
+        images: request.metadata?.images || [],
+      }
+    : {
+        title: request.title,
+        content: request.content,
+        email: request.userEmail,
+        category: request.metadata?.category,
+        images: request.metadata?.images || [],
+      };
 
-  useEffect(() => {
-    // 📝 [syncur 백엔드 API 호출 레이어]
-    //실제로는 axios나 fetch로 /api/support/requests/${requestId} 를 찌르게 됩니다.
+  // 2. 제출 핸들러 (타입별 분기)
+  const handleSubmit = (data: BugReportFormValues) => {
+    const payload = isBugReport
+      ? {
+          title: data.title,
+          content: data.content,
+          metadata: {
+            category: data.category,
+            os: data.os,
+            browser: data.browser,
+            images: data.images,
+          },
+        }
+      : {
+          title: data.title,
+          content: data.content,
+          metadata: {
+            category: data.category,
+            images: data.images,
+          },
+        };
 
-    // 예시: 버그 신고 데이터가 서버에서 날아왔다고 가정
-    setRequestType(REQUEST_TYPE.BUG_REPORT);
-    setInitialData({
-      title: "대시보드 진입 시 무한 로딩이 걸립니다.",
-      content:
-        "특정 메뉴만 누르면 화면이 멈춰요. syncur 서비스 확인 부탁드립니다.",
-      os: "Windows 11",
-      browser: "Chrome",
-    });
-  }, [requestId]);
-
-  const handleEditSubmit = async (
-    data: InquiryEditFormValues | BugEditFormValues,
-  ) => {
-    try {
-      console.log(
-        `[syncur] ${requestType} 유형의 ${requestId}번 글 수정 요청:`,
-        data,
-      );
-      // await fetch(`/api/support/requests/${requestId}`, { method: 'PATCH', body: JSON.stringify(data) });
-      alert("성공적으로 수정되었습니다.");
-    } catch (error) {
-      console.error(error);
-    }
+    updateRequest(
+      { requestId: request._id, ...payload },
+      {
+        onSuccess: () => toast.success("수정이 완료되었습니다."),
+        onError: () => toast.error("수정 중 오류가 발생했습니다."),
+      },
+    );
   };
 
-  // 데이터가 아직 fetch되지 않았다면 로딩 UI 반환
-  if (!requestType || !initialData) return <div>로딩 중...</div>;
-
   return (
-    <div className="mx-auto w-full max-w-xl space-y-4 p-6">
-      <div>
-        <h1 className="text-xl font-bold">
-          {requestType === REQUEST_TYPE.BUG_REPORT
-            ? "버그 제보 수정"
-            : "1:1 문의 내용 수정"}
+    <div className="bg-background mx-auto w-full max-w-xl rounded-lg border p-6 shadow-sm">
+      <div className="mb-6 space-y-1">
+        <h1 className="text-2xl font-bold tracking-tight">
+          {isBugReport ? "버그 제보 수정" : "문의 내용 수정"}
         </h1>
-        <p className="text-muted-foreground text-xs">
-          {requestType === REQUEST_TYPE.BUG_REPORT
-            ? "제보하셨던 에러 내용을 정정합니다."
-            : "작성하셨던 문의 내용을 수정합니다."}
-        </p>
       </div>
 
       <DynamicForm
-        configs={
-          requestType === REQUEST_TYPE.BUG_REPORT
-            ? bugReportFormConfig
-            : inquiryFormConfig
-        }
-        onSubmit={handleEditSubmit}
-        initialValues={initialData}
-        submitLabel="수정 완료하기"
+        configs={isBugReport ? bugReportFormConfig : inquiryFormConfig}
+        initialValues={initialValues} // 💡 기존 정보 자동 주입
+        onSubmit={handleSubmit}
+        submitLabel="수정 완료"
       />
     </div>
   );

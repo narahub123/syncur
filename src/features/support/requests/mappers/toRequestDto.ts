@@ -27,6 +27,7 @@ export const toRequestDto = (lean: RequestLean): RequestResponseDTO => {
           repliedBy: lean.adminReply.repliedBy.toString(),
           repliedAt: lean.adminReply.repliedAt.toISOString(),
           repliedUpdatedAt: lean.adminReply.repliedUpdatedAt.toISOString(),
+          images: lean.adminReply.images,
         }
       : null,
     createdAt: lean.createdAt.toISOString(),

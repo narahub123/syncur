@@ -1,43 +1,79 @@
 // shared/types/inquiry.ts
+import { RequestMetadata } from "@/features/support/requests/types/lean";
+import { UserBasicDto } from "@/features/users/dto/userDto";
+import { CLOUDINARY_FOLDERS } from "@/shared/lib/cloudinary/cloudinary.constant";
+import { ImageInfo } from "@/shared/lib/cloudinary/image-info.model";
 import { FormFieldConfig } from "@/shared/types/form";
 
-// 1. 상태 타입 정의
-export type InquiryStatus = "대기중" | "처리중" | "답변완료";
+// 1. 상태 상수 정의
+export const Inquiry_Status = {
+  PENDING: "PENDING",
+  PROCESSING: "PROCESSING",
+  COMPLETED: "COMPLETED",
+} as const;
 
-// 2. 문의 상태 옵션 정의 (Select용)
-export const INQUIRY_STATUS_OPTIONS: { label: string; value: InquiryStatus }[] =
-  [
-    { label: "대기중", value: "대기중" },
-    { label: "처리중", value: "처리중" },
-    { label: "답변완료", value: "답변완료" },
-  ];
+// 2. 타입 추출 ("PENDING" | "PROCESSING" | "COMPLETED")
+export type InquiryStatus =
+  (typeof Inquiry_Status)[keyof typeof Inquiry_Status];
 
-// 3. 답변 시 변경 가능한 상태 옵션 정의
-export type AnswerStatus = "처리중" | "답변완료";
+// 3. UI 표시용 매핑
+export const INQUIRY_STATUS_LABELS: Record<InquiryStatus, string> = {
+  [Inquiry_Status.PENDING]: "대기중",
+  [Inquiry_Status.PROCESSING]: "처리중",
+  [Inquiry_Status.COMPLETED]: "답변완료",
+};
 
-export const ANSWER_STATUS_OPTIONS: { label: string; value: AnswerStatus }[] = [
-  { label: "처리중", value: "처리중" },
-  { label: "답변완료", value: "답변완료" },
-];
+// 4. Select용 옵션 배열
+export const INQUIRY_STATUS_OPTIONS = Object.entries(INQUIRY_STATUS_LABELS).map(
+  ([value, label]) => ({ label, value: value as InquiryStatus }),
+);
+
+// 1. 상태 상수 정의
+export const ANSWER_STATUS = {
+  PROCESSING: "PROCESSING",
+  COMPLETED: "COMPLETED",
+} as const;
+
+// 2. 타입 추출 (자동으로 "PROCESSING" | "COMPLETED"가 됨)
+export type AnswerStatus = (typeof ANSWER_STATUS)[keyof typeof ANSWER_STATUS];
+
+// 3. UI 표시용 매핑 (라벨 연결)
+export const ANSWER_STATUS_LABELS: Record<AnswerStatus, string> = {
+  [ANSWER_STATUS.PROCESSING]: "처리중",
+  [ANSWER_STATUS.COMPLETED]: "답변완료",
+};
+
+// 4. Select 옵션 생성
+export const ANSWER_STATUS_OPTIONS = Object.entries(ANSWER_STATUS_LABELS).map(
+  ([value, label]) => ({ label, value: value as AnswerStatus }),
+);
 
 // 4. 문의 상세 데이터 타입
 export interface UserInquiryData {
   id: string;
-  userEmail: string;
+  user: UserBasicDto | null;
   title: string;
   content: string;
   createdAt: string;
-  currentStatus: InquiryStatus; // string 대신 타입 적용
+  metadata?: RequestMetadata;
+  currentStatus: InquiryStatus;
 }
 
 // 5. 답변 폼 값 타입
 export interface AnswerFormValues {
   replyContent: string;
-  status: AnswerStatus; // string 대신 타입 적용
+  status: AnswerStatus;
+  images?: ImageInfo[]; // 💡 답변용 이미지 추가
 }
 
-// 6. DynamicForm 설정
 export const answerFormConfig: FormFieldConfig[] = [
+  {
+    name: "status",
+    label: "문의 상태 변경",
+    type: "select",
+    options: ANSWER_STATUS_OPTIONS,
+    required: true,
+  },
   {
     name: "replyContent",
     label: "답변 작성",
@@ -45,12 +81,14 @@ export const answerFormConfig: FormFieldConfig[] = [
     placeholder: "유저에게 전달할 답변 내용을 입력해 주세요.",
     required: true,
   },
+
   {
-    name: "status",
-    label: "문의 상태 변경",
-    type: "select",
-    placeholder: "답변 제출 후 변경할 상태를 선택하세요.",
-    options: ANSWER_STATUS_OPTIONS, // 고정 배열 대신 상수 사용
-    required: true,
+    name: "images",
+    label: "이미지 첨부",
+    type: "file",
+    isMultiple: true,
+    accept: "image/*",
+    required: false,
+    folderName: CLOUDINARY_FOLDERS.INQUIRY_REPLIES,
   },
 ];

@@ -10,6 +10,7 @@ import {
   RequestWithUserAndAdminLean,
 } from "../types/admin-search";
 import { UserRequestQuery } from "../../notices/types/user-search";
+import { ImageInfo } from "@/shared/lib/cloudinary/image-info.model";
 
 /**
  * Request Repository
@@ -63,20 +64,33 @@ export class RequestRepository {
   async submitAdminReply(params: {
     requestId: Types.ObjectId | string;
     replyContent: string;
+    images: ImageInfo[];
     repliedBy: Types.ObjectId | string;
     status: RequestStatus;
   }): Promise<RequestLean | null> {
+    // 1. 기존 데이터 조회 (기존 repliedAt을 가져오기 위함)
+    const existingRequest = await RequestModel.findById(
+      params.requestId,
+    ).lean();
+
+    if (!existingRequest) return null;
+
+    // 2. 답변 정보 구성 (수정 시 repliedAt은 유지, repliedUpdatedAt만 갱신)
+    const newAdminReply = {
+      replyContent: params.replyContent,
+      images: params.images,
+      repliedBy: toObjectId(params.repliedBy),
+      repliedAt: existingRequest.adminReply?.repliedAt || new Date(), // 기존 값이 있으면 유지
+      repliedUpdatedAt: new Date(), // 현재 시간으로 갱신
+    };
+
+    // 3. 업데이트 수행
     return RequestModel.findByIdAndUpdate(
       toObjectId(params.requestId),
       {
         $set: {
           status: params.status,
-          adminReply: {
-            replyContent: params.replyContent,
-            repliedBy: toObjectId(params.repliedBy),
-            repliedAt: new Date(),
-            repliedUpdatedAt: new Date(), // 💡 최초 등록 시점 동기화
-          },
+          adminReply: newAdminReply,
         },
       },
       { returnDocument: "after" },
@@ -267,5 +281,74 @@ export class RequestRepository {
     status: RequestStatus,
   ): Promise<number> {
     return RequestModel.countDocuments({ userId: toObjectId(userId), status });
+  }
+
+  async findByIdForAdmin(
+    id: Types.ObjectId | string,
+  ): Promise<RequestWithUserAndAdminLean | null> {
+    const result = await RequestModel.aggregate<RequestWithUserAndAdminLean>([
+      { $match: { _id: toObjectId(id) } },
+      {
+        $lookup: {
+          from: "users",
+          localField: "userId",
+          foreignField: "_id",
+          as: "user",
+        },
+      },
+      { $unwind: { path: "$user", preserveNullAndEmptyArrays: true } },
+      {
+        $lookup: {
+          from: "users",
+          localField: "adminReply.repliedBy",
+          foreignField: "_id",
+          as: "repliedByAdmin",
+        },
+      },
+      {
+        $unwind: { path: "$repliedByAdmin", preserveNullAndEmptyArrays: true },
+      },
+      // ... 이후 $project 단계에서 데이터 구조 정리 (findAllPaginatedForAdmin과 동일하게)
+    ]);
+
+    return result[0] || null;
+  }
+
+  /**
+   * 유저 작성 글 수정 (제목, 본문, 메타데이터 업데이트)
+   * * @description 사용자가 자신의 문의/버그 제보 글을 수정할 때 사용합니다.
+   * * @param params 수정할 제보 ID, 새로운 제목, 본문, 그리고 가변 메타데이터
+   * * @returns 수정이 완료된 이후의 제보 상세 Lean 객체 (존재하지 않을 경우 null)
+   */
+  async updateUserRequest(params: {
+    requestId: Types.ObjectId | string;
+    title: string;
+    content: string;
+    metadata: {
+      category: string;
+      os?: string;
+      browser?: string;
+      images: ImageInfo[];
+    };
+  }): Promise<RequestLean | null> {
+    console.log("이미지", params.metadata.images);
+
+    return RequestModel.findByIdAndUpdate(
+      toObjectId(params.requestId),
+      {
+        $set: {
+          title: params.title,
+          content: params.content,
+          "metadata.category": params.metadata.category,
+          "metadata.images": params.metadata.images,
+          ...(params.metadata.os && { "metadata.os": params.metadata.os }),
+          ...(params.metadata.browser && {
+            "metadata.browser": params.metadata.browser,
+          }),
+          updatedAt: new Date(),
+        },
+      },
+      { returnDocument: "after" },
+    ).lean();
   }
 }

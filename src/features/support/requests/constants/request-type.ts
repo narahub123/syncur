@@ -15,13 +15,21 @@ export const REQUEST_TYPE_LABEL: Record<RequestType, string> = {
 };
 
 export const REQUEST_STATUS = {
+  PENDING: "PENDING",
+  COMPLETED: "COMPLETED",
+  PROCESSING: "PROCESSING",
+  CHECKING: "CHECKING",
+  FIXING: "FIXING",
+  RESOLVED: "RESOLVED",
+} as const;
+
+export const REQUEST_STATUS_OPTIONS = {
   PENDING: "대기중",
-  PROCESSING: "처리중",
   COMPLETED: "답변완료",
+  PROCESSING: "처리중",
   CHECKING: "확인중",
   FIXING: "수정중",
   RESOLVED: "해결완료",
 } as const;
 
-export type RequestStatus =
-  (typeof REQUEST_STATUS)[keyof typeof REQUEST_STATUS];
+export type RequestStatus = keyof typeof REQUEST_STATUS;

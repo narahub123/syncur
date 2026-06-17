@@ -4,8 +4,11 @@ import { DynamicForm } from "@/shared/components/common/DynamicForm";
 import { inquiryFormConfig, InquiryFormValues } from "../types/inquiries";
 import { toast } from "sonner";
 import { useCreateRequestMutation } from "../../requests/hooks/useCreateRequestMutation";
+import { useRouter } from "next/navigation";
+import { ROUTES } from "@/shared/constants/routes";
 
 const SupportInquiriesClient = () => {
+  const router = useRouter();
   const { mutate: submitInquiry } = useCreateRequestMutation();
 
   const handleInquirySubmit = async (data: InquiryFormValues) => {
@@ -22,13 +25,12 @@ const SupportInquiriesClient = () => {
     };
 
     try {
-      console.log("제출된 문의 데이터:", payload);
-
       // 3. mutation 실행
       submitInquiry(payload, {
         onSuccess: () => {
           toast.success("문의가 성공적으로 접수되었습니다!");
-          // 필요시 폼 초기화 로직 추가
+
+          router.push(`${ROUTES.SUPPORT_REQUESTS}`);
         },
         onError: (error) => {
           console.error(error);

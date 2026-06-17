@@ -1,3 +1,4 @@
+import { ImageInfo } from "@/shared/lib/cloudinary/image-info.model";
 import { RequestStatus, RequestType } from "../constants/request-type";
 import { RequestMetadata } from "../types/lean";
 
@@ -9,6 +10,7 @@ export interface RequestAdminReplyDTO {
   repliedAt: string;
   repliedUpdatedAt: string;
   repliedBy: string;
+  images: ImageInfo[];
 }
 
 /**
