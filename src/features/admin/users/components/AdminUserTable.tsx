@@ -13,6 +13,7 @@ import { useRouter } from "next/navigation";
 import { userTableColumns } from "../constants/adminUserTable";
 import { ChevronDown, ChevronUp, LoaderCircle } from "lucide-react";
 import { AdminUserSort, AdminUsersQuery } from "../types";
+import { ROUTES } from "@/shared/constants/routes";
 
 type Props = {
   users: UserDto[];
@@ -121,7 +122,7 @@ export default function AdminUserTable({
             users.map((user) => (
               <TableRow
                 key={user._id}
-                onClick={() => router.push(`/users/${user._id}`)}
+                onClick={() => router.push(`${ROUTES.ADMIN_USERS}/${user._id}`)}
                 className="cursor-pointer"
               >
                 {userTableColumns.map((col) => (

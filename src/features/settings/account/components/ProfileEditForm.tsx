@@ -43,7 +43,6 @@ export function ProfileEditForm({ user, onCancel }: Props) {
     register,
     handleSubmit,
     setValue,
-    watch,
     formState: { errors, isDirty },
   } = useForm<ProfileFormValues>({
     resolver: zodResolver(profileSchema),
