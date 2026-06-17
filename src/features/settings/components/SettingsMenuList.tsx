@@ -9,7 +9,7 @@ import SettingsMenuItem from "./SettingsMenuItem";
  */
 const SettingsMenuList = () => {
   return (
-    <nav aria-label="설정 메뉴">
+    <nav aria-label="설정 메뉴" className="flex flex-col">
       {SETTINGS_LIST.map((item) => (
         <SettingsMenuItem
           key={item.href}

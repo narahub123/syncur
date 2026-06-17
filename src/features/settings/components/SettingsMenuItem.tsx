@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { SettingsMenuItemType } from "../types/settings";
 import { ChevronRight } from "lucide-react";
+import { Button } from "@/shared/components/ui/button";
 
 type SettingsMenuItemProps = SettingsMenuItemType;
 
@@ -12,13 +13,20 @@ type SettingsMenuItemProps = SettingsMenuItemType;
  */
 const SettingsMenuItem = ({ href, label }: SettingsMenuItemProps) => {
   return (
-    <Link
-      href={href}
-      className="flex items-center justify-between border-b border-gray-100 px-3 py-6 hover:bg-gray-50 focus-visible:bg-gray-50 focus-visible:outline-blue-500"
+    <Button
+      key={label}
+      variant="ghost"
+      className="hover:bg-accent/50 flex w-full items-center justify-between rounded-none px-6 py-8 text-base font-medium" // padding을 늘려 여유롭게
+      asChild
     >
-      <span>{label}</span>
-      <ChevronRight aria-hidden="true" />
-    </Link>
+      <Link href={href}>
+        {label}
+        <ChevronRight
+          className="text-muted-foreground/50 size-5"
+          aria-hidden="true"
+        />
+      </Link>
+    </Button>
   );
 };
 

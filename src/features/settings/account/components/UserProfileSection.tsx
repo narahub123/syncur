@@ -1,17 +1,19 @@
 "use client";
+
+import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { ProfileEditForm } from "./ProfileEditForm";
-import { useState } from "react";
 import { UserDto } from "@/features/users/dto/userDto";
-import { Button } from "@/shared/components/ui/button";
-import { Avatar } from "@/shared/components/common/Avartar";
+import { UserProfileView } from "./UserProfileView";
 
 type Props = {
   user: UserDto;
+  isLoading: boolean;
 };
 
-const UserProfileSection = ({ user }: Props) => {
+const UserProfileSection = ({ user, isLoading }: Props) => {
   const [isEditing, setIsEditing] = useState(false);
+
   return (
     <div className="border-b px-6 pb-6">
       <section className="overflow-hidden">
@@ -19,9 +21,10 @@ const UserProfileSection = ({ user }: Props) => {
           {isEditing ? (
             <motion.div
               key="edit-form"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
+              // y축 이동을 제거하고 opacity(fade)만 적용
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
               transition={{ duration: 0.2 }}
             >
               <ProfileEditForm
@@ -30,40 +33,20 @@ const UserProfileSection = ({ user }: Props) => {
               />
             </motion.div>
           ) : (
-            <section className="flex w-full items-end">
-              <div className="flex-1">
-                <h2 className="mb-4 text-lg font-semibold">프로필 정보</h2>
-                <div className="flex items-center gap-6">
-                  <button
-                    onClick={() => setIsEditing(!isEditing)}
-                    type="button"
-                  >
-                    <Avatar
-                      src={user.profileImage || user.image}
-                      name={user.name}
-                      className="h-20 w-20"
-                    />
-                  </button>
-                  <div className="space-y-1">
-                    <p className="font-medium">{user.name}</p>
-                    <p className="text-sm text-gray-600">{user.email}</p>
-                  </div>
-                </div>
-              </div>
-              <AnimatePresence mode="wait">
-                {!isEditing ? (
-                  <motion.div
-                    key="edit-button"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.2 }}
-                  >
-                    <Button onClick={() => setIsEditing(true)}>수정하기</Button>
-                  </motion.div>
-                ) : null}
-              </AnimatePresence>
-            </section>
+            <motion.div
+              key="view-form"
+              // y축 이동을 제거하고 opacity(fade)만 적용
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+            >
+              <UserProfileView
+                user={user}
+                isLoading={isLoading} // 여기서 로딩 상태 전달
+                onEdit={() => setIsEditing(true)}
+              />
+            </motion.div>
           )}
         </AnimatePresence>
       </section>
