@@ -51,7 +51,7 @@ const Avatar = React.forwardRef<
         ref={ref}
         aria-label={name || "아바타"}
         className={cn(
-          "relative flex shrink-0 items-center justify-center overflow-hidden font-medium",
+          "relative flex shrink-0 items-center justify-center overflow-hidden bg-white font-medium",
           variantClasses[variant],
           sizeClasses[size],
           className,

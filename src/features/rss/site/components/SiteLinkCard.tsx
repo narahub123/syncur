@@ -26,7 +26,7 @@ const SiteLinkCard = ({ site, onClick }: Props) => {
       onClick={onClick}
       className="hover:bg-accent focus-visible:bg-accent flex items-center gap-2 rounded-md px-2 py-1"
     >
-      <Avatar src={favicon_url} name={name} />
+      <Avatar src={favicon_url} name={name} className="h-10 w-10" />
 
       <span className="truncate text-sm font-medium">{name}</span>
     </Link>

@@ -1,5 +1,4 @@
 @import "tailwindcss";
-@import "../shared/styles/input.css";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 @plugin "@tailwindcss/typography";
@@ -19,83 +18,20 @@
   --muted: oklch(0.97 0 0);
   --muted-foreground: oklch(0.556 0 0);
 
-  --primary: oklch(0.205 0 0); /* base (blue-400) */
+  --primary: oklch(0.707 0.165 254.62);
+  --primary-foreground: oklch(0.985 0 0);
+
   --primary-hover: #3b82f6; /* blue-500 */
   --primary-active: #2563eb; /* blue-600 */
   --primary-disabled: #93c5fd; /* blue-300 */
-
-  --primary-foreground: oklch(0.985 0 0);
 
   --ring: oklch(0.708 0 0);
 
   --overlay: rgba(0, 0, 0, 0.4);
 
-  /* =========================
- * Input (Light Theme)
- * ========================= */
-
-  /**
- * Input 배경
- * - 기본 input background
- * - card와 동일 레벨 사용
- */
-  --input-bg: var(--card);
-
-  /**
- * Input border (default 상태)
- */
-  --input-border: var(--border);
-
-  /**
- * Input border (hover 상태)
- * - 사용자가 hover 했을 때만 살짝 강조
- * - primary 사용 금지 (UI 과도 강조 방지)
- */
-  --input-border-hover: #d1d5db;
-
-  /**
- * Input border (focus 상태)
- * - primary 기반으로 focus 상태 강조
- */
-  --input-border-focus: var(--primary);
-
-  /**
- * Input text color
- */
-  --input-text: var(--foreground);
-
-  /**
- * Placeholder text color
- */
-  --input-placeholder: var(--muted-foreground);
-
-  /**
- * Error 상태 색상
- * - semantic color (action color와 분리)
- */
-  --input-error: #ef4444;
-
-  /**
- * Disabled 상태 opacity
- * - 전체 UI 비활성 표현용
- */
-  --input-disabled-opacity: 0.5;
-
-  /**
- * Input icon color
- */
-  --input-icon: var(--muted-foreground);
-
-  /**
- * Focus ring color
- * - global ring system과 동일하게 사용
- */
-  --input-focus-ring: var(--ring);
-
   /**
  * Helper / description text color
  */
-  --input-helper-text: var(--muted-foreground);
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
   --popover: oklch(1 0 0);
@@ -137,75 +73,21 @@
   --muted: oklch(0.269 0 0);
   --muted-foreground: oklch(0.708 0 0);
 
-  --primary: oklch(0.922 0 0); /* base */
-  --primary-hover: #60a5fa; /* brighter */
-  --primary-active: #2563eb; /* deeper */
-  --primary-disabled: #1d4ed8; /* muted */
+  --primary: oklch(0.707 0.165 254.62);
+  --primary-foreground: oklch(0.985 0 0);
 
-  --primary-foreground: oklch(0.205 0 0);
+  --primary-hover: #60a5fa; /* 더 밝은 파랑 */
+  --primary-active: #1d4ed8; /* 더 깊은 파랑 */
+  --primary-disabled: #1e3a8a; /* 어두운 배경과 어울리는 무거운 파랑 */
 
   --ring: oklch(0.556 0 0);
 
   --overlay: rgba(0, 0, 0, 0.7);
 
-  /* =========================
- * Input (Dark Theme)
- * ========================= */
-
-  /**
- * Input 배경
- */
-  --input-bg: var(--card);
-
-  /**
- * Input border (default)
- */
-  --input-border: var(--border);
-
-  /**
- * Input border (hover)
- */
-  --input-border-hover: #3f3f46;
-
-  /**
- * Input border (focus)
- */
-  --input-border-focus: var(--primary);
-
-  /**
- * Input text color
- */
-  --input-text: var(--foreground);
-
-  /**
- * Placeholder color
- */
-  --input-placeholder: var(--muted-foreground);
-
-  /**
- * Error color (dark mode optimized)
- */
-  --input-error: #f87171;
-
-  /**
- * Disabled opacity
- */
-  --input-disabled-opacity: 0.5;
-
-  /**
- * Icon color
- */
-  --input-icon: var(--muted-foreground);
-
-  /**
- * Focus ring color
- */
-  --input-focus-ring: var(--ring);
-
   /**
  * Helper text color
  */
-  --input-helper-text: var(--muted-foreground);
+
   --popover: oklch(0.205 0 0);
   --popover-foreground: oklch(0.985 0 0);
   --secondary: oklch(0.269 0 0);
