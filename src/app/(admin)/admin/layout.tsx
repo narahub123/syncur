@@ -1,8 +1,13 @@
 import { auth } from "@/auth";
-import AdminHeader from "@/features/admin/components/AdminHeader";
+import { AdminSidebarWrapper } from "@/features/admin/components/AdminSidebarWrapper";
 import NotificationDeniedBanner from "@/features/notifications/components/NotificationDeniedBanner";
 import NotificationPermissionBanner from "@/features/notifications/components/NotificationPermissionBanner";
 import { USER_ROLE } from "@/features/users/constants/user-role";
+import {
+  SidebarProvider,
+  SidebarTrigger,
+} from "@/shared/components/ui/sidebar";
+import { TooltipProvider } from "@/shared/components/ui/tooltip";
 import { ROUTES } from "@/shared/constants/routes";
 import AdminSSEProvider from "@/shared/providers/AdminSSEProvider";
 import { redirect } from "next/navigation";
@@ -57,12 +62,20 @@ export default async function AdminLayout({
    * - children: 각 admin 페이지 콘텐츠
    */
   return (
-    <div className="mt-1 flex flex-1 flex-col border-x border-gray-100">
-      <AdminSSEProvider />
-      <AdminHeader />
-      <NotificationPermissionBanner />
-      <NotificationDeniedBanner />
-      <main className="flex flex-1 flex-col">{children}</main>
-    </div>
+    <TooltipProvider>
+      <SidebarProvider>
+        <AdminSSEProvider />
+        <AdminSidebarWrapper />
+        <main className="flex-1">
+          <header className="flex h-16 items-center border-b px-4">
+            <SidebarTrigger /> {/* 사이드바 토글 버튼 */}
+            <h1 className="ml-4 font-semibold">관리자 대시보드</h1>
+          </header>
+          <NotificationPermissionBanner />
+          <NotificationDeniedBanner />
+          <div className="flex flex-1 flex-col p-6">{children}</div>
+        </main>
+      </SidebarProvider>
+    </TooltipProvider>
   );
 }

@@ -35,11 +35,7 @@ export default function RootLayout({
       <body>
         <SessionProvider>
           <QueryProvider>
-            <ThemeProvider>
-              <div className="mx-auto flex min-h-screen max-w-2xl xl:max-w-6xl">
-                {children}
-              </div>
-            </ThemeProvider>
+            <ThemeProvider>{children}</ThemeProvider>
             <AppToaster />
           </QueryProvider>
         </SessionProvider>

@@ -15,16 +15,18 @@ export default async function layout({
   await requireAuth();
 
   return (
-    <div className="flex min-h-screen w-full">
-      <UserSSEProvider />;
-      <LeftSidebar />
-      <Main>
-        <FeedTabs />
-        <NotificationPermissionBanner />
-        <NotificationDeniedBanner />
-        {children}
-      </Main>
-      <RightSidebar />
+    <div className="mx-auto flex min-h-screen max-w-2xl xl:max-w-6xl">
+      <div className="flex min-h-screen w-full">
+        <UserSSEProvider />
+        <LeftSidebar />
+        <Main>
+          <FeedTabs />
+          <NotificationPermissionBanner />
+          <NotificationDeniedBanner />
+          {children}
+        </Main>
+        <RightSidebar />
+      </div>
     </div>
   );
 }

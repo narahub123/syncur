@@ -214,6 +214,14 @@ body {
   html {
     @apply font-sans;
   }
+  :root {
+    /* 사이드바 관련 변수 추가 */
+    --sidebar-width: 16rem;
+    --sidebar-width-mobile: 18rem;
+    --sidebar-width-icon: 3rem; /* 이 값이 없어서 아이콘 모드 너비가 0이었습니다 */
+    --sidebar-foreground: 240 5.3% 26.1%;
+    --sidebar-background: 0 0% 98%;
+  }
 }
 
 .tiptap p.is-editor-empty:first-child::before {
