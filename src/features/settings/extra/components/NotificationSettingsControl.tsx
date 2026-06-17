@@ -39,7 +39,7 @@ export default function NotificationSettingsControl() {
   };
 
   return (
-    <div className="w-full rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
+    <div className="w-full">
       <h3 className="mb-1 text-sm font-bold text-gray-900">
         실시간 알림 배너 제어
       </h3>
