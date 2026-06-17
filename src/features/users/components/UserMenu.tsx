@@ -29,6 +29,7 @@ const UserMenu = () => {
       {data?.user?.image && (
         <UserAvatar
           src={data.user.image}
+          profileImage={data.user.profileImage}
           alt={
             data.user.name ? `${data.user.name}의 프로필 사진` : "프로필 사진"
           }

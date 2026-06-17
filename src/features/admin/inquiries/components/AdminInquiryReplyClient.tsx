@@ -14,6 +14,7 @@ import {
   UserInquiryData,
 } from "../types";
 import { ImageInfo } from "@/shared/lib/cloudinary/image-info.model";
+import UserAvatar from "@/features/users/components/UserAvatar";
 
 interface AdminInquiryReplyClientProps {
   inquiry: UserInquiryData;
@@ -32,8 +33,6 @@ export default function AdminInquiryReplyClient({
   const [images, setImages] = useState(inquiry.metadata?.images || []);
 
   const { mutate: reply } = useAdminReplyMutation(isEditMode);
-
-  const userInitial = inquiry.user?.name?.charAt(0).toUpperCase() || "U";
 
   const handleReplySubmit = (data: AnswerFormValues) => {
     reply({
@@ -70,17 +69,12 @@ export default function AdminInquiryReplyClient({
 
         <div className="bg-muted/30 mb-6 flex items-center justify-between rounded-lg border p-3">
           <div className="flex items-center gap-3">
-            {inquiry.user?.image ? (
-              <img
-                src={inquiry.user.image}
-                alt={inquiry.user.name}
-                className="h-9 w-9 rounded-full border object-cover"
-              />
-            ) : (
-              <div className="bg-primary text-primary-foreground flex h-9 w-9 items-center justify-center rounded-full border font-semibold">
-                {userInitial}
-              </div>
-            )}
+            <UserAvatar
+              src={inquiry.user?.image}
+              profileImage={inquiry.user?.profileImage}
+              name={inquiry.user?.name}
+              className="h-9 w-9"
+            />
             <div>
               <p className="text-sm font-medium">
                 {inquiry.user?.name ?? "사용자"}

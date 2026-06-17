@@ -12,6 +12,7 @@ import {
 } from "@/shared/lib/cloudinary/cloudinary.utils";
 import { CLOUDINARY_FOLDERS } from "@/shared/lib/cloudinary/cloudinary.constant";
 import { useUpdateProfile } from "@/features/users/hooks/useUpdateProfile";
+import UserAvatar from "@/features/users/components/UserAvatar";
 
 const profileSchema = z.object({
   name: z.string().min(1, "이름은 필수입니다."),
@@ -53,9 +54,6 @@ export function ProfileEditForm({ user, onCancel }: Props) {
         : null,
     },
   });
-
-  const profileImage = watch("profileImage");
-  const currentName = watch("name");
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -116,17 +114,11 @@ export function ProfileEditForm({ user, onCancel }: Props) {
         <div className="flex flex-1 gap-6">
           <div className="flex flex-col items-center gap-2">
             <div className="relative h-20 w-20 overflow-hidden rounded-full border border-gray-200 bg-gray-50">
-              {profileImage?.url ? (
-                <img
-                  src={profileImage.url}
-                  className="h-full w-full object-cover"
-                  alt="Profile"
-                />
-              ) : (
-                <div className="flex h-full w-full items-center justify-center text-xl font-bold text-gray-400">
-                  {currentName?.charAt(0).toUpperCase() || "?"}
-                </div>
-              )}
+              <UserAvatar
+                src={user.image}
+                profileImage={user.profileImage}
+                className="h-full w-full"
+              />
               {/* 오버레이 버튼: 사진 변경을 더 자연스럽게 */}
               <button
                 type="button"

@@ -68,5 +68,6 @@ export interface AdminNoticeResponseDTO {
     email: string;
     name: string | null;
     image: string | null;
+    profileImage: ImageInfo | null;
   } | null;
 }

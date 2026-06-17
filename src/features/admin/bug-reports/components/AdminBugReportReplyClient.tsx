@@ -12,6 +12,7 @@ import { DynamicForm } from "@/shared/components/common/DynamicForm";
 import { useAdminReplyMutation } from "@/features/support/requests/hooks/useAdminReplyMutation";
 import { ImagePreview } from "@/shared/components/common/ImagePreview";
 import { useState } from "react";
+import UserAvatar from "@/features/users/components/UserAvatar";
 
 interface AdminBugReplyClientProps {
   bugReport: AdminBugReportDetail;
@@ -36,7 +37,7 @@ export default function AdminBugReplyClient({
       images: data.images || [],
     });
   };
-  const userInitial = bugReport.user?.name?.charAt(0).toUpperCase() || "U";
+
   return (
     <div className="mx-auto w-full max-w-4xl space-y-6 p-6">
       <div className="flex items-center justify-between border-b pb-4">
@@ -64,17 +65,12 @@ export default function AdminBugReplyClient({
           <div className="bg-muted/30 space-y-4 rounded-xl border p-6">
             <div className="space-y-1">
               <div className="flex items-center gap-3">
-                {bugReport.user?.image ? (
-                  <img
-                    src={bugReport.user.image}
-                    alt={bugReport.user.name}
-                    className="h-9 w-9 rounded-full border object-cover"
-                  />
-                ) : (
-                  <div className="bg-primary text-primary-foreground flex h-9 w-9 items-center justify-center rounded-full border font-semibold">
-                    {userInitial}
-                  </div>
-                )}
+                <UserAvatar
+                  src={bugReport.user?.image}
+                  profileImage={bugReport.user?.profileImage}
+                  name={bugReport.user?.name}
+                  className="h-9 w-9"
+                />
                 <div>
                   <p className="text-sm font-medium">
                     {bugReport.user?.name ?? "사용자"}

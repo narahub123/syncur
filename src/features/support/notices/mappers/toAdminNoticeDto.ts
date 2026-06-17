@@ -27,6 +27,7 @@ export function toAdminNoticeDto(
           email: lean.author.email,
           name: lean.author.name, // string | null 매칭 성공
           image: lean.author.image, // string | null 매칭 성공
+          profileImage: lean.author.profileImage,
         }
       : null,
   };

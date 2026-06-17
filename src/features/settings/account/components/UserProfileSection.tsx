@@ -4,6 +4,7 @@ import { ProfileEditForm } from "./ProfileEditForm";
 import { useState } from "react";
 import { UserDto } from "@/features/users/dto/userDto";
 import { Button } from "@/shared/components/ui/button";
+import UserAvatar from "@/features/users/components/UserAvatar";
 
 type Props = {
   user: UserDto;
@@ -37,14 +38,10 @@ const UserProfileSection = ({ user }: Props) => {
                     onClick={() => setIsEditing(!isEditing)}
                     type="button"
                   >
-                    <img
-                      src={
-                        user.profileImage?.url ||
-                        user.image ||
-                        "/default-avatar.png"
-                      }
-                      alt="프로필"
-                      className="h-20 w-20 rounded-full bg-gray-200 object-cover"
+                    <UserAvatar
+                      src={user.image}
+                      profileImage={user.profileImage}
+                      className="h-20 w-20"
                     />
                   </button>
                   <div className="space-y-1">

@@ -1,6 +1,5 @@
 import { Types } from "mongoose";
 import { FeedStatus } from "./feed";
-import { UserRole } from "@/features/users/constants/user-role";
 
 /**
  * UserFeedInteraction lean type
