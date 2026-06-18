@@ -2,8 +2,8 @@
 
 import { connectMongo } from "@/shared/lib/db/mongoose";
 import { requireAdmin } from "@/features/admin/lib/requireAdmin";
-import { feedExecutionLogService } from "@/features/feed-execution-logs/service/FeedExecutionLogService.instance";
-import { AdminFeedExecutionLogsQuery } from "../types";
+import { AdminFeedExecutionLogsQuery } from "../types/search";
+import { adminFeedExecutionLogService } from "../services/AdminFeedExecutionLogService.instance";
 
 /**
  * Admin - Feed Execution Log 목록 조회 Action
@@ -28,5 +28,7 @@ export async function getAdminFeedExecutionLogsPaginatedAction(
   /**
    * 로그 조회
    */
-  return await feedExecutionLogService.getLogsPaginated(query);
+  return await adminFeedExecutionLogService.getFeedExecutionLogsPaginated(
+    query,
+  );
 }

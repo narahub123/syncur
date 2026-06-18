@@ -20,16 +20,4 @@ export class AdminFeedStatsRepository {
           inactive: 0,
         };
   }
-
-  async incrementStats(data: {
-    total?: number;
-    active?: number;
-    inactive?: number;
-  }) {
-    return await FeedStatsModel.updateOne(
-      { key: this.STATS_ID },
-      { $inc: data },
-      { upsert: true },
-    );
-  }
 }

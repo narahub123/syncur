@@ -1,5 +1,5 @@
 import { getAdminFeedExecutionLogsPaginatedAction } from "../actions/getAdminFeedExecutionLogsPaginatedAction";
-import { AdminFeedExecutionLogsQuery } from "../types";
+import { AdminFeedExecutionLogsQuery } from "../types/search";
 
 /**
  * Feed Execution Log Fetcher

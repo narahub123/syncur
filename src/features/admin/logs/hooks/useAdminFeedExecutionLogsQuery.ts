@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { QUERY_CONFIG } from "@/shared/constants/query";
 import { fetchAdminFeedExecutionLogs } from "../api/fetchAdminFeedExecutionLogs";
-import { AdminFeedExecutionLogsQuery } from "../types";
+import { AdminFeedExecutionLogsQuery } from "../types/search";
 
 /**
  * Feed Execution Log Query Hook

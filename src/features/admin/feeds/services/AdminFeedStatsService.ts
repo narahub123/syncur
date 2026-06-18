@@ -1,5 +1,6 @@
 import { FeedStatsDto } from "@/features/feeds/dto/feedStatsDto";
 import { AdminFeedStatsRepository } from "../repositories/AdminFeedStatsRepository";
+import { feedExecutionLogStatsRepository } from "@/features/feed-execution-logs/repository/FeedExecutionLogStatsRepository.instance";
 
 export class AdminFeedStatsService {
   constructor(private statsRepo: AdminFeedStatsRepository) {}
@@ -27,6 +28,6 @@ export class AdminFeedStatsService {
     active?: number;
     inactive?: number;
   }) {
-    return await this.statsRepo.incrementStats(increment);
+    return await feedExecutionLogStatsRepository.incrementStats(increment);
   }
 }

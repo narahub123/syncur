@@ -1,4 +1,3 @@
-import { PAGINATION } from "@/shared/constants/pagination";
 import {
   FEED_EXECUTION_STATUS,
   FeedExecutionReason,
@@ -7,14 +6,10 @@ import {
 } from "../constants/feed-execution-log";
 import { FeedExecutionLogModel } from "../model/feed-execution-log";
 import { FeedExecutionError, FetchLog, ParseLog, PersistLog } from "../types";
-import { ADMIN_CONFIG } from "@/features/admin/constants/admin-config";
-import {
-  FeedExecutionLogWithFeedAndSiteDto,
-  FeedExecutionLogWithFeedAndSiteDtoPagedResponse,
-} from "../dto/feedExecutionLogDto";
+import { FeedExecutionLogWithFeedAndSiteDto } from "../dto/feedExecutionLogDto";
 import { feedExecutionLogRepository } from "../repository/FeedExecutionLogRepository.instance";
 import { toFeedExecutionLogWithFeedAndSiteDto } from "../mappers/toFeedExecutionLogWithFeedAndSiteDto";
-import { AdminFeedExecutionLogsQuery } from "@/features/admin/logs/types";
+import { feedExecutionLogStatsService } from "./FeedExecutionLogStatsService.instance";
 
 /**
  * Execution write contract
@@ -90,37 +85,12 @@ export class FeedExecutionLogService {
         },
       },
     );
-  }
 
-  /**
-   * 로그 목록 조회 (admin)
-   */
-  async getLogsPaginated(
-    query: AdminFeedExecutionLogsQuery,
-  ): Promise<FeedExecutionLogWithFeedAndSiteDtoPagedResponse> {
-    const page = query.page ?? PAGINATION.DEFAULT_PAGE;
-    const limit =
-      query.limit ?? ADMIN_CONFIG.FEED_EXECUTION_LOGS.PAGINATION_LIMIT;
-
-    const { items, totalCount } =
-      await feedExecutionLogRepository.findAllPaginated({
-        page,
-        limit,
-        search: query.search,
-        searchField: query.searchField,
-        sort: query.sort,
-        sortOrder: query.sortOrder,
+    if (data.status === FEED_EXECUTION_STATUS.FAILED) {
+      await feedExecutionLogStatsService.updateStats({
+        fails: 1,
       });
-
-    return {
-      items: items.map(toFeedExecutionLogWithFeedAndSiteDto),
-      pagination: {
-        page,
-        limit,
-        totalCount,
-        totalPages: Math.ceil(totalCount / limit),
-      },
-    };
+    }
   }
 
   async getLogDetailById(

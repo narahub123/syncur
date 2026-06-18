@@ -1,7 +1,7 @@
 import {
   AdminFeedExecutionLogPageSize,
   AdminFeedExecutionLogSearchField,
-} from "../types";
+} from "../types/search";
 
 export const ADMIN_FEED_EXECUTION_LOG_SEARCH_FIELD_OPTIONS: {
   label: string;

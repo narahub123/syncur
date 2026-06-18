@@ -67,3 +67,9 @@ export function toFeedExecutionLogWithFeedAndSiteDto(
       : null,
   };
 }
+
+export function toFeedExecutionLogWithFeedAndSiteDtos(
+  items: FeedExecutionLogWithFeedAndSiteLean[],
+) {
+  return items.map(toFeedExecutionLogWithFeedAndSiteDto);
+}

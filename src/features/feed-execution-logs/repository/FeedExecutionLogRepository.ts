@@ -4,7 +4,7 @@ import { FeedExecutionLogWithFeedAndSiteLeanPagedResponse } from "../dto/feedExe
 import { Types } from "mongoose";
 import { toObjectId } from "@/shared/utils/toObjectId";
 import { FeedExecutionLogWithFeedAndSiteLean } from "../types/lean";
-import { AdminFeedExecutionLogsQuery } from "@/features/admin/logs/types";
+import { AdminFeedExecutionLogsQuery } from "@/features/admin/logs/types/search";
 
 export class FeedExecutionLogRepository {
   async findAllPaginated(
