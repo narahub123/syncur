@@ -22,8 +22,13 @@ export const useTableSort = <Q extends SortableQuery<K>, K extends string>(
   const onSort = (key: K) => {
     const isSameKey = query.sort === key;
 
-    const nextOrder =
-      isSameKey && query.sortOrder === SORT_ORDER.DESC ? "desc" : "asc";
+    // 1. 같은 키를 클릭했다면 현재 상태의 반대로 (desc -> asc, asc -> desc)
+    // 2. 다른 키를 클릭했다면 기본값(예: desc)으로 시작
+    const nextOrder = isSameKey
+      ? query.sortOrder === SORT_ORDER.ASC
+        ? "desc"
+        : "asc"
+      : "desc"; // 다른 키 클릭 시 기본값으로 'desc' 설정
 
     onChange({
       ...query,

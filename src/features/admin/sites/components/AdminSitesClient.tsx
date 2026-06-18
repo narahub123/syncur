@@ -6,16 +6,21 @@ import { AdminTable } from "../../components/AdminTable";
 import { useTableSort } from "../../hooks/useTableSort";
 import { useState } from "react";
 import {
+  ADMIN_SITE_FILTER_CONFIG,
   ADMIN_SITE_PAGE_SIZE_OPTIONS,
   ADMIN_SITE_SEARCH_FIELD_OPTIONS,
   ADMIN_SITE_SEARCH_FIELDS,
   ADMIN_SITE_SORT_FIELDS,
+  AdminSiteFilterKey,
   AdminSiteQuery,
   AdminSiteSort,
-} from "../constants/search";
+} from "../types/search";
 import { SORT_ORDER } from "@/shared/types/pagination";
 import AdminPagination from "../../components/AdminPagination";
 import { adminSiteColumns } from "../constants/search-columns";
+import { useAdminSites } from "@/features/admin/sites/hooks/useAdminSites";
+import { FilterBar } from "../../components/FilterBar";
+import { FilterValue } from "../../constants/filters";
 
 export const mockSites: Site[] = [
   {
@@ -55,15 +60,28 @@ export const AdminSitesClient = () => {
     searchField: ADMIN_SITE_SEARCH_FIELDS.NAME,
     sort: ADMIN_SITE_SORT_FIELDS.CREATED_AT,
     sortOrder: SORT_ORDER.DESC,
+    filters: {},
   });
+
+  const handleFilterChange = (key: AdminSiteFilterKey, value: FilterValue) => {
+    setQuery((prev) => ({
+      ...prev,
+      filters: {
+        ...prev.filters,
+        [key]: value,
+      },
+    }));
+  };
 
   const { sort, onSort } = useTableSort<AdminSiteQuery, AdminSiteSort>(
     query,
     setQuery,
   );
 
-  const totalPages = 1;
-  // data?.pagination?.totalPages ?? 1;
+  const { data, isLoading } = useAdminSites(query);
+
+  const sites = data?.items ?? [];
+  const totalPages = data?.pagination?.totalPages ?? 1;
 
   return (
     <div className="space-y-6 p-6">
@@ -73,10 +91,15 @@ export const AdminSitesClient = () => {
         searchFieldOptions={ADMIN_SITE_SEARCH_FIELD_OPTIONS}
         pageSizeOptions={ADMIN_SITE_PAGE_SIZE_OPTIONS}
       />
+      <FilterBar
+        filters={query.filters}
+        onChange={handleFilterChange}
+        config={ADMIN_SITE_FILTER_CONFIG}
+      />
       <AdminTable
         columns={adminSiteColumns}
-        data={mockSites}
-        isFetching={false}
+        data={sites}
+        isFetching={isLoading}
         sort={sort}
         onSort={onSort}
       />

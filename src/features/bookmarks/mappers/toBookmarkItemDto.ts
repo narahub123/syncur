@@ -1,9 +1,9 @@
+import { SiteLean } from "@/features/rss/site/types/leans";
 import {
   BookmarkCollectionLean,
   FeedItemLean,
   FeedItemStatsLean,
   FeedLean,
-  SiteLean,
   UserFeedInteractionLean,
 } from "@/shared/types/domain-leans";
 

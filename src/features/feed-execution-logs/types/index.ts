@@ -1,10 +1,4 @@
-import {
-  AdminFeedExecutionLogPageSize,
-  AdminFeedExecutionLogSearchField,
-  AdminFeedExecutionLogSort,
-} from "@/features/admin/logs/types";
 import { FeedExecutionErrorType } from "../constants/feed-execution-log";
-import { SortOrder } from "mongoose";
 
 /**
  * Fetch 단계 로그

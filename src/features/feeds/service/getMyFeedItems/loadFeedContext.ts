@@ -2,7 +2,8 @@ import { subscriptionRepository } from "@/features/subscriptions/repository/Subs
 import { feedRepository } from "../../repository/FeedRepository.instance";
 import { siteRepository } from "@/features/rss/site/repository/SiteRepository.instance";
 import { feedItemRepository } from "@/features/feed-items/repositories/FeedItemRepository.instance";
-import { FeedItemLean, FeedLean, SiteLean } from "@/shared/types/domain-leans";
+import { FeedItemLean, FeedLean } from "@/shared/types/domain-leans";
+import { SiteLean } from "@/features/rss/site/types/leans";
 
 type FeedContext = {
   items: FeedItemLean[];

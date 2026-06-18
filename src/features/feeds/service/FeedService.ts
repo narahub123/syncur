@@ -1,7 +1,7 @@
 import { feedRepository } from "../repository/FeedRepository.instance";
 import { Feed, FeedStatus } from "@/shared/types/feed";
 import { getFeedItems } from "./getMyFeedItems/getFeedItems";
-import { FeedLean, SiteLean } from "@/shared/types/domain-leans";
+import { FeedLean } from "@/shared/types/domain-leans";
 import { toFeed } from "../mapper/toFeed";
 import { FeedDto, FeedWithSiteDtoPagedResponse } from "../dto/feedDto";
 import { toFeedWithSiteDto } from "../mapper/toFeedWithSiteDto";
@@ -10,6 +10,7 @@ import { PAGINATION } from "@/shared/constants/pagination";
 import { AdminFeedsQuery } from "@/features/admin/feeds/types";
 import { toFeedDto } from "../mapper/toFeedDto";
 import { RSS_CONFIG } from "@/ingestion/rss/rss-config";
+import { SiteLean } from "@/features/rss/site/types/leans";
 
 export class FeedService {
   async ensureFeed(site: SiteLean): Promise<Feed | null> {

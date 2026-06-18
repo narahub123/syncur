@@ -1,6 +1,6 @@
 import { SiteContextDTO } from "../dto/siteDto";
 import { Feed } from "@/shared/types/feed";
-import { SiteLean } from "@/shared/types/domain-leans";
+import { SiteLean } from "../types/leans";
 
 /**
  * Context 생성 입력 데이터

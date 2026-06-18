@@ -2,7 +2,7 @@ import { Types } from "mongoose";
 import { NotificationTarget } from "../constants/notification-target";
 import { NotificationType } from "../constants/notification-type";
 import { FeedExecutionLogLean } from "@/features/feed-execution-logs/types/lean";
-import { SiteLean } from "@/shared/types/domain-leans";
+import { SiteLean } from "@/features/rss/site/types/leans";
 
 /**
  * Notification 관련 리소스 정보

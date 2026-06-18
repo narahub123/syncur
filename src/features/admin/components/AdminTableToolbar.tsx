@@ -52,11 +52,13 @@ export const AdminTableToolbar = <
           placeholder="검색어를 입력하세요"
         />
       </div>
-      <AdminPageSizeSelect
-        value={query.limit}
-        options={pageSizeOptions}
-        onChange={(v) => onChange({ ...query, limit: v, page: 1 })}
-      />
+      <div>
+        <AdminPageSizeSelect
+          value={query.limit}
+          options={pageSizeOptions}
+          onChange={(v) => onChange({ ...query, limit: v, page: 1 })}
+        />
+      </div>
     </div>
   );
 };

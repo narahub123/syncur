@@ -5,6 +5,7 @@ import QueryProvider from "@/shared/providers/QueryProvider";
 import AppToaster from "@/shared/components/ui/Toaster";
 import SessionProvider from "@/shared/providers/SessionProvider";
 import ThemeProvider from "@/shared/providers/ThemeProvider";
+import "react-datepicker/dist/react-datepicker.css";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",

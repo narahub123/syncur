@@ -1,4 +1,5 @@
 import { SortOrder } from "@/shared/types/pagination";
+import { FilterValue } from "../../constants/filters";
 
 /**
  * 사이트 관리 검색 필드 상수
@@ -51,6 +52,20 @@ export const ADMIN_SITE_PAGE_SIZE_OPTIONS = [
 export type AdminSitePageSize =
   (typeof ADMIN_SITE_PAGE_SIZE_OPTIONS)[number]["value"];
 
+export const ADMIN_SITE_FILTER_CONFIG = {
+  hasFeed: {
+    label: "RSS",
+    type: "select",
+    options: [
+      { label: "가능", value: "true" },
+      { label: "불가", value: "false" },
+    ],
+  },
+  createdAt: { label: "등록 기간", type: "date-range" },
+} as const;
+
+export type AdminSiteFilterKey = keyof typeof ADMIN_SITE_FILTER_CONFIG;
+
 /**
  * 사이트 관리 쿼리 인터페이스
  */
@@ -61,4 +76,5 @@ export interface AdminSiteQuery {
   searchField: AdminSiteSearchField;
   sort: AdminSiteSort;
   sortOrder: SortOrder;
+  filters: Partial<Record<AdminSiteFilterKey, FilterValue>>;
 }

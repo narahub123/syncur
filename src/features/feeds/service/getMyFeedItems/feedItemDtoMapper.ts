@@ -1,8 +1,8 @@
+import { SiteLean } from "@/features/rss/site/types/leans";
 import {
   FeedItemLean,
   FeedItemStatsLean,
   FeedLean,
-  SiteLean,
   UserFeedInteractionLean,
 } from "@/shared/types/domain-leans";
 

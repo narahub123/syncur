@@ -4,7 +4,7 @@ import { CreateSiteDto } from "../dto/siteDto";
 import { escapeRegExp } from "@/shared/utils/regex";
 import { SiteDiscoveryResult } from "../../discovery";
 import { Types } from "mongoose";
-import { SiteLean } from "@/shared/types/domain-leans";
+import { SiteLean } from "../types/leans";
 
 /**
  * Site Repository

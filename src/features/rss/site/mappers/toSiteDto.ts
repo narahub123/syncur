@@ -1,5 +1,5 @@
-import { SiteLean } from "@/shared/types/domain-leans";
 import { SiteDto } from "../dto/siteDto";
+import { SiteLean } from "../types/leans";
 
 /**
  * SiteLean → SiteDto 변환
@@ -21,3 +21,5 @@ export const toSiteDto = (doc: SiteLean): SiteDto => {
     updatedAt: doc.updatedAt.toISOString(),
   };
 };
+
+export const toSiteDtos = (docs: SiteLean[]) => docs.map(toSiteDto);

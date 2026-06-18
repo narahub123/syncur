@@ -1,14 +1,14 @@
-import { Site } from "@/shared/types/site";
 import { Column, COLUMN_ALIGN } from "../../types/admin-table";
-import { AdminSiteSort } from "./search";
+import { AdminSiteSort } from "../types/search";
 import { Badge } from "@/shared/components/ui/badge";
 import { Avatar } from "@/shared/components/common/Avartar";
+import { SiteDto } from "@/features/rss/site/dto/siteDto";
 
-export const adminSiteColumns: Column<Site, AdminSiteSort>[] = [
+export const adminSiteColumns: Column<SiteDto, AdminSiteSort>[] = [
   {
     key: "name",
     header: "이름",
-    render: (site: Site) => (
+    render: (site: SiteDto) => (
       <div className="flex items-center gap-3">
         <Avatar
           src={site.favicon_url}
@@ -24,13 +24,13 @@ export const adminSiteColumns: Column<Site, AdminSiteSort>[] = [
   {
     key: "url",
     header: "URL",
-    render: (site: Site) => <span className="text-sm">{site.url}</span>,
+    render: (site: SiteDto) => <span className="text-sm">{site.url}</span>,
     sortable: true,
   },
   {
     key: "status",
     header: "RSS 상태",
-    render: (site: Site) => (
+    render: (site: SiteDto) => (
       <Badge variant={site.feed_url ? "default" : "destructive"}>
         {site.feed_url ? "RSS 가능" : "미탐색"}
       </Badge>
@@ -41,14 +41,14 @@ export const adminSiteColumns: Column<Site, AdminSiteSort>[] = [
   {
     key: "createdAt",
     header: "최초 등록일",
-    render: (site: Site) => new Date(site.createdAt).toLocaleDateString(),
+    render: (site: SiteDto) => new Date(site.createdAt).toLocaleDateString(),
     align: COLUMN_ALIGN.CENTER,
     sortable: true,
   },
   {
     key: "updatedAt",
     header: "최근 갱신일",
-    render: (site: Site) => new Date(site.updatedAt).toLocaleDateString(),
+    render: (site: SiteDto) => new Date(site.updatedAt).toLocaleDateString(),
     align: COLUMN_ALIGN.CENTER,
     sortable: true,
   },
