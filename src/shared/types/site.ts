@@ -22,6 +22,6 @@ export type Site = {
    */
   feed_url: string | null;
 
-  created_at: Date;
-  updated_at: Date;
+  createdAt: Date;
+  updatedAt: Date;
 };

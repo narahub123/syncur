@@ -73,7 +73,7 @@ export default async function AdminLayout({
           </header>
           <NotificationPermissionBanner />
           <NotificationDeniedBanner />
-          <div className="flex flex-1 flex-col p-6">{children}</div>
+          <div className="flex flex-1 flex-col">{children}</div>
         </main>
       </SidebarProvider>
     </TooltipProvider>

@@ -66,12 +66,3 @@ export type FeedExecutionError = {
   message: string;
   stack?: string;
 };
-
-export type AdminFeedExecutionLogsQuery = {
-  search: string;
-  searchField: AdminFeedExecutionLogSearchField;
-  sort: AdminFeedExecutionLogSort;
-  sortOrder: SortOrder;
-  page: number;
-  limit: AdminFeedExecutionLogPageSize;
-};

@@ -37,4 +37,9 @@ export type CursorPaginationResponse<T> = {
   hasNext: boolean;
 };
 
-export type SortOrder = "asc" | "desc";
+export const SORT_ORDER = {
+  ASC: "asc",
+  DESC: "desc",
+};
+
+export type SortOrder = (typeof SORT_ORDER)[keyof typeof SORT_ORDER];

@@ -6,13 +6,7 @@ import {
   FeedExecutionStatus,
 } from "../constants/feed-execution-log";
 import { FeedExecutionLogModel } from "../model/feed-execution-log";
-import {
-  AdminFeedExecutionLogsQuery,
-  FeedExecutionError,
-  FetchLog,
-  ParseLog,
-  PersistLog,
-} from "../types";
+import { FeedExecutionError, FetchLog, ParseLog, PersistLog } from "../types";
 import { ADMIN_CONFIG } from "@/features/admin/constants/admin-config";
 import {
   FeedExecutionLogWithFeedAndSiteDto,
@@ -20,6 +14,7 @@ import {
 } from "../dto/feedExecutionLogDto";
 import { feedExecutionLogRepository } from "../repository/FeedExecutionLogRepository.instance";
 import { toFeedExecutionLogWithFeedAndSiteDto } from "../mappers/toFeedExecutionLogWithFeedAndSiteDto";
+import { AdminFeedExecutionLogsQuery } from "@/features/admin/logs/types";
 
 /**
  * Execution write contract

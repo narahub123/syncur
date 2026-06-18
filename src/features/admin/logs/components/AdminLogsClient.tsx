@@ -6,6 +6,7 @@ import AdminFeedExecutionLogTable from "./AdminFeedExecutionLogTable";
 import AdminPagination from "../../components/AdminPagination";
 import AdminFeedExecutionLogsTableToolbar from "./AdminFeedExecutionLogsTableToolbar";
 import { useAdminFeedExecutionLogsQuery } from "../hooks/useAdminFeedExecutionLogsQuery";
+import { SORT_ORDER } from "@/shared/types/pagination";
 
 const AdminLogsClient = () => {
   /**
@@ -16,7 +17,7 @@ const AdminLogsClient = () => {
     search: "",
     searchField: "siteName",
     sort: "startedAt",
-    sortOrder: "desc",
+    sortOrder: SORT_ORDER.DESC,
     page: 1,
     limit: 10,
   });
