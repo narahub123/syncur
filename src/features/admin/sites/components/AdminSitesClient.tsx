@@ -1,6 +1,5 @@
 "use client";
 
-import { Site } from "@/shared/types/site";
 import { AdminTableToolbar } from "../../components/AdminTableToolbar";
 import { AdminTable } from "../../components/AdminTable";
 import { useTableSort } from "../../hooks/useTableSort";
@@ -14,6 +13,7 @@ import {
   AdminSiteFilterKey,
   AdminSiteQuery,
   AdminSiteSort,
+  AdminSiteInitialFilterValue,
 } from "../types/search";
 import { SORT_ORDER } from "@/shared/types/pagination";
 import AdminPagination from "../../components/AdminPagination";
@@ -21,36 +21,8 @@ import { adminSiteColumns } from "../constants/search-columns";
 import { useAdminSites } from "@/features/admin/sites/hooks/useAdminSites";
 import { FilterBar } from "../../components/FilterBar";
 import { FilterValue } from "../../constants/filters";
-
-export const mockSites: Site[] = [
-  {
-    _id: "1",
-    name: "Velog dlakfjlkdfj ljal jasklfj lksjf slkjf ladsj lajflkasfjlsdkfjsdk",
-    url: "https://velog.io/@abcfjdlfjsflslkfjasklfjalsdfkafdsfasfasdfasfasfef",
-    favicon_url: null,
-    feed_url: "https://v2.velog.io/rss/abc",
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  },
-  {
-    _id: "2",
-    name: "OpenAI Blog",
-    url: "https://openai.com/blog",
-    favicon_url: null,
-    feed_url: null,
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  },
-  {
-    _id: "3",
-    name: "Tech Crunch",
-    url: "https://techcrunch.com",
-    favicon_url: null,
-    feed_url: "https://techcrunch.com/feed/",
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  },
-];
+import { AdminStatsCard } from "../../components/AdminStatsCard";
+import { getRssStatusList } from "../constants/stats";
 
 export const AdminSitesClient = () => {
   const [query, setQuery] = useState<AdminSiteQuery>({
@@ -60,7 +32,7 @@ export const AdminSitesClient = () => {
     searchField: ADMIN_SITE_SEARCH_FIELDS.NAME,
     sort: ADMIN_SITE_SORT_FIELDS.CREATED_AT,
     sortOrder: SORT_ORDER.DESC,
-    filters: {},
+    filters: AdminSiteInitialFilterValue,
   });
 
   const handleFilterChange = (key: AdminSiteFilterKey, value: FilterValue) => {
@@ -81,10 +53,18 @@ export const AdminSitesClient = () => {
   const { data, isLoading } = useAdminSites(query);
 
   const sites = data?.items ?? [];
+  const stats = data?.stats ?? { total: 0, canRss: 0, noRss: 0 };
   const totalPages = data?.pagination?.totalPages ?? 1;
 
+  const rssRate = stats.total > 0 ? (stats.canRss / stats.total) * 100 : 0;
   return (
     <div className="space-y-6 p-6">
+      <AdminStatsCard
+        title="사이트 수집 현황"
+        items={getRssStatusList(stats)}
+        progressValue={rssRate}
+        total={stats.total}
+      />
       <AdminTableToolbar
         query={query}
         onChange={setQuery}
@@ -95,6 +75,7 @@ export const AdminSitesClient = () => {
         filters={query.filters}
         onChange={handleFilterChange}
         config={ADMIN_SITE_FILTER_CONFIG}
+        initialValue={AdminSiteInitialFilterValue}
       />
       <AdminTable
         columns={adminSiteColumns}

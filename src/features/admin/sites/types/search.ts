@@ -52,13 +52,18 @@ export const ADMIN_SITE_PAGE_SIZE_OPTIONS = [
 export type AdminSitePageSize =
   (typeof ADMIN_SITE_PAGE_SIZE_OPTIONS)[number]["value"];
 
+export const AdminSiteInitialFilterValue = {
+  hasFeed: "all",
+};
+
 export const ADMIN_SITE_FILTER_CONFIG = {
   hasFeed: {
     label: "RSS",
     type: "select",
     options: [
-      { label: "가능", value: "true" },
-      { label: "불가", value: "false" },
+      { label: "전체", value: "all" },
+      { label: "지원", value: "true" },
+      { label: "미지원", value: "false" },
     ],
   },
   createdAt: { label: "등록 기간", type: "date-range" },

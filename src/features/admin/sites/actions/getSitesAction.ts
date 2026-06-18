@@ -22,6 +22,7 @@ export async function getSitesAction(query: AdminSiteQuery) {
         totalCount: 0,
         totalPages: 0,
       },
+      stats: { total: 0, canRss: 0, noRss: 0 },
       error: "사이트 목록을 불러올 수 없습니다.",
     };
   }

@@ -13,7 +13,7 @@ async function migrate() {
 
   await mongoose.connect(process.env.MONGODB_URI);
 
-  const cursor = FeedExecutionLogModel.find({}).cursor();
+  FeedExecutionLogModel.find({}).cursor();
 
   console.log("Migration completed");
   process.exit(0);

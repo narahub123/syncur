@@ -2,11 +2,15 @@ import { CreateSiteDto, SiteDto } from "../dto/siteDto";
 import { SiteRepository } from "../repository/SiteRepository";
 import { normalizeSiteIdentity } from "../utils/normalizeSiteIdentity";
 import { toSiteDto } from "../mappers/toSiteDto";
+import { AdminSiteStatsService } from "@/features/admin/sites/services/AdminSiteStatsService";
 
 export class SiteService {
   private readonly siteRepository: SiteRepository;
 
-  constructor(siteRepository: SiteRepository) {
+  constructor(
+    siteRepository: SiteRepository,
+    private statsService: AdminSiteStatsService,
+  ) {
     this.siteRepository = siteRepository;
   }
 
@@ -52,6 +56,17 @@ export class SiteService {
       return toSiteDto(existingSite);
     }
 
-    return toSiteDto(await this.siteRepository.create(siteData));
+    // 사이트 저장
+    const newSite = await this.siteRepository.create(siteData);
+
+    // 통계 갱신 (비즈니스 로직)
+    const isRss = !!siteData.feed_url;
+    await this.statsService.updateStats({
+      total: 1,
+      canRss: isRss ? 1 : 0,
+      noRss: isRss ? 0 : 1,
+    });
+
+    return toSiteDto(newSite);
   }
 }

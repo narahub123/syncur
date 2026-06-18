@@ -24,7 +24,6 @@ export const CommonSelect = ({
       <SelectValue placeholder={placeholder} />
     </SelectTrigger>
     <SelectContent side="right" align="start">
-      <SelectItem value="all">전체</SelectItem>
       {options.map((opt) => (
         <SelectItem key={opt.value} value={opt.value}>
           {opt.label}
