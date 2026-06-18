@@ -6,12 +6,13 @@ import {
   FeedWithSiteLean,
   FeedWithSiteLeanPagedResponse,
 } from "../dto/feedDto";
+
+import { SortOrder } from "@/shared/types/pagination";
+import { FeedStatus } from "@/shared/types/feed";
 import {
   AdminFeedSearchField,
   AdminFeedSort,
-} from "@/features/admin/feeds/types";
-import { SortOrder } from "@/shared/types/pagination";
-import { FeedStatus } from "@/shared/types/feed";
+} from "@/features/admin/feeds/types/search";
 
 /**
  * FeedRepository

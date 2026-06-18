@@ -46,6 +46,8 @@ export function AdminTable<T extends { _id: string }, K extends string>({
     return "justify-start";
   };
 
+  console.log(data);
+
   return (
     <>
       <div className="hidden w-full overflow-x-auto border md:block">
@@ -114,35 +116,45 @@ export function AdminTable<T extends { _id: string }, K extends string>({
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:hidden">
-        {data.map((item) => (
-          <div
-            key={item._id}
-            className={cn(
-              "space-y-2 rounded-lg border bg-white p-4",
-              onRowClick ? "cursor-pointer" : "",
-            )}
-            onClick={() => onRowClick?.(item)}
-          >
-            {columns.map((col) => (
-              <div
-                key={col.key}
-                className="flex items-center justify-between text-sm"
-              >
-                <span className="font-semibold text-gray-500">
-                  {col.header}
-                </span>
-                <div
-                  className={cn(
-                    getAlignClass(col.align),
-                    "max-w-50 truncate sm:max-w-32",
-                  )}
-                >
-                  {col.render(item)}
-                </div>
-              </div>
-            ))}
+        {isFetching ? (
+          <div className="col-span-full flex h-24 items-center justify-center">
+            <LoaderCircle className="h-4 w-4 animate-spin" />
           </div>
-        ))}
+        ) : data.length === 0 ? (
+          <div className="text-muted-foreground col-span-full flex h-24 items-center justify-center text-sm">
+            {emptyMessage}
+          </div>
+        ) : (
+          data.map((item) => (
+            <div
+              key={item._id}
+              className={cn(
+                "space-y-2 rounded-lg border bg-white p-4",
+                onRowClick ? "cursor-pointer" : "",
+              )}
+              onClick={() => onRowClick?.(item)}
+            >
+              {columns.map((col) => (
+                <div
+                  key={col.key}
+                  className="flex items-center justify-between text-sm"
+                >
+                  <span className="font-semibold text-gray-500">
+                    {col.header}
+                  </span>
+                  <div
+                    className={cn(
+                      getAlignClass(col.align),
+                      "max-w-50 truncate sm:max-w-32",
+                    )}
+                  >
+                    {col.render(item)}
+                  </div>
+                </div>
+              ))}
+            </div>
+          ))
+        )}
       </div>
     </>
   );

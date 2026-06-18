@@ -33,3 +33,7 @@ export function toFeedWithSiteDto(feed: FeedWithSiteLean): FeedWithSiteDto {
     updatedAt: feed.updatedAt.toISOString(),
   };
 }
+
+export function toFeedWithSiteDtos(feeds: FeedWithSiteLean[]) {
+  return feeds.map(toFeedWithSiteDto);
+}

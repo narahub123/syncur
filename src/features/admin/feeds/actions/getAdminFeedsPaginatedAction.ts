@@ -2,8 +2,8 @@
 
 import { connectMongo } from "@/shared/lib/db/mongoose";
 import { requireAdmin } from "@/features/admin/lib/requireAdmin";
-import { feedService } from "@/features/feeds/service/FeedService.instance";
-import { AdminFeedsQuery } from "../types";
+import { AdminFeedsQuery } from "../types/search";
+import { adminFeedService } from "../services/AdminFeedService.instance";
 
 /**
  * Admin - Feed 목록 조회 Action
@@ -26,5 +26,5 @@ export async function getAdminFeedsPaginatedAction(query: AdminFeedsQuery) {
   /**
    * Feed 목록 조회
    */
-  return await feedService.getFeedsPaginated(query);
+  return await adminFeedService.getFeedsPaginated(query);
 }

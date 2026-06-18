@@ -2,10 +2,24 @@
 
 import { useState } from "react";
 import { useAdminFeedsQuery } from "../hooks/useAdminFeedsQuery";
-import AdminFeedTable from "./AdminFeedTable";
 import AdminPagination from "../../components/AdminPagination";
-import { AdminFeedsQuery } from "../types";
-import AdminFeedTableToolbar from "./AdminFeedTableToolbar";
+import {
+  ADMIN_FEED_FILTER_CONFIG,
+  ADMIN_FEED_PAGE_SIZE_OPTIONS,
+  ADMIN_FEED_SEARCH_FIELD_OPTIONS,
+  AdminFeedFilterKey,
+  AdminFeedInitialFilterValue,
+  AdminFeedSort,
+  AdminFeedsQuery,
+} from "../types/search";
+import { AdminTableToolbar } from "../../components/AdminTableToolbar";
+import { useTableSort } from "../../hooks/useTableSort";
+import { AdminTable } from "../../components/AdminTable";
+import { adminFeedTableColumns } from "../constants/adminFeedTable";
+import { FilterValue } from "../../constants/filters";
+import { FilterBar } from "../../components/FilterBar";
+import { AdminStatsCard } from "../../components/AdminStatsCard";
+import { getFeedStatusList } from "../constants/stats";
 
 const AdminFeedsClient = () => {
   /**
@@ -19,7 +33,24 @@ const AdminFeedsClient = () => {
     sortOrder: "desc",
     page: 1,
     limit: 10,
+    filters: AdminFeedInitialFilterValue,
   });
+
+  const handleFilterChange = (key: AdminFeedFilterKey, value: FilterValue) => {
+    setQuery((prev) => ({
+      ...prev,
+      filters: {
+        ...prev.filters,
+        [key]: value,
+      },
+    }));
+  };
+
+  const { sort, onSort } = useTableSort<AdminFeedsQuery, AdminFeedSort>(
+    query,
+    setQuery,
+  );
+
   const { data, isFetching } = useAdminFeedsQuery(query);
 
   /**
@@ -27,37 +58,51 @@ const AdminFeedsClient = () => {
    * 데이터 없을 때도 table 구조 유지하기 위해 빈 배열 사용
    */
   const feeds = data?.items ?? [];
-
+  const stats = data?.stats ?? { total: 0, active: 0, inactive: 0 };
   const totalPages = data?.pagination.totalPages ?? 1;
 
+  const activeRate = stats.total > 0 ? (stats.active / stats.total) * 100 : 0;
   return (
-    <div className="flex flex-1 flex-col">
-      {/* 페이지 타이틀 */}
-      <h3 className="p-2 font-medium">사이트 목록</h3>
-
-      <div className="flex flex-1 flex-col space-y-2">
-        {/* 🔹 검색 / 정렬 / 페이지 사이즈 컨트롤 */}
-        <AdminFeedTableToolbar query={query} onChange={setQuery} />
-        {/* 🔹 테이블 유지 구조 * - 로딩 중에도 UI 유지 * - 데이터 변경 시 깜빡임 방지 */}{" "}
-        <AdminFeedTable
-          feeds={feeds}
-          isFetching={isFetching}
-          query={query}
-          onChange={setQuery}
+    <div className="space-y-6 p-6">
+      <AdminStatsCard
+        title="피드 현황"
+        items={getFeedStatusList(stats)}
+        progressValue={activeRate}
+        total={stats.total}
+      />
+      {/* 🔹 검색 / 정렬 / 페이지 사이즈 컨트롤 */}
+      <AdminTableToolbar
+        query={query}
+        onChange={setQuery}
+        searchFieldOptions={ADMIN_FEED_SEARCH_FIELD_OPTIONS}
+        pageSizeOptions={ADMIN_FEED_PAGE_SIZE_OPTIONS}
+      />
+      <FilterBar
+        filters={query.filters}
+        onChange={handleFilterChange}
+        config={ADMIN_FEED_FILTER_CONFIG}
+        initialValue={AdminFeedInitialFilterValue}
+      />
+      {/* 🔹 테이블 유지 구조 * - 로딩 중에도 UI 유지 * - 데이터 변경 시 깜빡임 방지 */}{" "}
+      <AdminTable
+        columns={adminFeedTableColumns}
+        data={feeds}
+        isFetching={isFetching}
+        sort={sort}
+        onSort={onSort}
+      />
+      {totalPages > 1 && (
+        <AdminPagination
+          page={query.page}
+          totalPages={totalPages}
+          onChange={(page) =>
+            setQuery((prev) => ({
+              ...prev,
+              page,
+            }))
+          }
         />
-        {totalPages !== 1 && (
-          <AdminPagination
-            page={query.page}
-            totalPages={totalPages}
-            onChange={(page) =>
-              setQuery((prev) => ({
-                ...prev,
-                page,
-              }))
-            }
-          />
-        )}
-      </div>
+      )}
     </div>
   );
 };

@@ -4,6 +4,7 @@ import { SiteDto } from "@/features/rss/site/dto/siteDto";
 import { toSiteDtos } from "@/features/rss/site/mappers/toSiteDto";
 import { AdminSiteStatsService } from "./AdminSiteStatsService";
 import { DashboardResponse } from "../types/stats";
+import { SiteStatsDto } from "@/features/rss/site/dto/siteStatsDto";
 
 export class AdminSiteService {
   private readonly adminSiteRepository: AdminSiteRepository;
@@ -19,7 +20,9 @@ export class AdminSiteService {
    * 사이트 목록 조회 서비스 로직
    * @param query 클라이언트로부터 받은 쿼리 객체
    */
-  async getSites(query: AdminSiteQuery): Promise<DashboardResponse<SiteDto>> {
+  async getSites(
+    query: AdminSiteQuery,
+  ): Promise<DashboardResponse<SiteDto, SiteStatsDto>> {
     try {
       const [result, stats] = await Promise.all([
         this.adminSiteRepository.getSites(query),

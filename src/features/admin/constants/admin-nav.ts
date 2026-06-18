@@ -11,6 +11,7 @@ import {
   Bug,
   HelpCircle,
   Home,
+  Globe,
 } from "lucide-react";
 
 // constants/admin-nav.ts
@@ -27,6 +28,12 @@ export const ADMIN_NAV_LIST = [
     href: ROUTES.ADMIN_USERS,
     icon: Users,
     tooltip: "사용자 목록 및 관리",
+  },
+  {
+    label: "사이트 관리",
+    href: ROUTES.ADMIN_SITES, // ROUTES 설정에 맞게 수정
+    icon: Globe,
+    tooltip: "수집 사이트 목록 및 설정",
   },
   {
     label: "피드 관리",

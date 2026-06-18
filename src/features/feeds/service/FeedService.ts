@@ -7,10 +7,13 @@ import { FeedDto, FeedWithSiteDtoPagedResponse } from "../dto/feedDto";
 import { toFeedWithSiteDto } from "../mapper/toFeedWithSiteDto";
 import { ADMIN_CONFIG } from "@/features/admin/constants/admin-config";
 import { PAGINATION } from "@/shared/constants/pagination";
-import { AdminFeedsQuery } from "@/features/admin/feeds/types";
+import { AdminFeedsQuery } from "@/features/admin/feeds/types/search";
 import { toFeedDto } from "../mapper/toFeedDto";
 import { RSS_CONFIG } from "@/ingestion/rss/rss-config";
 import { SiteLean } from "@/features/rss/site/types/leans";
+import { adminFeedStatsService } from "@/features/admin/feeds/services/AdminFeedStatsService.instance";
+import { feedStatsService } from "./FeedStatService.instance";
+import { FEED_STATUS } from "../constants/feed-status";
 
 export class FeedService {
   async ensureFeed(site: SiteLean): Promise<Feed | null> {
@@ -27,6 +30,11 @@ export class FeedService {
         categories: [],
       });
     }
+
+    await adminFeedStatsService.updateStats({
+      total: 1,
+      active: 1,
+    });
 
     return toFeed(feed as FeedLean);
   }
@@ -72,6 +80,26 @@ export class FeedService {
     feedId: string,
     status: FeedStatus,
   ): Promise<FeedDto | null> {
+    const currentFeed = await feedRepository.findById(feedId);
+
+    if (!currentFeed) {
+      throw new Error("Feed not found");
+    }
+
+    if (currentFeed.status !== status) {
+      if (status === FEED_STATUS.ACTIVE) {
+        await feedStatsService.updateStats({
+          active: 1,
+          inactive: -1,
+        });
+      } else {
+        await feedStatsService.updateStats({
+          active: -1,
+          inactive: 1,
+        });
+      }
+    }
+
     const feed = await feedRepository.updateStatus(feedId, status);
 
     if (!feed) {

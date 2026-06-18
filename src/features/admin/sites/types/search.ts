@@ -35,6 +35,7 @@ export const ADMIN_SITE_SORT_FIELDS = {
 // 상수로부터 타입 추출
 export type AdminSiteSearchField =
   (typeof ADMIN_SITE_SEARCH_FIELDS)[keyof typeof ADMIN_SITE_SEARCH_FIELDS];
+  
 export type AdminSiteSort =
   (typeof ADMIN_SITE_SORT_FIELDS)[keyof typeof ADMIN_SITE_SORT_FIELDS];
 

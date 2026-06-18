@@ -2,8 +2,10 @@ import { FeedWithSiteDto } from "@/features/feeds/dto/feedDto";
 import { AdminFeedStatusSelect } from "../components/AdminFeedStatusSelect";
 import AdminFeedErrorCountInput from "../components/AdminFeedErrorCountInput";
 import AdminFeedSiteLink from "../components/AdminFeedSiteLink";
+import { Column } from "../../types/admin-table";
+import { AdminFeedSort } from "../types/search";
 
-export const adminFeedTableColumns = [
+export const adminFeedTableColumns: Column<FeedWithSiteDto, AdminFeedSort>[] = [
   {
     key: "siteName",
     header: "사이트",

@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { fetchAdminFeeds } from "../api/fetchAdminFeeds";
 import { QUERY_CONFIG } from "@/shared/constants/query";
-import { AdminFeedsQuery } from "../types";
+import { AdminFeedsQuery } from "../types/search";
 
 /**
  * Feed 목록 Query Hook

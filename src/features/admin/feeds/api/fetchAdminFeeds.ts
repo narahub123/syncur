@@ -1,5 +1,5 @@
 import { getAdminFeedsPaginatedAction } from "../actions/getAdminFeedsPaginatedAction";
-import { AdminFeedsQuery } from "../types";
+import { AdminFeedsQuery } from "../types/search";
 
 /**
  * Feed 목록 Fetcher

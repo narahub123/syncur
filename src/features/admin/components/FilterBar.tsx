@@ -21,9 +21,9 @@ export const FilterBar = <T extends Record<string, FilterDefinition>>({
       // 각 타입에 맞는 기본값으로 초기화 (보통 null, undefined, 또는 빈 배열)
       const type = config[key].type;
       if (type === "multi-select") {
-        onChange(key, []);
+        onChange(key, initialValue?.[key] ?? []);
       } else if (type === "date-range") {
-        onChange(key, { start: null, end: null });
+        onChange(key, initialValue?.[key] ?? { start: null, end: null });
       } else {
         onChange(key, initialValue?.[key] ?? ""); // select 등
       }
