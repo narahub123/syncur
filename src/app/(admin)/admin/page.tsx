@@ -1,7 +1,7 @@
-import AdminClient from "@/features/admin/components/AdminClient";
+import { AdminDashboardClient } from "@/features/admin/dashboard/components/AdminDashboardClient";
 
-const AdminPage = async () => {
-  return <AdminClient />;
+const AdminDashboardPage = async () => {
+  return <AdminDashboardClient />;
 };
 
-export default AdminPage;
+export default AdminDashboardPage;
