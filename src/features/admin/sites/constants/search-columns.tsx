@@ -3,6 +3,7 @@ import { AdminSiteSort } from "../types/search";
 import { Badge } from "@/shared/components/ui/badge";
 import { Avatar } from "@/shared/components/common/Avartar";
 import { SiteDto } from "@/features/rss/site/dto/siteDto";
+import Link from "next/link";
 
 export const adminSiteColumns: Column<SiteDto, AdminSiteSort>[] = [
   {
@@ -24,7 +25,11 @@ export const adminSiteColumns: Column<SiteDto, AdminSiteSort>[] = [
   {
     key: "url",
     header: "URL",
-    render: (site: SiteDto) => <span className="text-sm">{site.url}</span>,
+    render: (site: SiteDto) => (
+      <Link href={site.url} target="_blank">
+        <span className="text-sm">{site.url}</span>
+      </Link>
+    ),
     sortable: true,
   },
   {
