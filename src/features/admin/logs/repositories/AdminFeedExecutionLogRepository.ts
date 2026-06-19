@@ -56,31 +56,54 @@ export default class AdminFeedExecutionLogRepository {
     /**
      * 실행 상태
      */
-    if (filters.status && filters.status !== "all") {
-      matchStage.status = filters.status;
+    if (
+      Array.isArray(filters.status) &&
+      filters.status.length > 0 &&
+      !filters.status.includes("all")
+    ) {
+      matchStage.status = {
+        $in: filters.status,
+      };
     }
 
     /**
      * 종료 사유
      */
-    if (filters.reason && filters.reason !== "all") {
-      matchStage.reason = filters.reason;
+    if (
+      Array.isArray(filters.reason) &&
+      filters.reason.length > 0 &&
+      !filters.reason.includes("all")
+    ) {
+      matchStage.reason = {
+        $in: filters.reason,
+      };
     }
 
     /**
      * 실패 단계
      */
-    if (filters.failedAtStage && filters.failedAtStage !== "all") {
-      matchStage.failedAtStage = filters.failedAtStage;
+    if (
+      Array.isArray(filters.failedAtStage) &&
+      filters.failedAtStage.length > 0 &&
+      !filters.failedAtStage.includes("all")
+    ) {
+      matchStage.failedAtStage = {
+        $in: filters.failedAtStage,
+      };
     }
 
     /**
      * 에러 타입
      */
-    if (filters.errorType && filters.errorType !== "all") {
-      matchStage["error.type"] = filters.errorType;
+    if (
+      Array.isArray(filters.errorType) &&
+      filters.errorType.length > 0 &&
+      !filters.errorType.includes("all")
+    ) {
+      matchStage["error.type"] = {
+        $in: filters.errorType,
+      };
     }
-
     /**
      * 시작일
      */

@@ -1,4 +1,4 @@
-import { FeedExecutionErrorType } from "../constants/feed-execution-log";
+import { FeedExecutionErrorType } from "@/features/admin/logs/types/search";
 
 /**
  * Fetch 단계 로그

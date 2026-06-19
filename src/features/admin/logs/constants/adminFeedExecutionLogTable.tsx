@@ -1,15 +1,16 @@
 import { FeedExecutionLogWithFeedAndSiteDto } from "@/features/feed-execution-logs/dto/feedExecutionLogDto";
+import { Column } from "../../types/admin-table";
 import {
+  AdminFeedExecutionLogSort,
   FEED_EXECUTION_ERROR_TYPE_KR,
   FEED_EXECUTION_REASON_KR,
   FEED_EXECUTION_STAGE_KR,
   FeedExecutionErrorType,
   FeedExecutionReason,
   FeedExecutionStage,
-} from "@/features/feed-execution-logs/constants/feed-execution-log";
-import { Column } from "../../types/admin-table";
-import { AdminFeedExecutionLogSort } from "../types/search";
+} from "../types/search";
 import AdminFeedExecutionLogsStatusCell from "../components/AdminFeedExecutionLogsStatusCell";
+import { Avatar } from "@/shared/components/common/Avartar";
 
 export const adminFeedExecutionLogTableColumns: Column<
   FeedExecutionLogWithFeedAndSiteDto,
@@ -18,7 +19,20 @@ export const adminFeedExecutionLogTableColumns: Column<
   {
     key: "siteName",
     header: "사이트",
-    render: (log: FeedExecutionLogWithFeedAndSiteDto) => log.site?.name ?? "-",
+    render: (log: FeedExecutionLogWithFeedAndSiteDto) => (
+      <div className="flex items-center">
+        {log.site?.faviconUrl && (
+          <Avatar
+            src={log.site?.faviconUrl}
+            name={log.site?.name}
+            imgProps={{ className: "rounded-full w-7 h-7" }}
+          />
+        )}
+        <span className="max-w-36 truncate font-medium">
+          {log.site?.name || "-"}
+        </span>
+      </div>
+    ),
   },
   {
     key: "status",
@@ -50,6 +64,7 @@ export const adminFeedExecutionLogTableColumns: Column<
     render: (log: FeedExecutionLogWithFeedAndSiteDto) =>
       FEED_EXECUTION_ERROR_TYPE_KR[log.error?.type as FeedExecutionErrorType] ??
       "-",
+    sortable: true,
   },
   {
     key: "failedAtStage",

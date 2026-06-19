@@ -1,4 +1,3 @@
-import { FeedExecutionLogStatsDto } from "@/features/feed-execution-logs/dto/feedExecutionLogStatsDto";
 import { FeedExecutionLogStatsRepository } from "../repository/FeedExecutionLogStatsRepository";
 
 export class FeedExecutionLogStatsService {

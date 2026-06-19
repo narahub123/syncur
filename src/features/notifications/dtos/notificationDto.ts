@@ -6,7 +6,7 @@ import {
   FeedExecutionReason,
   FeedExecutionStage,
   FeedExecutionStatus,
-} from "@/features/feed-execution-logs/constants/feed-execution-log";
+} from "@/features/admin/logs/types/search";
 import { NotificationMetadata } from "../types";
 
 export interface NotificationMessageDTO {

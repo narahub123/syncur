@@ -1,9 +1,4 @@
 import {
-  FeedExecutionReason,
-  FeedExecutionStage,
-  FeedExecutionStatus,
-} from "@/features/feed-execution-logs/constants/feed-execution-log";
-import {
   FeedExecutionError,
   FetchLog,
   ParseLog,
@@ -11,6 +6,11 @@ import {
 } from "@/features/feed-execution-logs/types";
 import { FeedExecutionLogWithFeedAndSiteLean } from "../types/lean";
 import { PaginatedResponse } from "@/shared/types/pagination";
+import {
+  FeedExecutionReason,
+  FeedExecutionStage,
+  FeedExecutionStatus,
+} from "@/features/admin/logs/types/search";
 
 export type FeedExecutionLogDto = {
   _id: string;

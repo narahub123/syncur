@@ -1,4 +1,3 @@
-import { feedExecutionLogRepository } from "../repository/FeedExecutionLogRepository.instance";
 import { feedExecutionLogStatsRepository } from "../repository/FeedExecutionLogStatsRepository.instance";
 import { FeedExecutionLogStatsService } from "./FeedExecutionLogStatsService";
 

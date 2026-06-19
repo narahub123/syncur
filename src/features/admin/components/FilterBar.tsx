@@ -44,7 +44,9 @@ export const FilterBar = <T extends Record<string, FilterDefinition>>({
 
           return (
             <div key={String(key)} className="flex items-center gap-2">
-              <label className="text-sm font-semibold">{item.label}</label>
+              <label className="shrink-0 text-sm font-semibold">
+                {item.label}
+              </label>
 
               {item.type === "select" && item.options && (
                 <CommonSelect

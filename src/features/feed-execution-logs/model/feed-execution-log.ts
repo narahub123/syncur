@@ -1,13 +1,13 @@
-import mongoose, { Schema, Types, Document } from "mongoose";
 import {
+  FEED_EXECUTION_ERROR_TYPE,
   FEED_EXECUTION_REASON,
   FEED_EXECUTION_STAGE,
   FEED_EXECUTION_STATUS,
-  FEED_EXECUTION_ERROR_TYPE,
   FeedExecutionReason,
   FeedExecutionStage,
   FeedExecutionStatus,
-} from "../constants/feed-execution-log";
+} from "@/features/admin/logs/types/search";
+import mongoose, { Schema, Types, Document } from "mongoose";
 
 /**
  * FeedExecutionError

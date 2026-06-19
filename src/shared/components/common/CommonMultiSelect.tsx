@@ -1,4 +1,5 @@
 "use client";
+
 import {
   Popover,
   PopoverContent,
@@ -21,14 +22,37 @@ interface Props {
 }
 
 export const CommonMultiSelect = ({ options, selected, onChange }: Props) => {
+  const hasAllOption = options.some((opt) => opt.value === "all");
+
   const toggle = (val: string) => {
-    onChange(
-      selected.includes(val)
-        ? selected.filter((s) => s !== val)
-        : [...selected, val],
-    );
+    // 1. ALL 선택 시
+    if (val === "all") {
+      onChange(["all"]);
+      return;
+    }
+
+    // 2. ALL 상태에서 다른 값 선택 시
+    if (selected.includes("all")) {
+      onChange([val]);
+      return;
+    }
+
+    // 3. 일반 toggle
+    const next = selected.includes(val)
+      ? selected.filter((s) => s !== val)
+      : [...selected, val];
+
+    // 4. 빈 상태 처리
+    if (next.length === 0 && hasAllOption) {
+      onChange(["all"]);
+      return;
+    }
+
+    onChange(next);
   };
 
+  const getLabel = (value: string) =>
+    options.find((opt) => opt.value === value)?.label ?? value;
   return (
     <Popover>
       <PopoverTrigger asChild>
@@ -36,11 +60,14 @@ export const CommonMultiSelect = ({ options, selected, onChange }: Props) => {
           variant="outline"
           className="flex h-8 max-w-100 flex-wrap justify-start gap-2"
         >
-          {selected.length === 0
-            ? "선택하세요"
-            : selected.map((s) => <Badge key={s}>{s}</Badge>)}
+          {selected.length === 0 || selected.includes("all") ? (
+            <span>전체</span>
+          ) : (
+            selected.map((s) => <Badge key={s}>{getLabel(s)}</Badge>)
+          )}
         </Button>
       </PopoverTrigger>
+
       <PopoverContent className="p-0">
         <Command>
           <CommandInput placeholder="검색..." />
@@ -48,7 +75,9 @@ export const CommonMultiSelect = ({ options, selected, onChange }: Props) => {
             {options.map((opt) => (
               <CommandItem key={opt.value} onSelect={() => toggle(opt.value)}>
                 <Check
-                  className={`mr-2 ${selected.includes(opt.value) ? "opacity-100" : "opacity-0"}`}
+                  className={`mr-2 ${
+                    selected.includes(opt.value) ? "opacity-100" : "opacity-0"
+                  }`}
                 />
                 {opt.label}
               </CommandItem>

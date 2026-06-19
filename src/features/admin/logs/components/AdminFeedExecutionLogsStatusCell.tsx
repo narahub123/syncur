@@ -1,7 +1,4 @@
-import {
-  FEED_EXECUTION_STATUS_KR,
-  FeedExecutionStatus,
-} from "@/features/feed-execution-logs/constants/feed-execution-log";
+import { FEED_EXECUTION_STATUS_KR, FeedExecutionStatus } from "../types/search";
 
 type Props = { status: FeedExecutionStatus };
 

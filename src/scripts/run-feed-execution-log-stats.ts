@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 import dotenv from "dotenv";
 import { FeedExecutionLogModel } from "@/features/feed-execution-logs/model/feed-execution-log";
-import { FEED_EXECUTION_STATUS } from "@/features/feed-execution-logs/constants/feed-execution-log";
+import { FEED_EXECUTION_STATUS } from "@/features/admin/logs/types/search";
 import { FeedExecutionLogStatsModel } from "@/features/feed-execution-logs/model/FeedExecutionLogStat";
 
 dotenv.config({ path: ".env.local" });

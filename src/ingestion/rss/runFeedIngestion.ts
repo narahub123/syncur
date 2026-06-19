@@ -4,7 +4,7 @@ import {
   FEED_EXECUTION_STAGE,
   FEED_EXECUTION_STATUS,
   FeedExecutionStage,
-} from "@/features/feed-execution-logs/constants/feed-execution-log";
+} from "@/features/admin/logs/types/search";
 import { feedExecutionLogService } from "@/features/feed-execution-logs/service/FeedExecutionLogService.instance";
 import { FeedLean } from "@/shared/types/domain-leans";
 import { RSS_CONFIG } from "./rss-config";

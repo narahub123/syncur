@@ -4,7 +4,7 @@ import {
   FeedExecutionReason,
   FeedExecutionStage,
   FeedExecutionStatus,
-} from "../constants/feed-execution-log";
+} from "@/features/admin/logs/types/search";
 
 /**
  * FeedExecutionLog Lean Type

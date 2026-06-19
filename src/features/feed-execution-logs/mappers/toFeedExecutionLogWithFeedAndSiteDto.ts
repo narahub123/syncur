@@ -1,7 +1,7 @@
 import {
   FeedExecutionReason,
   FeedExecutionStatus,
-} from "../constants/feed-execution-log";
+} from "@/features/admin/logs/types/search";
 import { FeedExecutionLogWithFeedAndSiteDto } from "../dto/feedExecutionLogDto";
 import { FeedExecutionLogWithFeedAndSiteLean } from "../types/lean";
 

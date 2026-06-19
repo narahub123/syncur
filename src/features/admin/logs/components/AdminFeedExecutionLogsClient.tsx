@@ -16,12 +16,19 @@ import { AdminTableToolbar } from "../../components/AdminTableToolbar";
 import { useTableSort } from "../../hooks/useTableSort";
 import { AdminTable } from "../../components/AdminTable";
 import { adminFeedExecutionLogTableColumns } from "../constants/adminFeedExecutionLogTable";
-import { FilterBar } from "../../components/FilterBar";
 import { FilterValue } from "../../constants/filters";
 import { AdminStatsCard } from "../../components/AdminStatsCard";
 import { getFeedExecutionLogStatusList } from "../constants/stats";
+import { FilterToolbar } from "../../components/FilterToolbar";
+import { useAdminFeedExecutionLogsInfiniteQuery } from "../hooks/useAdminFeedExecutionLogsInfiniteQuery";
+import { useMediaQuery } from "../../hooks/useMediaQuery";
+import { useInfiniteScroll } from "@/shared/hooks/useInfiniteScroll";
+import LoadMoreTrigger from "@/shared/components/common/LoadMoreTrigger";
+import { useListMode } from "../../hooks/useListMode";
 
 const AdminFeedExecutionLogsClient = () => {
+  const isMobile = useMediaQuery("(max-width: 768px)");
+
   const [query, setQuery] = useState<AdminFeedExecutionLogsQuery>({
     search: "",
     searchField: "siteName",
@@ -50,19 +57,43 @@ const AdminFeedExecutionLogsClient = () => {
     AdminFeedExecutionLogSort
   >(query, setQuery);
 
-  const { data, isFetching } = useAdminFeedExecutionLogsQuery(query);
-  console.log("data", data?.stats);
-  const logs = data?.items ?? [];
-  const stats = data?.stats ?? { total: 0, fails: 0 };
-  const totalPages = data?.pagination.totalPages ?? 1;
+  const {
+    isLoading,
+    items,
+    stats,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    pagination,
+  } = useListMode({
+    isMobile,
+    query,
 
-  const failRate = stats.total > 0 ? (stats.fails / stats.total) * 100 : 0;
+    useQueryHook: useAdminFeedExecutionLogsQuery,
+    useInfiniteHook: useAdminFeedExecutionLogsInfiniteQuery,
+  });
+
+  const loadMoreRef = useInfiniteScroll({
+    onIntersect: () => {
+      if (hasNextPage && !isFetchingNextPage) {
+        fetchNextPage();
+      }
+    },
+    enabled: !!hasNextPage,
+  });
+
+  const logs = items ?? [];
+  const logStats = stats ?? { total: 0, fails: 0 };
+  const totalPages = pagination?.totalPages ?? 1;
+
+  const failRate =
+    logStats.total > 0 ? (logStats.fails / logStats.total) * 100 : 0;
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="flex flex-col space-y-6 p-6">
       <AdminStatsCard
         title="로그 현황"
-        items={getFeedExecutionLogStatusList(stats)}
+        items={getFeedExecutionLogStatusList(logStats)}
         progressValue={failRate}
         total={stats?.total || 0}
       />
@@ -72,8 +103,7 @@ const AdminFeedExecutionLogsClient = () => {
         searchFieldOptions={ADMIN_FEED_EXECUTION_LOG_SEARCH_FIELD_OPTIONS}
         pageSizeOptions={ADMIN_FEED_EXECUTION_LOG_PAGE_SIZE_OPTIONS}
       />
-
-      <FilterBar
+      <FilterToolbar
         filters={query.filters}
         onChange={handleFilterChange}
         config={ADMIN_FEED_EXECUTION_LOG_FILTER_CONFIG}
@@ -83,12 +113,12 @@ const AdminFeedExecutionLogsClient = () => {
       <AdminTable
         columns={adminFeedExecutionLogTableColumns}
         data={logs}
-        isFetching={isFetching}
+        isFetching={isLoading}
         sort={sort}
         onSort={onSort}
       />
 
-      {totalPages > 1 && (
+      {totalPages > 1 && !isMobile && (
         <AdminPagination
           page={query.page}
           totalPages={totalPages}
@@ -99,6 +129,12 @@ const AdminFeedExecutionLogsClient = () => {
             }))
           }
         />
+      )}
+      {/* 👇 무한스크롤 트리거 */}
+      {isMobile && <LoadMoreTrigger ref={loadMoreRef} className="h-10" />}
+
+      {isMobile && isFetchingNextPage && (
+        <div className="-mt-20 p-4 text-center">loading...</div>
       )}
     </div>
   );

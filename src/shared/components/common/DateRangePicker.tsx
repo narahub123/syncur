@@ -2,7 +2,7 @@
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 
-interface DateRange {
+export interface DateRange {
   start: Date | null;
   end: Date | null;
 }

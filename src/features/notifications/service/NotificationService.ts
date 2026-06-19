@@ -11,10 +11,6 @@ import {
   toNotificationDtos,
 } from "../mappers/toNotificationDto";
 import {
-  FEED_EXECUTION_STAGE,
-  FeedExecutionStage,
-} from "@/features/feed-execution-logs/constants/feed-execution-log";
-import {
   NOTIFICATION_TARGET,
   NotificationTarget,
 } from "../constants/notification-target";
@@ -33,6 +29,10 @@ import { notFound } from "next/navigation";
 import { SubscriptionService } from "@/features/subscriptions/services/SubscriptionService";
 import { API_ROUTES } from "@/shared/sse/sse-api-routes";
 import { sendBulkSseNotifications } from "@/shared/api/sse-client";
+import {
+  FEED_EXECUTION_STAGE,
+  FeedExecutionStage,
+} from "@/features/admin/logs/types/search";
 
 /**
  * Notification Service
