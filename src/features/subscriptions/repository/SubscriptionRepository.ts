@@ -1,5 +1,5 @@
 import { SubscriptionModel } from "../model/Subscription";
-import { SubscriptionLean } from "@/shared/types/domain-leans";
+import { SubscriptionLean } from "../types/leans";
 
 /**
  * SubscriptionRepository
@@ -35,23 +35,33 @@ export class SubscriptionRepository {
   }
 
   /**
-   * 새로운 구독 생성 (Feed 기준)
+   * 구독 생성 (재구독 로직 포함)
    *
    * @returns 생성된 Subscription
    */
   async create(userId: string, feedId: string): Promise<SubscriptionLean> {
-    const doc = await SubscriptionModel.create({
+    // 1. 이미 해지된(deletedAt이 있는) 기록이 있는지 확인
+    const existingDoc = await SubscriptionModel.findOne({
+      userId,
+      feedId,
+      deletedAt: { $ne: null }, // 삭제된 상태인 것만 찾음
+    });
+
+    if (existingDoc) {
+      // 2. 재구독: deletedAt을 null로 초기화하여 복구
+      existingDoc.deletedAt = null;
+      await existingDoc.save();
+
+      return existingDoc.toObject();
+    }
+
+    // 3. 신규 구독: 데이터 생성
+    const newDoc = await SubscriptionModel.create({
       userId,
       feedId,
     });
 
-    return {
-      _id: doc._id.toString(),
-      userId: doc.userId.toString(),
-      feedId: doc.feedId.toString(),
-      createdAt: doc.createdAt,
-      updatedAt: doc.updatedAt,
-    };
+    return newDoc.toObject();
   }
 
   /**
@@ -89,19 +99,30 @@ export class SubscriptionRepository {
   }
 
   /**
-   * 사용자-Feed 구독 삭제
+   * 사용자-Feed 구독 소프트 삭제 (해지)
    *
    * @description
-   * 특정 userId + feedId 기준으로 구독 해제
+   * 물리 삭제 대신 deletedAt에 현재 시간을 기록하여 구독 해지 상태로 변경
    */
-  async deleteByUserAndFeed(
+  async softDelete(
     userId: string,
     feedId: string,
   ): Promise<SubscriptionLean | null> {
-    return SubscriptionModel.findOneAndDelete({
-      userId,
-      feedId,
-    }).lean();
+    const doc = await SubscriptionModel.findOneAndUpdate(
+      {
+        userId,
+        feedId,
+        deletedAt: null, // 현재 활성화된 구독만 대상으로 함
+      },
+      {
+        $set: { deletedAt: new Date() },
+      },
+      { returnDocument: "after" },
+    ).lean();
+
+    if (!doc) return null;
+
+    return doc;
   }
 
   /**

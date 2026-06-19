@@ -1,51 +1,28 @@
 import mongoose, { Schema, Document, Types } from "mongoose";
 
-/**
- * Subscription Document
- * - user ↔ feed 관계 테이블
- */
 export interface SubscriptionDocument extends Document {
   userId: Types.ObjectId;
   feedId: Types.ObjectId;
+  deletedAt?: Date | null;
   createdAt: Date;
   updatedAt: Date;
 }
 
 const SubscriptionSchema = new Schema<SubscriptionDocument>(
   {
-    /**
-     * 구독한 사용자
-     */
-    userId: {
-      type: Schema.Types.ObjectId,
-      ref: "User",
-      required: true,
-    },
-
-    /**
-     * 구독 대상 Site
-     */
-
-    feedId: {
-      type: Schema.Types.ObjectId,
-      ref: "Feed",
-      required: true,
-    },
+    userId: { type: Schema.Types.ObjectId, ref: "User", required: true },
+    feedId: { type: Schema.Types.ObjectId, ref: "Feed", required: true },
+    deletedAt: { type: Date, default: null },
   },
-  {
-    timestamps: true,
-    versionKey: false,
-  },
+  { timestamps: true, versionKey: false },
 );
 
-/**
- * 동일 유저 중복 구독 방지 (핵심)
- */
-SubscriptionSchema.index({ userId: 1, feedId: 1 }, { unique: true });
+// [핵심] 해지되지 않은(null) 구독 건에 대해서만 유니크 제약
+SubscriptionSchema.index(
+  { userId: 1, feedId: 1 },
+  { unique: true, partialFilterExpression: { deletedAt: null } },
+);
 
-/**
- * Model export (hot reload 대응)
- */
 export const SubscriptionModel =
   mongoose.models.Subscription ||
   mongoose.model<SubscriptionDocument>("Subscription", SubscriptionSchema);

@@ -81,35 +81,6 @@ export type FeedItemLean = {
 };
 
 /**
- * Subscription Lean Type
- *
- * user ↔ feed 관계 (lean 전용)
- */
-export type SubscriptionLean = {
-  _id: Types.ObjectId;
-
-  /**
-   * 구독한 사용자 ID
-   */
-  userId: Types.ObjectId;
-
-  /**
-   * 구독 대상 Feed ID
-   */
-  feedId: Types.ObjectId;
-
-  /**
-   * 생성 시각
-   */
-  createdAt: Date;
-
-  /**
-   * 수정 시각
-   */
-  updatedAt: Date;
-};
-
-/**
  * UserInterestProfile Lean Type
  *
  * 사용자 관심사 프로필 (lean 전용)

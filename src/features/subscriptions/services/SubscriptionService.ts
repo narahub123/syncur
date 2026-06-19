@@ -65,38 +65,6 @@ export class SubscriptionService {
   }
 
   /**
-   * 구독 생성
-   *
-   * @description
-   * 동일 user-feed 조합에 대해 중복 구독을 방지하며 생성한다.
-   * DB unique index와 함께 이중 안전장치 역할을 수행한다.
-   */
-  async create(
-    input: CreateSubscriptionInput,
-  ): Promise<CreateSubscriptionResult> {
-    const { userId, feedId } = input;
-
-    /**
-     * 기존 구독 존재 여부 확인 (idempotent 보장)
-     */
-    const exists = await this.repository.find(userId, feedId);
-
-    if (exists) {
-      return { status: "already_subscribed" };
-    }
-
-    /**
-     * 신규 구독 생성
-     */
-    await this.repository.create(userId, feedId);
-
-    // 2. FeedService를 통해 구독자 수 증가 (도메인 위임)
-    await this.feedService.incrementSubscriberCount(feedId);
-
-    return { status: "subscribed" };
-  }
-
-  /**
    * 사용자 구독 목록 조회
    *
    * @description
@@ -180,6 +148,38 @@ export class SubscriptionService {
   }
 
   /**
+   * 구독 생성
+   *
+   * @description
+   * 동일 user-feed 조합에 대해 중복 구독을 방지하며 생성한다.
+   * DB unique index와 함께 이중 안전장치 역할을 수행한다.
+   */
+  async create(
+    input: CreateSubscriptionInput,
+  ): Promise<CreateSubscriptionResult> {
+    const { userId, feedId } = input;
+
+    // 1. 구독 상태 확인 (소프트 삭제된 것까지 포함해서 조회해야 함)
+    // repository에 `findOneIncludingDeleted` 같은 메서드를 만들거나
+    // 기존 find를 확장하여 deletedAt이 null인지 확인합니다.
+    const subscription = await this.repository.find(userId, feedId);
+
+    // 2. 이미 활성화된 구독이 있는 경우 (중복 방지)
+    if (subscription && subscription.deletedAt === null) {
+      return { status: "already_subscribed" };
+    }
+
+    // 3. 신규 구독 또는 재구독 생성
+    // repository의 create 메서드 안에서 이미 "재구독(복구) vs 신규 생성" 로직을 처리하도록 했습니다.
+    await this.repository.create(userId, feedId);
+
+    // 4. 구독자 수 증가
+    await this.feedService.incrementSubscriberCount(feedId);
+
+    return { status: "subscribed" };
+  }
+
+  /**
    * 구독 해제
    *
    * @description
@@ -189,10 +189,7 @@ export class SubscriptionService {
     userId: string,
     feedId: string,
   ): Promise<SubscriptionDto | null> {
-    const doc = await subscriptionRepository.deleteByUserAndFeed(
-      userId,
-      feedId,
-    );
+    const doc = await subscriptionRepository.softDelete(userId, feedId);
 
     if (!doc) return null;
 

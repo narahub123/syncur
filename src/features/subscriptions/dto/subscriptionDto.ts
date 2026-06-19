@@ -23,6 +23,7 @@ export type SubscriptionDto = {
   userId: string;
   feedId: string;
 
+  deletedAt: string;
   createdAt: string;
   updatedAt: string;
 };

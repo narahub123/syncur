@@ -1,5 +1,5 @@
-import { SubscriptionLean } from "@/shared/types/domain-leans";
 import { SubscriptionDto } from "../dto/subscriptionDto";
+import { SubscriptionLean } from "../types/leans";
 
 /**
  * SubscriptionLean → SubscriptionItemDto 변환
@@ -13,6 +13,7 @@ export const toSubscriptionDto = (doc: SubscriptionLean): SubscriptionDto => {
     userId: doc.userId.toString(),
     feedId: doc.feedId.toString(),
 
+    deletedAt: doc.deletedAt.toISOString(),
     createdAt: doc.createdAt.toISOString(),
     updatedAt: doc.updatedAt.toISOString(),
   };
