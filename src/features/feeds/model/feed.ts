@@ -77,6 +77,24 @@ export interface FeedDocument extends Document {
   updatedAt: Date;
 }
 
+/**
+ * 누적 구독 횟수 (성장 지표)
+ * - 신규 + 재구독을 포함한 총 구독 성공 횟수
+ */
+// totalSubscriptionCount: { type: Number, default: 0 },
+
+/**
+ * 누적 해지 횟수 (이탈 지표)
+ * - 총 해지 횟수
+ */
+// totalUnsubscriptionCount: { type: Number, default: 0 },
+
+/**
+ * 일일 구독자 증감 (트렌드 지표)
+ * - 매일 배치 작업으로 업데이트
+ */
+// dailyDelta: { type: Number, default: 0 },
+
 const FeedSchema = new Schema<FeedDocument>(
   {
     siteId: {
