@@ -1,13 +1,15 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { NOTIFICATION_PERMISSION_STATUS } from "../constants/notification-type";
 
 /**
  * 브라우저 Notification 권한 상태 관리 훅
  */
 export function useNotificationPermission() {
-  const [permission, setPermission] =
-    useState<NotificationPermission>("default");
+  const [permission, setPermission] = useState<NotificationPermission>(
+    NOTIFICATION_PERMISSION_STATUS.DEFAULT,
+  );
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -25,8 +27,8 @@ export function useNotificationPermission() {
   return {
     permission,
     requestPermission, // 💡 외부로 함수 노출
-    isGranted: permission === "granted",
-    isDefault: permission === "default",
-    isDenied: permission === "denied",
+    isGranted: permission === NOTIFICATION_PERMISSION_STATUS.GRANTED,
+    isDefault: permission === NOTIFICATION_PERMISSION_STATUS.DEFAULT,
+    isDenied: permission === NOTIFICATION_PERMISSION_STATUS.DENIED,
   };
 }

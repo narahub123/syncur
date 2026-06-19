@@ -5,6 +5,8 @@ import { SSE_EVENT } from "@/shared/sse/sse-events";
 import { NotificationMessageDTO } from "@/features/notifications/dtos/notificationDto";
 import { useMarkNotificationAsReadMutation } from "@/features/admin/notifiactions/hooks/useMarkNotificationAsReadMutation";
 import { useRouter } from "next/navigation";
+import { ROUTES } from "../constants/routes";
+import { NOTIFICATION_PERMISSION_STATUS } from "@/features/notifications/constants/notification-type";
 
 export default function UserSSEProvider() {
   const router = useRouter();
@@ -17,7 +19,7 @@ export default function UserSSEProvider() {
     onEvent: (data: NotificationMessageDTO) => {
       console.log("🔥 유저 실시간 알림 수신 성공:", data);
 
-      if (Notification.permission === "granted") {
+      if (Notification.permission === NOTIFICATION_PERMISSION_STATUS.GRANTED) {
         const notification = new Notification(data.title || "새로운 알림", {
           body: data.message,
           tag: data.id, // 중복 알림 방지용 태그
@@ -42,7 +44,7 @@ export default function UserSSEProvider() {
             // 💡 B. 원문 주소가 없다면, 새 창을 열지 않고 현재 열려 있는 우리 사이트 창 내부에서 이동!
             // 프로젝트의 실제 피드 목록 주소 규칙에 맞게 경로를 지정하세요. (예: 피드 홈 "/" 또는 "/feeds")
             console.warn("⚠️ 메타데이터에 originUrl 주소가 누락되었습니다.");
-            router.push("/feeds");
+            router.push(ROUTES.FEED);
           }
 
           // --- 3. [클린업] 클릭했으므로 화면 알림 카드 닫기 ---

@@ -28,3 +28,21 @@ export const NOTIFICATION_TYPE = {
 
 export type NotificationType =
   (typeof NOTIFICATION_TYPE)[keyof typeof NOTIFICATION_TYPE];
+
+/**
+ * 알림/권한 관련 상태 정의
+ * * @description
+ * 브라우저 및 시스템 레벨에서 제공하는 권한 상태값
+ */
+export const NOTIFICATION_PERMISSION_STATUS = {
+  GRANTED: "granted",
+  DEFAULT: "default",
+  DENIED: "denied",
+} as const;
+
+/**
+ * PermissionStatus의 타입을 추출
+ * (유니온 타입: "granted" | "default" | "denied")
+ */
+export type NotificationPermissionStatusType =
+  (typeof NOTIFICATION_PERMISSION_STATUS)[keyof typeof NOTIFICATION_PERMISSION_STATUS];

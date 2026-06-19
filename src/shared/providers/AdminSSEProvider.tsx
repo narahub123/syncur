@@ -5,6 +5,8 @@ import { SSE_EVENT } from "@/shared/sse/sse-events";
 import { NotificationMessageDTO } from "@/features/notifications/dtos/notificationDto";
 import { useRouter } from "next/navigation"; // 💡 페이지 이동을 위한 라우터 임포트
 import { useMarkNotificationAsReadMutation } from "@/features/admin/notifiactions/hooks/useMarkNotificationAsReadMutation";
+import { ROUTES } from "../constants/routes";
+import { NOTIFICATION_PERMISSION_STATUS } from "@/features/notifications/constants/notification-type";
 
 export default function AdminSSEProvider() {
   const router = useRouter();
@@ -17,7 +19,7 @@ export default function AdminSSEProvider() {
     onEvent: (data: NotificationMessageDTO) => {
       console.log("🔥 관리자 실시간 알림 수신 성공:", data);
 
-      if (Notification.permission === "granted") {
+      if (Notification.permission === NOTIFICATION_PERMISSION_STATUS.GRANTED) {
         const notification = new Notification(data.title || "관리자 알림", {
           body: data.message,
           tag: data.id, // 중복 알림 방지용 태그
@@ -37,9 +39,9 @@ export default function AdminSSEProvider() {
           // --- 2. [내부 페이지 이동] 요청하신 관리자 에러 로그 상세 페이지로 라우팅 ---
           // 백엔드 크론 서비스가 meta.feedExecutionLogId에 심어준 FeedExecutionLogId를 활용합니다.
           if (data.meta?.feedExecutionLogId) {
-            router.push(`/admin/logs/${data.meta.feedExecutionLogId}`);
+            router.push(`${ROUTES.ADMIN_LOGS}/${data.meta.feedExecutionLogId}`);
           } else {
-            router.push("/admin/logs");
+            router.push(ROUTES.ADMIN_LOGS);
           }
 
           // --- 3. [클린업] 클릭 처리가 끝났으므로 화면의 알림 카드 닫기 ---
