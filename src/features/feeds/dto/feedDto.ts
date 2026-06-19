@@ -1,11 +1,11 @@
 import { FeedItemSiteDto } from "@/features/rss/site/dto/siteDto";
-import { FeedLean } from "@/shared/types/domain-leans";
 import { FeedStatus } from "@/shared/types/feed";
 import {
   CursorPaginationResponse,
   PaginatedResponse,
 } from "@/shared/types/pagination";
 import { Types } from "mongoose";
+import { FeedLean } from "../types/leans";
 
 export type FeedDto = {
   id: string;
@@ -25,6 +25,8 @@ export type FeedDto = {
   errorCount: number;
 
   categories: string[];
+
+  subscriberCount: number;
 
   createdAt: string;
 
@@ -150,6 +152,8 @@ export type FeedWithSiteLean = {
 
   categories: string[];
 
+  subscriberCount: number;
+
   createdAt: Date;
   updatedAt: Date;
 };
@@ -189,6 +193,8 @@ export type FeedWithSiteDto = {
   errorCount: number;
 
   categories: string[];
+
+  subscriberCount: number;
 
   createdAt: string;
   updatedAt: string;

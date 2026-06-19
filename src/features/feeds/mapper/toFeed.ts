@@ -1,5 +1,5 @@
 import { Feed } from "@/shared/types/feed";
-import { FeedLean } from "@/shared/types/domain-leans";
+import { FeedLean } from "../types/leans";
 
 export function toFeed(doc: FeedLean): Feed {
   return {

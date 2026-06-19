@@ -1,5 +1,4 @@
 import { Types } from "mongoose";
-import { FeedStatus } from "./feed";
 
 /**
  * UserFeedInteraction lean type
@@ -44,34 +43,6 @@ export type FeedItemStatsLean = {
   shareCount: number;
 
   lastInteractedAt: Date | null;
-
-  createdAt: Date;
-  updatedAt: Date;
-};
-
-/**
- * FeedModel lean() 반환 타입
- *
- * Document wrapper 없이 순수 JSON object
- */
-export type FeedLean = {
-  _id: Types.ObjectId;
-
-  siteId: Types.ObjectId;
-
-  feedUrl: string;
-
-  status: FeedStatus;
-
-  lastFetchedAt: Date | null;
-
-  etag: string | null;
-
-  lastModified: string | null;
-
-  errorCount: number;
-
-  categories: string[];
 
   createdAt: Date;
   updatedAt: Date;

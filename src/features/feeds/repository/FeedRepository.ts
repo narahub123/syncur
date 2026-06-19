@@ -1,6 +1,5 @@
 import { FeedModel } from "../model/feed";
 import { Types } from "mongoose";
-import { FeedLean } from "@/shared/types/domain-leans";
 import { toObjectId } from "@/shared/utils/toObjectId";
 import {
   FeedWithSiteLean,
@@ -13,6 +12,7 @@ import {
   AdminFeedSearchField,
   AdminFeedSort,
 } from "@/features/admin/feeds/types/search";
+import { FeedLean } from "../types/leans";
 
 /**
  * FeedRepository
@@ -190,6 +190,7 @@ export class FeedRepository {
             lastModified: 1,
             errorCount: 1,
             categories: 1,
+            subscriberCount: 1,
             createdAt: 1,
             updatedAt: 1,
             siteId: {

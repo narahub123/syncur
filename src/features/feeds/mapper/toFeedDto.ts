@@ -1,5 +1,5 @@
-import { FeedLean } from "@/shared/types/domain-leans";
 import { FeedDto } from "../dto/feedDto";
+import { FeedLean } from "../types/leans";
 
 export function toFeedDto(feed: FeedLean): FeedDto {
   return {
@@ -20,6 +20,8 @@ export function toFeedDto(feed: FeedLean): FeedDto {
     errorCount: feed.errorCount,
 
     categories: feed.categories,
+
+    subscriberCount: feed.subscriberCount,
 
     createdAt: feed.createdAt.toISOString(),
 

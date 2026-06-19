@@ -2,9 +2,9 @@ import { SiteLean } from "@/features/rss/site/types/leans";
 import {
   FeedItemLean,
   FeedItemStatsLean,
-  FeedLean,
   UserFeedInteractionLean,
 } from "@/shared/types/domain-leans";
+import { FeedLean } from "../../types/leans";
 
 /**
  * FeedItem + 관련 Map 데이터를 기반으로

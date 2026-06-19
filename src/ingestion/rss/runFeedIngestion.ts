@@ -6,13 +6,13 @@ import {
   FeedExecutionStage,
 } from "@/features/admin/logs/types/search";
 import { feedExecutionLogService } from "@/features/feed-execution-logs/service/FeedExecutionLogService.instance";
-import { FeedLean } from "@/shared/types/domain-leans";
 import { RSS_CONFIG } from "./rss-config";
 import { fetchRSS } from "./fetchRss";
 import { parseRSS } from "./parseRss";
 import { upsertFeedItems } from "./upsertFeedItems";
 import { feedIngestionService } from "@/features/feeds/service/FeedIngestionService.instance";
 import { notificationService } from "@/features/notifications/service/NotificationService.instance";
+import { FeedLean } from "@/features/feeds/types/leans";
 
 export async function runFeedIngestion(feed: FeedLean) {
   const feedId = feed._id.toString();

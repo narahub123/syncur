@@ -28,6 +28,7 @@ export function toFeedWithSiteDto(feed: FeedWithSiteLean): FeedWithSiteDto {
     lastModified: feed.lastModified,
     errorCount: feed.errorCount,
     categories: feed.categories,
+    subscriberCount: feed.subscriberCount,
 
     createdAt: feed.createdAt.toISOString(),
     updatedAt: feed.updatedAt.toISOString(),

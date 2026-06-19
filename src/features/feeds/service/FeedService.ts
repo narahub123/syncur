@@ -1,7 +1,6 @@
 import { feedRepository } from "../repository/FeedRepository.instance";
 import { Feed, FeedStatus } from "@/shared/types/feed";
 import { getFeedItems } from "./getMyFeedItems/getFeedItems";
-import { FeedLean } from "@/shared/types/domain-leans";
 import { toFeed } from "../mapper/toFeed";
 import { FeedDto, FeedWithSiteDtoPagedResponse } from "../dto/feedDto";
 import { toFeedWithSiteDto } from "../mapper/toFeedWithSiteDto";
@@ -14,6 +13,7 @@ import { SiteLean } from "@/features/rss/site/types/leans";
 import { adminFeedStatsService } from "@/features/admin/feeds/services/AdminFeedStatsService.instance";
 import { feedStatsService } from "./FeedStatService.instance";
 import { FEED_STATUS } from "../constants/feed-status";
+import { FeedLean } from "../types/leans";
 
 export class FeedService {
   async ensureFeed(site: SiteLean): Promise<Feed | null> {

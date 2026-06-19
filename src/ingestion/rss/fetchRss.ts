@@ -1,6 +1,6 @@
 import axios from "axios";
 import { RSS_CONFIG } from "./rss-config";
-import { FeedLean } from "@/shared/types/domain-leans";
+import { FeedLean } from "@/features/feeds/types/leans";
 
 /**
  * retry 가능한 에러인지 판단

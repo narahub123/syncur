@@ -68,6 +68,11 @@ export interface FeedDocument extends Document {
    */
   categories: string[];
 
+  /**
+   * 구독자 수
+   */
+  subscriberCount: number;
+
   createdAt: Date;
   updatedAt: Date;
 }
@@ -123,6 +128,15 @@ const FeedSchema = new Schema<FeedDocument>(
     categories: {
       type: [String],
       default: [],
+    },
+
+    /**
+     * 구독자 수 (캐싱 필드)
+     */
+    subscriberCount: {
+      type: Number,
+      default: 0,
+      min: 0, // 구독자 수가 음수가 되는 것을 방지
     },
   },
   {
