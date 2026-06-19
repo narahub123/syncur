@@ -1,5 +1,5 @@
 import { updateFaqAction } from "../actions/updateFaqAction";
-import { UpdateFaqDto } from "../dtos";
+import { UpdateFaqDto } from "../../../support/faqs/dtos";
 
 export const updateFaq = async (id: string, dto: UpdateFaqDto) => {
   return await updateFaqAction(id, dto);

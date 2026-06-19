@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { updateFaq } from "../api/updateFaq";
-import { UpdateFaqDto } from "../dtos";
+import { UpdateFaqDto } from "../../../support/faqs/dtos";
 
 export function useUpdateFaqMutation(id: string) {
   const queryClient = useQueryClient();
@@ -15,6 +15,9 @@ export function useUpdateFaqMutation(id: string) {
       // 2. 목록 캐시 갱신 (수정된 내용이 목록에 즉시 반영되도록)
       queryClient.invalidateQueries({ queryKey: ["faqs"] });
       queryClient.invalidateQueries({ queryKey: ["admin-faqs"] });
+      queryClient.invalidateQueries({
+        queryKey: ["admin-faq-infinite"],
+      });
     },
   });
 }

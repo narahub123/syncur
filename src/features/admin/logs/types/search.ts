@@ -265,6 +265,7 @@ export type AdminFeedExecutionLogFilterKey =
   keyof typeof ADMIN_FEED_EXECUTION_LOG_FILTER_CONFIG;
 
 export type AdminFeedExecutionLogsQuery = {
+  
   search: string;
   searchField: AdminFeedExecutionLogSearchField;
   sort: AdminFeedExecutionLogSort;

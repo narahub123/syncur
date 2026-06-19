@@ -1,5 +1,5 @@
 import { createFaqAction } from "../actions/createFaqAction";
-import { CreateFaqDto } from "../dtos";
+import { CreateFaqDto } from "../../../support/faqs/dtos";
 
 /**
  * FAQ 생성 API

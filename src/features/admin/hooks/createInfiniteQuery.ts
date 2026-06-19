@@ -24,11 +24,7 @@ export type InfinitePageResponse<TItem, S = unknown> = {
  * 역할:
  * - page 기반 API → React Query infinite로 변환
  */
-export function createInfiniteQuery<
-  Q extends Record<string, unknown>,
-  TItem,
-  S = unknown,
->(
+export function createInfiniteQuery<Q extends object, TItem, S = unknown>(
   queryKeyPrefix: string,
   fetcher: (
     query: Q & { page: number },

@@ -1,63 +1,52 @@
-import { FaqWithUserDto } from "@/features/support/faqs/dtos"; // 실제 DTO 경로에 맞게 수정하세요
-import { AdminFaqSort } from "@/features/support/faqs/types/search";
+import { FaqWithUserDto } from "@/features/support/faqs/dtos";
+import { Column } from "../../types/admin-table";
+import {
+  AdminFaqSort,
+  FAQ_CATEGORY_LABELS,
+  FaqCategory,
+} from "../types/search";
 
-/**
- * Admin FAQ Table Column
- */
-export type AdminFaqTableColumn = {
-  key: AdminFaqSort;
-  header: string;
-  align?: "left" | "center" | "right";
-  render: (faq: FaqWithUserDto) => React.ReactNode;
-};
+const FAQ_STATUS_LABEL = {
+  PUBLISHED: "공개",
+  HIDDEN: "비공개",
+} as const;
 
-export const adminFaqTableColumns: AdminFaqTableColumn[] = [
-  /**
-   * Sort Order
-   */
+export const adminFaqTableColumns: Column<FaqWithUserDto, AdminFaqSort>[] = [
   {
     key: "sortOrder",
     header: "순서",
     align: "center",
-    render: (f) => f.sortOrder,
+    render: (faq: FaqWithUserDto) => faq.sortOrder,
+    sortable: true,
   },
-
-  /**
-   * Category
-   */
   {
     key: "category",
     header: "카테고리",
     align: "center",
-    render: (f) => f.category,
+    render: (faq: FaqWithUserDto) =>
+      FAQ_CATEGORY_LABELS[faq.category as FaqCategory],
+    sortable: true,
   },
-
-  /**
-   * Question
-   */
   {
     key: "question",
     header: "질문",
-    render: (f) => f.question,
+    render: (faq: FaqWithUserDto) => faq.question,
+    sortable: true,
   },
-
-  /**
-   * Published Status
-   */
   {
     key: "isPublished",
     header: "상태",
     align: "center",
-    render: (f) => (f.isPublished ? "공개" : "비공개"),
+    render: (faq: FaqWithUserDto) =>
+      faq.isPublished ? FAQ_STATUS_LABEL.PUBLISHED : FAQ_STATUS_LABEL.HIDDEN,
+    sortable: true,
   },
-
-  /**
-   * Created At
-   */
   {
     key: "createdAt",
     header: "생성일",
     align: "center",
-    render: (f) => new Date(f.createdAt).toLocaleString("ko-KR"),
+    render: (faq: FaqWithUserDto) =>
+      new Date(faq.createdAt).toLocaleDateString("ko-KR"),
+    sortable: true,
   },
-];
+] as const;

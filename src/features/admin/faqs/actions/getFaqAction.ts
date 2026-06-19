@@ -1,9 +1,10 @@
 "use server";
 
 import { connectMongo } from "@/shared/lib/db/mongoose";
-import { faqService } from "../services/FaqService.instance";
 import { requireAuth } from "@/shared/lib/auth/requireAuth";
-import { FaqCategory, FaqFormValues } from "@/features/admin/faqs/types";
+import { FaqCategory } from "@/features/admin/faqs/types/search";
+import { FaqFormValues } from "@/features/admin/faqs/types/fom";
+import { adminFaqService } from "../services/AdminFaqService.instance";
 
 /**
  * FAQ 상세 조회 Action
@@ -12,7 +13,7 @@ export async function getFaqAction(id: string): Promise<FaqFormValues | null> {
   await connectMongo();
   await requireAuth();
 
-  const faq = await faqService.getFaqById(id);
+  const faq = await adminFaqService.getFaqById(id);
   return {
     id: faq._id,
     userId: faq.userId,

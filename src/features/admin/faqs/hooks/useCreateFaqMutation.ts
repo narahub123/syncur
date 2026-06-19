@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { createFaq } from "../api/createFaq";
-import { CreateFaqDto } from "../dtos";
+import { CreateFaqDto } from "../../../support/faqs/dtos";
 
 /**
  * FAQ 생성 처리 Mutation
@@ -20,6 +20,10 @@ export function useCreateFaqMutation() {
       // 만약 어드민 전용 faq 키가 따로 분리되어 있다면 함께 무효화 처리합니다.
       queryClient.invalidateQueries({
         queryKey: ["admin-faqs"],
+      });
+
+      queryClient.invalidateQueries({
+        queryKey: ["admin-faq-infinite"],
       });
     },
   });

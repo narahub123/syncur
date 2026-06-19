@@ -2,13 +2,35 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useAdminFaqsQuery } from "@/features/support/faqs/hooks/useAdminFaqsQuery";
+import { useAdminFaqsQuery } from "@/features/admin/faqs/hooks/useAdminFaqsQuery";
 import AdminPagination from "../../components/AdminPagination"; // 기존 페이지네이션 컴포넌트
-import { AdminFaqsQuery } from "@/features/support/faqs/types/search";
-import AdminFaqTable from "./AdminFaqTable";
-import AdminFaqTableToolbar from "./AdminFaqTableToolbar";
+import {
+  ADMIN_FAQ_FILTER_CONFIG,
+  AdminFaqFilterKey,
+  adminFaqInitialFilterValue,
+  AdminFaqSort,
+  AdminFaqsQuery,
+} from "../types/search";
+import { FilterValue } from "../../constants/filters";
+import { useTableSort } from "../../hooks/useTableSort";
+import { FilterToolbar } from "../../components/FilterToolbar";
+import { AdminTable } from "../../components/AdminTable";
+import { adminFaqTableColumns } from "../constans/adminFaqTableColumns";
+import { AdminStatsCard } from "../../components/AdminStatsCard";
+import { getFaqStatusList } from "../constans/stats";
+import { useListMode } from "../../hooks/useListMode";
+import { useMediaQuery } from "../../hooks/useMediaQuery";
+import { useAdminFaqsInfiniteQuery } from "../hooks/useAdminFaqsInfinityQuery";
+import LoadMoreTrigger from "@/shared/components/common/LoadMoreTrigger";
+import { useInfiniteScroll } from "@/shared/hooks/useInfiniteScroll";
+import { useRouter } from "next/navigation";
+import { ROUTES } from "@/shared/constants/routes";
+import { FaqWithUserDto } from "@/features/support/faqs/dtos";
 
 const AdminFAQsClient = () => {
+  const router = useRouter();
+
+  const isMobile = useMediaQuery("(max-width: 768px)");
   // 1. 상태 관리: Query 객체를 상태로 관리
   const [query, setQuery] = useState<AdminFaqsQuery>({
     page: 1,
@@ -17,18 +39,75 @@ const AdminFAQsClient = () => {
     searchField: "question",
     sort: "createdAt",
     sortOrder: "desc",
+    filters: adminFaqInitialFilterValue,
   });
 
-  // 2. 데이터 요청: 상태 변경 시 훅이 자동으로 재요청
-  const { data, isFetching, error } = useAdminFaqsQuery(query);
+  const handleFilterChange = (key: AdminFaqFilterKey, value: FilterValue) => {
+    setQuery((prev) => ({
+      ...prev,
+      filters: {
+        ...prev.filters,
+        [key]: value,
+      },
+    }));
+  };
 
-  const faqs = data?.items ?? [];
-  const totalPages = data?.pagination?.totalPages ?? 1;
+  const { sort, onSort } = useTableSort<AdminFaqsQuery, AdminFaqSort>(
+    query,
+    setQuery,
+  );
 
-  if (error) return <div>데이터를 불러오는 중 오류가 발생했습니다.</div>;
+  const {
+    isLoading,
+    items,
+    stats,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    pagination,
+  } = useListMode({
+    isMobile,
+    query,
+
+    useQueryHook: useAdminFaqsQuery,
+    useInfiniteHook: useAdminFaqsInfiniteQuery,
+  });
+
+  const loadMoreRef = useInfiniteScroll({
+    onIntersect: () => {
+      if (hasNextPage && !isFetchingNextPage) {
+        fetchNextPage();
+      }
+    },
+    enabled: !!hasNextPage,
+  });
+  console.log(items);
+  const faqs = items ?? [];
+  const faqStats = stats ?? {
+    totalCount: 0,
+    publishedCount: 0,
+    hiddenCount: 0,
+    categoryCounts: {
+      payment: 0,
+      usage: 0,
+      bug: 0,
+      etc: 0,
+    },
+  };
+
+  const totalPages = pagination?.totalPages ?? 1;
+
+  const activeRate =
+    faqStats.totalCount > 0
+      ? (faqStats.publishedCount / faqStats.totalCount) * 100
+      : 0;
+
+  const handleRowClick = (item: FaqWithUserDto) => {
+    router.push(`${ROUTES.ADMIN_FAQS}/${item._id}`);
+  };
 
   return (
-    <div className="mx-auto w-full max-w-4xl p-6">
+    <div className="space-y-6 p-6">
       <div className="mb-6 flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold">FAQ 관리</h1>
@@ -45,20 +124,29 @@ const AdminFAQsClient = () => {
         </Link>
       </div>
 
-      {/* 로딩 표시 (데이터 변경 시 깜빡임 방지용으로 isFetching 사용 가능) */}
-      {isFetching && <div className="mb-2 text-sm">로딩 중...</div>}
+      <AdminStatsCard
+        title="FAQs 현황"
+        items={getFaqStatusList(faqStats)}
+        progressValue={activeRate}
+        total={faqStats.totalCount}
+      />
 
       <div className="flex flex-1 flex-col space-y-2">
-        {/* 🔹 검색 / 정렬 / 페이지 사이즈 컨트롤 */}
-        <AdminFaqTableToolbar query={query} onChange={setQuery} />
-        {/* 🔹 테이블 유지 구조 * - 로딩 중에도 UI 유지 * - 데이터 변경 시 깜빡임 방지 */}{" "}
-        <AdminFaqTable
-          faqs={faqs}
-          isFetching={isFetching}
-          query={query}
-          onChange={setQuery}
+        <FilterToolbar
+          filters={query.filters}
+          onChange={handleFilterChange}
+          config={ADMIN_FAQ_FILTER_CONFIG}
+          initialValue={adminFaqInitialFilterValue}
         />
-        {totalPages !== 1 && (
+        <AdminTable
+          columns={adminFaqTableColumns}
+          data={faqs}
+          isFetching={isLoading}
+          sort={sort}
+          onSort={onSort}
+          onRowClick={handleRowClick}
+        />
+        {totalPages > 1 && !isMobile && (
           <AdminPagination
             page={query.page}
             totalPages={totalPages}
@@ -69,6 +157,12 @@ const AdminFAQsClient = () => {
               }))
             }
           />
+        )}
+        {/* 👇 무한스크롤 트리거 */}
+        {isMobile && <LoadMoreTrigger ref={loadMoreRef} className="h-10" />}
+
+        {isMobile && isFetchingNextPage && (
+          <div className="-mt-20 p-4 text-center">loading...</div>
         )}
       </div>
     </div>

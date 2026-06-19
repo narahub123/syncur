@@ -1,16 +1,17 @@
 "use client";
 
 import { DynamicForm } from "@/shared/components/common/DynamicForm";
-import { faqFormConfig, FaqFormValues } from "../types";
-import { useCreateFaqMutation } from "@/features/support/faqs/hooks/useCreateFaqMutation";
-import { useUpdateFaqMutation } from "@/features/support/faqs/hooks/useUpdateFaqMutation"; // 💡 추가
+import { useCreateFaqMutation } from "@/features/admin/faqs/hooks/useCreateFaqMutation";
+import { useUpdateFaqMutation } from "@/features/admin/faqs/hooks/useUpdateFaqMutation"; // 💡 추가
 import { toast } from "sonner";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { ROUTES } from "@/shared/constants/routes";
 import { DeleteButton } from "@/shared/components/common/DeleteButton";
-import { useDeleteFaqMutation } from "@/features/support/faqs/hooks/useDeleteFaqMutation";
+import { useDeleteFaqMutation } from "@/features/admin/faqs/hooks/useDeleteFaqMutation";
+import { FaqFormValues } from "../types/fom";
+import { faqFormConfig } from "../constans/form";
 
 interface AdminFAQNewClientProps {
   faqId?: string;
