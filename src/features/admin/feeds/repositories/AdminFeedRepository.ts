@@ -38,6 +38,7 @@ export default class AdminFeedRepository {
       siteUrl: "site.url",
       status: "status",
       category: "categories",
+      subscriberCount: "subscriberCount",
     } as const;
 
     const mongoOrder = sortOrder === "asc" ? 1 : -1;
@@ -47,6 +48,7 @@ export default class AdminFeedRepository {
       feedUrl: { feedUrl: mongoOrder },
       status: { status: mongoOrder },
       errorCount: { errorCount: mongoOrder },
+      subscriberCount: { errorCount: mongoOrder },
       lastFetchedAt: { lastFetchedAt: mongoOrder },
       createdAt: { createdAt: mongoOrder },
     } as const;
@@ -84,6 +86,34 @@ export default class AdminFeedRepository {
       matchStage.errorCount = {
         $in: filters.errorCount.map(Number),
       };
+    }
+
+    /**
+     * 구독자 수
+     */
+    if (
+      filters.subscriberCount &&
+      typeof filters.subscriberCount === "object" &&
+      ("min" in filters.subscriberCount || "max" in filters.subscriberCount)
+    ) {
+      const { min, max } = filters.subscriberCount as {
+        min: number | null;
+        max: number | null;
+      };
+
+      const numberQuery: Record<string, number> = {};
+
+      if (min !== null) {
+        numberQuery.$gte = min;
+      }
+
+      if (max !== null) {
+        numberQuery.$lte = max;
+      }
+
+      if (Object.keys(numberQuery).length > 0) {
+        matchStage.subscriberCount = numberQuery;
+      }
     }
 
     /**
@@ -181,6 +211,7 @@ export default class AdminFeedRepository {
             lastModified: 1,
             errorCount: 1,
             categories: 1,
+            subscriberCount: 1,
             createdAt: 1,
             updatedAt: 1,
             siteId: {

@@ -1,11 +1,7 @@
 "use client";
+import { DateRange } from "@/features/admin/constants/filters";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-
-export interface DateRange {
-  start: Date | null;
-  end: Date | null;
-}
 
 interface DateRangePickerProps {
   value: DateRange | undefined;

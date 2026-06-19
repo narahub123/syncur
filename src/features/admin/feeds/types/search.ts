@@ -1,5 +1,5 @@
 import { SortOrder } from "@/shared/types/pagination";
-import { FilterValue } from "../../constants/filters";
+import { FILTER_TYPES, FilterValue } from "../../constants/filters";
 import { FEED_STATUS } from "@/features/feeds/constants/feed-status";
 
 export const ADMIN_FEED_SEARCH_FIELDS = {
@@ -15,6 +15,7 @@ export type AdminFeedSearchField =
 export const ADMIN_FEED_SORT_FIELDS = {
   SITE_NAME: "siteName",
   FEED_URL: "feedUrl",
+  SUBSCRIBER_COUNT: "subscriberCount",
   STATUS: "status",
   ERROR_COUNT: "errorCount",
   LAST_FETCHED_AT: "lastFetchedAt",
@@ -60,12 +61,14 @@ export const AdminFeedInitialFilterValue = {
   status: "all",
   errorCount: ["all"],
   createdAt: { start: null, end: null },
+  lastFetchedAt: { start: null, end: null },
+  subscriberCouter: { min: null, max: null },
 };
 
 export const ADMIN_FEED_FILTER_CONFIG = {
   status: {
     label: "상태",
-    type: "select",
+    type: FILTER_TYPES.SELECT,
     options: [
       { label: "전체", value: "all" },
       { label: "활성", value: FEED_STATUS.ACTIVE },
@@ -74,7 +77,7 @@ export const ADMIN_FEED_FILTER_CONFIG = {
   },
   errorCount: {
     label: "에러 횟수",
-    type: "multi-select",
+    type: FILTER_TYPES.MULTI_SELECT,
     options: [
       { label: "전체", value: "all" },
       { label: "0회", value: "0" },
@@ -85,10 +88,15 @@ export const ADMIN_FEED_FILTER_CONFIG = {
       { label: "5회", value: "5" },
     ],
   },
-  createdAt: { label: "생성일", type: "date-range" },
+  createdAt: { label: "생성일", type: FILTER_TYPES.DATE_RANGE },
   lastFetchedAt: {
     label: "마지막 수집일",
-    type: "date-range",
+    type: FILTER_TYPES.DATE_RANGE,
+  },
+  subscriberCount: {
+    label: "구독자 수",
+    type: FILTER_TYPES.NUMBER_RANGE,
+    min: 0,
   },
 } as const;
 

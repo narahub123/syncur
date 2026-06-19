@@ -134,4 +134,20 @@ export class FeedService {
       fetchIntervalMs: RSS_CONFIG.FETCH_INTERVAL_MS,
     });
   }
+
+  /**
+   * 구독 발생 시: 피드 카운트 증가
+   */
+  async incrementSubscriberCount(feedId: string): Promise<FeedDto> {
+    const doc = await feedRepository.incrementSubscriberCount(feedId);
+    return toFeedDto(doc);
+  }
+
+  /**
+   * 구독 해지 시: 피드 카운트 감소
+   */
+  async decrementSubscriberCount(feedId: string): Promise<FeedDto> {
+    const doc = await feedRepository.decrementSubscriberCount(feedId);
+    return toFeedDto(doc);
+  }
 }

@@ -17,9 +17,9 @@ import { useTableSort } from "../../hooks/useTableSort";
 import { AdminTable } from "../../components/AdminTable";
 import { adminFeedTableColumns } from "../constants/adminFeedTable";
 import { FilterValue } from "../../constants/filters";
-import { FilterBar } from "../../components/FilterBar";
 import { AdminStatsCard } from "../../components/AdminStatsCard";
 import { getFeedStatusList } from "../constants/stats";
+import { FilterToolbar } from "../../components/FilterToolbar";
 
 const AdminFeedsClient = () => {
   /**
@@ -77,7 +77,7 @@ const AdminFeedsClient = () => {
         searchFieldOptions={ADMIN_FEED_SEARCH_FIELD_OPTIONS}
         pageSizeOptions={ADMIN_FEED_PAGE_SIZE_OPTIONS}
       />
-      <FilterBar
+      <FilterToolbar
         filters={query.filters}
         onChange={handleFilterChange}
         config={ADMIN_FEED_FILTER_CONFIG}

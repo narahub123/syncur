@@ -4,14 +4,18 @@ import {
   PopoverTrigger,
 } from "@/shared/components/ui/popover";
 import { Button } from "@/shared/components/ui/button";
-import { FilterDefinition, FilterValue } from "../constants/filters";
+import {
+  DateRange,
+  FILTER_TYPES,
+  FilterDefinition,
+  FilterValue,
+  NumberRange,
+} from "../constants/filters";
 
 import { CommonSelect } from "@/shared/components/common/CommonSelect";
 import { CommonMultiSelect } from "@/shared/components/common/CommonMultiSelect";
-import {
-  DateRange,
-  DateRangePicker,
-} from "@/shared/components/common/DateRangePicker";
+import { DateRangePicker } from "@/shared/components/common/DateRangePicker";
+import { NumberRangePicker } from "./NumberRangePicker";
 
 interface Props {
   label: string;
@@ -28,7 +32,7 @@ export const FilterPopoverItem = ({
 }: Props) => {
   const renderContent = () => {
     switch (config.type) {
-      case "select":
+      case FILTER_TYPES.SELECT:
         return (
           <CommonSelect
             options={config.options ?? []}
@@ -37,7 +41,7 @@ export const FilterPopoverItem = ({
           />
         );
 
-      case "multi-select":
+      case FILTER_TYPES.MULTI_SELECT:
         return (
           <CommonMultiSelect
             options={config.options ?? []}
@@ -46,11 +50,21 @@ export const FilterPopoverItem = ({
           />
         );
 
-      case "date-range":
+      case FILTER_TYPES.DATE_RANGE:
         return (
           <DateRangePicker
             value={value as DateRange | undefined}
             onChange={onChange}
+          />
+        );
+
+      case FILTER_TYPES.NUMBER_RANGE:
+        return (
+          <NumberRangePicker
+            value={value as NumberRange | undefined}
+            onChange={onChange}
+            min={config.min}
+            max={config.max}
           />
         );
     }

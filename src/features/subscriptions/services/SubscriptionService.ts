@@ -4,6 +4,7 @@ import { SubscriptionDto, SubscriptionItemDto } from "../dto/subscriptionDto";
 import { feedRepository } from "@/features/feeds/repository/FeedRepository.instance";
 import { PaginatedResponse } from "@/shared/types/pagination";
 import { toSubscriptionDto } from "../mapper/toSubscriptionDto";
+import { FeedService } from "@/features/feeds/service/FeedService";
 
 /**
  * 구독 생성 요청 입력값
@@ -53,9 +54,14 @@ type CreateSubscriptionResult =
  */
 export class SubscriptionService {
   private readonly repository: typeof subscriptionRepository;
+  private readonly feedService: FeedService;
 
-  constructor(repository: typeof subscriptionRepository) {
+  constructor(
+    repository: typeof subscriptionRepository,
+    feedService: FeedService,
+  ) {
     this.repository = repository;
+    this.feedService = feedService;
   }
 
   /**
@@ -83,6 +89,9 @@ export class SubscriptionService {
      * 신규 구독 생성
      */
     await this.repository.create(userId, feedId);
+
+    // 2. FeedService를 통해 구독자 수 증가 (도메인 위임)
+    await this.feedService.incrementSubscriberCount(feedId);
 
     return { status: "subscribed" };
   }
@@ -186,6 +195,9 @@ export class SubscriptionService {
     );
 
     if (!doc) return null;
+
+    // 2. FeedService를 통해 구독자 수 감소 (도메인 위임)
+    await this.feedService.decrementSubscriberCount(feedId);
 
     return toSubscriptionDto(doc);
   }

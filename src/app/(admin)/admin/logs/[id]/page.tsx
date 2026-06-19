@@ -1,4 +1,4 @@
-import AdminFeedExcutionLogClient from "@/features/admin/logs/components/AdminFeedExcutionLogClient";
+import AdminFeedExcutionLogClient from "@/features/admin/logs/components/AdminFeedExecutionLogClient";
 
 const AdminFeedExcutionLogPage = () => {
   return <AdminFeedExcutionLogClient />;

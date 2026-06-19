@@ -1,7 +1,11 @@
 "use client";
 
 import { Button } from "@/shared/components/ui/button";
-import { FilterDefinition, FilterValue } from "../constants/filters";
+import {
+  FILTER_TYPES,
+  FilterDefinition,
+  FilterValue,
+} from "../constants/filters";
 import { FilterPopoverItem } from "./FilterPopoverItem";
 
 interface Props<T extends Record<string, FilterDefinition>> {
@@ -32,10 +36,12 @@ export const FilterToolbar = <T extends Record<string, FilterDefinition>>({
     (Object.keys(config) as Array<keyof T>).forEach((key) => {
       const type = config[key].type;
 
-      if (type === "multi-select") {
+      if (type === FILTER_TYPES.MULTI_SELECT) {
         onChange(key, initialValue?.[key] ?? []);
-      } else if (type === "date-range") {
+      } else if (type === FILTER_TYPES.DATE_RANGE) {
         onChange(key, initialValue?.[key] ?? { start: null, end: null });
+      } else if (type === FILTER_TYPES.NUMBER_RANGE) {
+        onChange(key, initialValue?.[key] ?? { min: null, max: null });
       } else {
         onChange(key, initialValue?.[key] ?? "");
       }

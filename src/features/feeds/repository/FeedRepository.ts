@@ -135,6 +135,7 @@ export class FeedRepository {
     const sortMap = {
       siteName: { "site.name": mongoOrder },
       feedUrl: { feedUrl: mongoOrder },
+      subscriberCount: { subscriberCount: mongoOrder },
       status: { status: mongoOrder },
       errorCount: { errorCount: mongoOrder },
       lastFetchedAt: { lastFetchedAt: mongoOrder },
@@ -326,5 +327,39 @@ export class FeedRepository {
    */
   async findById(feedId: string) {
     return FeedModel.findById(feedId);
+  }
+
+  /**
+   * 구독자 수 증가 (구독 시)
+   */
+  async incrementSubscriberCount(
+    feedId: string | Types.ObjectId,
+  ): Promise<FeedLean> {
+    return FeedModel.findByIdAndUpdate(
+      feedId,
+      {
+        $inc: { subscriberCount: 1 },
+      },
+      {
+        returnDocument: "after",
+      },
+    ).lean();
+  }
+
+  /**
+   * 구독자 수 감소 (해지 시)
+   */
+  async decrementSubscriberCount(
+    feedId: string | Types.ObjectId,
+  ): Promise<FeedLean> {
+    return FeedModel.findByIdAndUpdate(
+      feedId,
+      {
+        $inc: { subscriberCount: -1 },
+      },
+      {
+        returnDocument: "after",
+      },
+    ).lean();
   }
 }
