@@ -25,8 +25,12 @@ import { useMediaQuery } from "../../hooks/useMediaQuery";
 import { useInfiniteScroll } from "@/shared/hooks/useInfiniteScroll";
 import LoadMoreTrigger from "@/shared/components/common/LoadMoreTrigger";
 import { useListMode } from "../../hooks/useListMode";
+import { useRouter } from "next/navigation";
+import { ROUTES } from "@/shared/constants/routes";
+import { FeedExecutionLogWithFeedAndSiteDto } from "@/features/feed-execution-logs/dto/feedExecutionLogDto";
 
 const AdminFeedExecutionLogsClient = () => {
+  const router = useRouter();
   const isMobile = useMediaQuery("(max-width: 768px)");
 
   const [query, setQuery] = useState<AdminFeedExecutionLogsQuery>({
@@ -89,6 +93,10 @@ const AdminFeedExecutionLogsClient = () => {
   const failRate =
     logStats.total > 0 ? (logStats.fails / logStats.total) * 100 : 0;
 
+  const handleRowClick = (item: FeedExecutionLogWithFeedAndSiteDto) => {
+    router.push(`${ROUTES.ADMIN_LOGS}/${item._id}`);
+  };
+
   return (
     <div className="flex flex-col space-y-6 p-6">
       <AdminStatsCard
@@ -116,6 +124,7 @@ const AdminFeedExecutionLogsClient = () => {
         isFetching={isLoading}
         sort={sort}
         onSort={onSort}
+        onRowClick={handleRowClick}
       />
 
       {totalPages > 1 && !isMobile && (

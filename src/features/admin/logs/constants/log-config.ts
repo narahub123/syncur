@@ -1,0 +1,3 @@
+export const FEED_EXECUTION_LOG_CONFIG = {
+  PAGE_TIMEOUT: 3,
+};
