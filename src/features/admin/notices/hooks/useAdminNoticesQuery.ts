@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
-import { AdminNoticeQuery } from "../types/admin-search";
 import { getAdminNoticesAction } from "../actions/getAdminNoticesAction";
+import { AdminNoticeQuery } from "@/features/admin/notices/types/search";
 
 export function useAdminNoticesQuery(query: AdminNoticeQuery) {
   return useQuery({

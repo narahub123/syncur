@@ -9,8 +9,8 @@ import {
   RequestAdminLeanPagedResponse,
   RequestWithUserAndAdminLean,
 } from "../types/admin-search";
-import { UserRequestQuery } from "../../notices/types/user-search";
 import { ImageInfo } from "@/shared/lib/cloudinary/image-info.model";
+import { UserRequestQuery } from "../types/user-search";
 
 /**
  * Request Repository

@@ -1,7 +1,6 @@
 "use client";
 
 import { DynamicForm } from "@/shared/components/common/DynamicForm";
-import { noticeFormConfig, NoticeFormValues } from "../types";
 import { useCreateNoticeMutation } from "@/features/support/notices/hooks/useCreateNoticeMutation";
 import { useUpdateNoticeMutation } from "@/features/support/notices/hooks/useUpdateNoticeMutation";
 import { useDeleteNoticeMutation } from "@/features/support/notices/hooks/useDeleteNoticeMutation";
@@ -11,6 +10,8 @@ import { ArrowLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { DeleteButton } from "@/shared/components/common/DeleteButton";
 import { extractPublicIdsFromHtml } from "@/shared/utils/extractPublicIdsFromHtml";
+import { NoticeFormValues } from "../types/form";
+import { noticeFormConfig } from "../constants/form";
 
 interface AdminNoticesNewClientProps {
   noticeId?: string;

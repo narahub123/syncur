@@ -2,13 +2,8 @@ import { Types } from "mongoose";
 import { NoticeModel } from "../model/Notice";
 import { NoticeLean } from "../types/lean";
 import { toObjectId } from "@/shared/utils/toObjectId";
-import { CreateNoticeDto, UpdateNoticeDto } from "../dtos";
-import {
-  AdminNoticeQuery,
-  NoticeAdminLeanPagedResponse,
-  NoticeWithUserLean,
-} from "../types/admin-search";
-import { UserNoticeQuery } from "../types/user-search";
+import { CreateNoticeDto, UpdateNoticeDto } from "../dtos/noticeDto";
+import { UserNoticeQuery } from "../types/search";
 
 /**
  * Notice Repository
@@ -93,130 +88,6 @@ export class NoticeRepository {
   async deleteById(id: Types.ObjectId | string): Promise<boolean> {
     const result = await NoticeModel.deleteOne({ _id: toObjectId(id) });
     return result.deletedCount > 0;
-  }
-
-  /**
-   * 관리자 전용 공지사항 목록 조회
-   * * 페이지네이션 + 동적 검색 + 작성자 어드민 JOIN
-   */
-  async findAllPaginatedForAdmin(
-    params: AdminNoticeQuery,
-  ): Promise<NoticeAdminLeanPagedResponse> {
-    const {
-      page,
-      limit,
-      search,
-      searchField = "title",
-      sort = "createdAt",
-      sortOrder = "desc",
-      isPinned,
-    } = params;
-    const skip = (page - 1) * limit;
-    const mongoOrder = sortOrder === "asc" ? 1 : -1;
-
-    // 💡 1 | -1 명시를 통해 any 제거
-    const sortMap: Record<string, Record<string, 1 | -1>> = {
-      title: { title: mongoOrder },
-      views: { views: mongoOrder },
-      category: { category: mongoOrder },
-      isPinned: { isPinned: mongoOrder },
-      createdAt: { createdAt: mongoOrder },
-      createdBy: { "author.name": mongoOrder },
-    };
-
-    const matchStage: Record<string, unknown> = {};
-    if (typeof isPinned === "boolean") matchStage.isPinned = isPinned;
-    if (search && search.trim().length > 0) {
-      matchStage[searchField] = { $regex: search, $options: "i" };
-    }
-
-    const basePipeline = [
-      ...(Object.keys(matchStage).length ? [{ $match: matchStage }] : []),
-      {
-        $lookup: {
-          from: "users",
-          localField: "createdBy",
-          foreignField: "_id",
-          as: "author",
-        },
-      },
-      { $unwind: { path: "$author", preserveNullAndEmptyArrays: true } },
-    ];
-
-    const [items, countResult] = await Promise.all([
-      NoticeModel.aggregate<NoticeWithUserLean>([
-        ...basePipeline,
-        { $sort: sortMap[sort] }, // 💡 any 없이 통과
-        { $skip: skip },
-        { $limit: limit },
-        {
-          $project: {
-            _id: 1,
-            title: 1,
-            content: 1,
-            category: 1,
-            views: 1,
-            isPinned: 1,
-            createdBy: 1,
-            createdAt: 1,
-            updatedAt: 1,
-            author: {
-              _id: "$author._id",
-              email: "$author.email",
-              name: "$author.name",
-              image: "$author.image",
-              profileImage: "$author.profileImage",
-            },
-          },
-        },
-      ]),
-      NoticeModel.aggregate([...basePipeline, { $count: "totalCount" }]),
-    ]);
-
-    return { items, totalCount: countResult[0]?.totalCount ?? 0 };
-  }
-
-  /**
-   * 관리자용 공지사항 상세 조회 (작성자 JOIN 포함)
-   */
-  async findDetailForAdmin(
-    id: Types.ObjectId | string,
-  ): Promise<NoticeWithUserLean | null> {
-    const result = await NoticeModel.aggregate<NoticeWithUserLean>([
-      { $match: { _id: toObjectId(id) } },
-      {
-        $lookup: {
-          from: "users",
-          localField: "createdBy",
-          foreignField: "_id",
-          as: "author",
-        },
-      },
-      { $unwind: { path: "$author", preserveNullAndEmptyArrays: true } },
-      {
-        $project: {
-          _id: 1,
-          title: 1,
-          content: 1,
-          category: 1,
-          views: 1,
-          isPinned: 1,
-          images: 1,
-          createdAt: 1,
-          updatedAt: 1,
-          author: {
-            // 필요한 유저 정보만 추출
-            _id: 1,
-            name: 1,
-            email: 1,
-            image: 1,
-            profileImage: 1,
-          },
-        },
-      },
-    ]);
-
-    return result[0] || null;
   }
 
   /**

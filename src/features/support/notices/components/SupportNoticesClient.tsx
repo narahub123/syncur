@@ -3,7 +3,7 @@
 import { useUserNoticesQuery } from "@/features/support/notices/hooks/useUserNoticesQuery";
 import { useState } from "react";
 import UserNoticeTableToolbar from "./UserNoticeTableToolbar";
-import { UserNoticeQuery } from "../types/user-search";
+import { UserNoticeQuery } from "../types/search";
 import AdminPagination from "@/features/admin/components/AdminPagination";
 import UserNoticeTable from "./UserNoticeTable";
 

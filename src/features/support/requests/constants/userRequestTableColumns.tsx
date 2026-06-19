@@ -1,6 +1,6 @@
 import { RequestResponseDTO } from "../dtos";
 import { REQUEST_STATUS, REQUEST_TYPE } from "../constants/request-type";
-import { UserRequestSort } from "../../notices/types/user-search";
+import { UserRequestSort } from "../types/user-search";
 
 export type UserRequestTableColumn = {
   key: UserRequestSort | string; // 정렬 키가 아닌 컬럼도 수용

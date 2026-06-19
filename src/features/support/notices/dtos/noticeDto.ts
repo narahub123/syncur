@@ -45,3 +45,22 @@ export interface UpdateNoticeDto {
 export interface UpdateNoticeRequestDto extends UpdateNoticeDto {
   deletedImages: ImageInfo[];
 }
+
+export interface AdminNoticeResponseDTO {
+  _id: string;
+  title: string;
+  content: string;
+  category: string;
+  views: number;
+  isPinned: boolean;
+  images: ImageInfo[];
+  createdAt: string;
+  updatedAt: string;
+  author: {
+    _id: string;
+    email: string;
+    name: string | null;
+    image: string | null;
+    profileImage: ImageInfo | null;
+  } | null;
+}

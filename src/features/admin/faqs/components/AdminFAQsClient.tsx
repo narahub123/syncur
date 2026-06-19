@@ -6,6 +6,8 @@ import { useAdminFaqsQuery } from "@/features/admin/faqs/hooks/useAdminFaqsQuery
 import AdminPagination from "../../components/AdminPagination"; // 기존 페이지네이션 컴포넌트
 import {
   ADMIN_FAQ_FILTER_CONFIG,
+  ADMIN_FAQ_PAGE_SIZE_OPTIONS,
+  ADMIN_FAQ_SEARCH_FIELD_OPTIONS,
   AdminFaqFilterKey,
   adminFaqInitialFilterValue,
   AdminFaqSort,
@@ -20,12 +22,13 @@ import { AdminStatsCard } from "../../components/AdminStatsCard";
 import { getFaqStatusList } from "../constans/stats";
 import { useListMode } from "../../hooks/useListMode";
 import { useMediaQuery } from "../../hooks/useMediaQuery";
-import { useAdminFaqsInfiniteQuery } from "../hooks/useAdminFaqsInfinityQuery";
+import { useAdminFaqsInfiniteQuery } from "../hooks/useAdminFaqsInfiniteQuery";
 import LoadMoreTrigger from "@/shared/components/common/LoadMoreTrigger";
 import { useInfiniteScroll } from "@/shared/hooks/useInfiniteScroll";
 import { useRouter } from "next/navigation";
 import { ROUTES } from "@/shared/constants/routes";
 import { FaqWithUserDto } from "@/features/support/faqs/dtos";
+import { AdminTableToolbar } from "../../components/AdminTableToolbar";
 
 const AdminFAQsClient = () => {
   const router = useRouter();
@@ -81,7 +84,7 @@ const AdminFAQsClient = () => {
     },
     enabled: !!hasNextPage,
   });
-  console.log(items);
+
   const faqs = items ?? [];
   const faqStats = stats ?? {
     totalCount: 0,
@@ -132,6 +135,12 @@ const AdminFAQsClient = () => {
       />
 
       <div className="flex flex-1 flex-col space-y-2">
+        <AdminTableToolbar
+          query={query}
+          onChange={setQuery}
+          searchFieldOptions={ADMIN_FAQ_SEARCH_FIELD_OPTIONS}
+          pageSizeOptions={ADMIN_FAQ_PAGE_SIZE_OPTIONS}
+        />
         <FilterToolbar
           filters={query.filters}
           onChange={handleFilterChange}

@@ -12,8 +12,8 @@ import {
   toAdminRequestDto,
   toAdminRequestDtos,
 } from "../mappers/toAdminRequestDtos";
-import { UserRequestQuery } from "../../notices/types/user-search";
 import { ImageInfo } from "@/shared/lib/cloudinary/image-info.model";
+import { UserRequestQuery } from "../types/user-search";
 
 export class RequestService {
   constructor(private readonly requestRepository: RequestRepository) {}

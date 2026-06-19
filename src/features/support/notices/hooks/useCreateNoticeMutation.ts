@@ -1,4 +1,4 @@
-import { CreateNoticeRequestDto } from "@/features/support/notices/dtos";
+import { CreateNoticeRequestDto } from "@/features/support/notices/dtos/noticeDto";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { createNoticeAction } from "../actions/createNoticeAction";
 

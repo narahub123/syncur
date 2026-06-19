@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { UserNoticeQuery } from "../types/user-search";
+import { UserNoticeQuery } from "../types/search";
 import { getNoticesAction } from "../actions/getNoticesAction";
 
 export function useUserNoticesQuery(query: UserNoticeQuery) {

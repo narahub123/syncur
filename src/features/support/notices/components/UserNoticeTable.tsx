@@ -11,8 +11,8 @@ import {
 import { ChevronDown, ChevronUp, LoaderCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { userNoticeTableColumns } from "../constants/userNoticeTableColumns";
-import { UserNoticeQuery, UserNoticeSort } from "../types/user-search";
-import { NoticeResponseDTO } from "../dtos";
+import { UserNoticeQuery, UserNoticeSort } from "../types/search";
+import { NoticeResponseDTO } from "../dtos/noticeDto";
 import { ROUTES } from "@/shared/constants/routes";
 
 type Props = {

@@ -2,7 +2,7 @@
 
 import { connectMongo } from "@/shared/lib/db/mongoose";
 import { noticeService } from "@/features/support/notices/services/NoticeService.instance";
-import { CreateNoticeRequestDto } from "@/features/support/notices/dtos";
+import { CreateNoticeRequestDto } from "@/features/support/notices/dtos/noticeDto";
 import { deleteCloudinaryImage } from "@/shared/lib/cloudinary/cloudinary.utils";
 import { requireAdmin } from "@/features/admin/lib/requireAdmin";
 

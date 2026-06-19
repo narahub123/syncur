@@ -1,34 +1,105 @@
 "use client";
 
-import { useAdminNoticesQuery } from "@/features/support/notices/hooks/useAdminNoticesQuery";
-import { AdminNoticeQuery } from "@/features/support/notices/types/admin-search";
+import { useAdminNoticesQuery } from "@/features/admin/notices/hooks/useAdminNoticesQuery";
 import Link from "next/link";
 import { useState } from "react";
 import AdminPagination from "../../components/AdminPagination";
-import AdminNoticeTableToolbar from "./AdminNoticeTableToolbar";
-import AdminNoticeTable from "./AdminNoticeTable";
+import {
+  ADMIN_NOTICE_FILTER_CONFIG,
+  ADMIN_NOTICE_SEARCH_FIELD,
+  ADMIN_NOTICE_SEARCH_FIELD_OPTIONS,
+  ADMIN_NOTICE_SORT,
+  ADMIN_PAGE_SIZE,
+  AdminNoticeFilterKey,
+  adminNoticeInitialFilterValue,
+  AdminNoticeQuery,
+  AdminNoticeSort,
+} from "../types/search";
+import { useRouter } from "next/navigation";
+import { useMediaQuery } from "../../hooks/useMediaQuery";
+import { SORT_ORDER } from "@/shared/types/pagination";
+import { FilterValue } from "../../constants/filters";
+import { useTableSort } from "../../hooks/useTableSort";
+import { ROUTES } from "@/shared/constants/routes";
+import { FilterToolbar } from "../../components/FilterToolbar";
+import { adminNoticeTableColumns } from "../constants/adminNoticeTableColumns";
+import { AdminTable } from "../../components/AdminTable";
+import { AdminNoticeResponseDTO } from "@/features/support/notices/dtos/noticeDto";
+import { useListMode } from "../../hooks/useListMode";
+import { useAdminNoticesInfiniteQuery } from "../hooks/useAdminNoticesInfiniteQuery";
+import { useInfiniteScroll } from "@/shared/hooks/useInfiniteScroll";
+import LoadMoreTrigger from "@/shared/components/common/LoadMoreTrigger";
+import { AdminTableToolbar } from "../../components/AdminTableToolbar";
+import { ADMIN_NOTICE_PAGE_SIZE_OPTIONS } from "@/features/support/notices/constants/search";
 
 const AdminNoticesClient = () => {
+  const router = useRouter();
+
+  const isMobile = useMediaQuery("(max-width: 768px)");
+
   // 1. 상태 관리: Query 객체를 상태로 관리
   const [query, setQuery] = useState<AdminNoticeQuery>({
     page: 1,
-    limit: 10,
+    limit: ADMIN_PAGE_SIZE.DEFAULT,
     search: "",
-    searchField: "title",
-    sort: "createdAt",
-    sortOrder: "desc",
+    searchField: ADMIN_NOTICE_SEARCH_FIELD.TITLE,
+    sort: ADMIN_NOTICE_SORT.CREATED_AT,
+    sortOrder: SORT_ORDER.DESC,
+    filters: adminNoticeInitialFilterValue,
   });
 
-  // 2. 데이터 요청: 상태 변경 시 훅이 자동으로 재요청
-  const { data, isFetching, error } = useAdminNoticesQuery(query);
+  const handleFilterChange = (
+    key: AdminNoticeFilterKey,
+    value: FilterValue,
+  ) => {
+    setQuery((prev) => ({
+      ...prev,
+      filters: {
+        ...prev.filters,
+        [key]: value,
+      },
+    }));
+  };
 
-  const notices = data?.items ?? [];
+  const { sort, onSort } = useTableSort<AdminNoticeQuery, AdminNoticeSort>(
+    query,
+    setQuery,
+  );
+  const {
+    isLoading,
+    items: notices,
+    stats,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    pagination,
+  } = useListMode({
+    isMobile,
+    query,
 
-  const totalPages = data?.pagination?.totalPages ?? 1;
+    useQueryHook: useAdminNoticesQuery,
+    useInfiniteHook: useAdminNoticesInfiniteQuery,
+  });
 
-  if (error) return <div>데이터를 불러오는 중 오류가 발생했습니다.</div>;
+  const loadMoreRef = useInfiniteScroll({
+    onIntersect: () => {
+      if (hasNextPage && !isFetchingNextPage) {
+        fetchNextPage();
+      }
+    },
+    enabled: !!hasNextPage,
+  });
+
+  const noticeStats = stats ?? {};
+
+  const totalPages = pagination?.totalPages ?? 1;
+
+  const handleRowClick = (item: AdminNoticeResponseDTO) => {
+    router.push(`${ROUTES.ADMIN_NOTICES}/${item._id}`);
+  };
+
   return (
-    <div className="mx-auto w-full max-w-4xl p-6">
+    <div className="w-full p-6">
       <div className="mb-6 flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold">공지사항 관리</h1>
@@ -38,27 +109,36 @@ const AdminNoticesClient = () => {
         </div>
 
         <Link
-          href="/admin/notices/new"
+          href={`${ROUTES.ADMIN_NOTICES}/new`}
           className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-md px-4 py-2 text-sm font-medium transition"
         >
           + 새 공지 등록
         </Link>
       </div>
 
-      {/* 로딩 표시 (데이터 변경 시 깜빡임 방지용으로 isFetching 사용 가능) */}
-      {isFetching && <div className="mb-2 text-sm">로딩 중...</div>}
-
       <div className="flex flex-1 flex-col space-y-2">
-        {/* 🔹 검색 / 정렬 / 페이지 사이즈 컨트롤 */}
-        <AdminNoticeTableToolbar query={query} onChange={setQuery} />
-
-        <AdminNoticeTable
-          notices={notices}
+        <AdminTableToolbar
           query={query}
           onChange={setQuery}
-          isFetching={isFetching}
+          searchFieldOptions={ADMIN_NOTICE_SEARCH_FIELD_OPTIONS}
+          pageSizeOptions={ADMIN_NOTICE_PAGE_SIZE_OPTIONS}
         />
-        {totalPages !== 1 && (
+        <FilterToolbar
+          filters={query.filters}
+          onChange={handleFilterChange}
+          config={ADMIN_NOTICE_FILTER_CONFIG}
+          initialValue={adminNoticeInitialFilterValue}
+        />
+        <AdminTable
+          columns={adminNoticeTableColumns}
+          data={notices}
+          isFetching={isLoading}
+          sort={sort}
+          onSort={onSort}
+          onRowClick={handleRowClick}
+        />
+
+        {totalPages > 1 && !isMobile && (
           <AdminPagination
             page={query.page}
             totalPages={totalPages}
@@ -69,6 +149,12 @@ const AdminNoticesClient = () => {
               }))
             }
           />
+        )}
+        {/* 👇 무한스크롤 트리거 */}
+        {isMobile && <LoadMoreTrigger ref={loadMoreRef} className="h-10" />}
+
+        {isMobile && isFetchingNextPage && (
+          <div className="-mt-20 p-4 text-center">loading...</div>
         )}
       </div>
     </div>

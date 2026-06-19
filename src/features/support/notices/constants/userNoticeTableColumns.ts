@@ -1,9 +1,9 @@
 import {
+  NOTICE_CATEGORY_LABELS,
   NoticeCategory,
-  NoticeCategoryLabels,
-} from "@/features/admin/notices/types";
-import { UserNoticeSort } from "../types/user-search";
-import { NoticeResponseDTO } from "../dtos";
+} from "@/features/admin/notices/types/search";
+import { UserNoticeSort } from "../types/search";
+import { NoticeResponseDTO } from "../dtos/noticeDto";
 
 export type UserNoticeTableColumn = {
   key: UserNoticeSort;
@@ -21,7 +21,7 @@ export const userNoticeTableColumns: UserNoticeTableColumn[] = [
   {
     key: "category",
     header: "카테고리",
-    render: (n) => NoticeCategoryLabels[n.category as NoticeCategory],
+    render: (n) => NOTICE_CATEGORY_LABELS[n.category as NoticeCategory],
   },
   {
     key: "views",

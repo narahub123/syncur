@@ -1,4 +1,4 @@
-import { NoticeResponseDTO } from "../dtos";
+import { NoticeResponseDTO } from "../dtos/noticeDto";
 import { NoticeLean } from "../types/lean";
 
 /**

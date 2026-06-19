@@ -1,4 +1,4 @@
-import { UserNoticeSearchField } from "../types/user-search";
+import { UserNoticeSearchField } from "../types/search";
 
 /**
  * 2. 유저 공지사항 검색 필드 옵션

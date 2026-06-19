@@ -5,11 +5,11 @@ import { useDebounce } from "@/shared/hooks/useDebounce";
 import AdminSearchFieldSelect from "@/features/admin/components/AdminSearchFieldSelect";
 import AdminPageSizeSelect from "@/features/admin/components/AdminPageSizeSelect";
 import AdminSearchInput from "@/features/admin/components/AdminSearchInput";
-import { UserRequestQuery } from "../../notices/types/user-search";
 import {
   REQUEST_PAGE_SIZE_OPTIONS,
   REQUEST_SEARCH_FIELD_OPTIONS,
 } from "../constants/search";
+import { UserRequestQuery } from "../types/user-search";
 
 type Props = {
   query: UserRequestQuery;

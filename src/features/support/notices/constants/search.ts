@@ -1,4 +1,4 @@
-import { AdminNoticeSearchField, AdminNoticeSort } from "../types/admin-search";
+import { AdminNoticeSearchField, AdminNoticeSort } from "@/features/admin/notices/types/search";
 
 /**
  * 관리자 공지사항 검색 필드 옵션

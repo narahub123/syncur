@@ -2,8 +2,8 @@
 
 import { connectMongo } from "@/shared/lib/db/mongoose";
 import { requireAuth } from "@/shared/lib/auth/requireAuth";
-import { UserRequestQuery } from "../../notices/types/user-search"; // 문의용 타입 정의 확인
 import { requestService } from "../services/RequestService.instance";
+import { UserRequestQuery } from "../types/user-search";
 
 export async function getMyRequestsAction(query: UserRequestQuery) {
   await connectMongo();

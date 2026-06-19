@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useUserRequestsQuery } from "@/features/support/requests/hooks/useUserRequestsQuery";
 
 import AdminPagination from "@/features/admin/components/AdminPagination";
-import { UserRequestQuery } from "../../notices/types/user-search";
+import { UserRequestQuery } from "../types/user-search";
 import RequestTableToolbar from "./RequestTableToolbar";
 import RequestTable from "./RequestTable";
 

@@ -1,7 +1,7 @@
 "use server";
 
 import { connectMongo } from "@/shared/lib/db/mongoose";
-import { UpdateNoticeRequestDto } from "../dtos";
+import { UpdateNoticeRequestDto } from "../dtos/noticeDto";
 import { noticeService } from "../services/NoticeService.instance";
 import { requireAdmin } from "@/features/admin/lib/requireAdmin";
 import { deleteCloudinaryImage } from "@/shared/lib/cloudinary/cloudinary.utils";

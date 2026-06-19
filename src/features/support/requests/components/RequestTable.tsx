@@ -12,11 +12,9 @@ import { ChevronDown, ChevronUp, LoaderCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { RequestResponseDTO } from "../dtos"; // 정의된 DTO import
 import { ROUTES } from "@/shared/constants/routes";
-import {
-  UserRequestQuery,
-  UserRequestSort,
-} from "../../notices/types/user-search";
+
 import { userRequestTableColumns } from "../constants/userRequestTableColumns";
+import { UserRequestQuery, UserRequestSort } from "../types/user-search";
 
 type Props = {
   requests: RequestResponseDTO[];

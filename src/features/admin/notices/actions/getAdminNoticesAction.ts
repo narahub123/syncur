@@ -1,8 +1,8 @@
 "use server";
 
 import { requireAdmin } from "@/features/admin/lib/requireAdmin";
-import { noticeService } from "@/features/support/notices/services/NoticeService.instance";
-import { AdminNoticeQuery } from "@/features/support/notices/types/admin-search";
+import { AdminNoticeQuery } from "@/features/admin/notices/types/search";
+import { adminNoticeService } from "../services/AdminNoticeService.instance";
 import { connectMongo } from "@/shared/lib/db/mongoose";
 
 export async function getAdminNoticesAction(query: AdminNoticeQuery) {
@@ -10,5 +10,5 @@ export async function getAdminNoticesAction(query: AdminNoticeQuery) {
 
   await requireAdmin();
 
-  return await noticeService.getNoticesForAdmin(query);
+  return await adminNoticeService.getNoticesForAdmin(query);
 }

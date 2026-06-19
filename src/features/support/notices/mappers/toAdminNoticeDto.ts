@@ -1,7 +1,5 @@
-import {
-  AdminNoticeResponseDTO,
-  NoticeWithUserLean,
-} from "../types/admin-search";
+import { AdminNoticeResponseDTO } from "../dtos/noticeDto";
+import { NoticeWithUserLean } from "../types/lean";
 
 /**
  * 관리자 공지사항 원시 객체를 어드민 응답 DTO 규격으로 직렬화합니다.

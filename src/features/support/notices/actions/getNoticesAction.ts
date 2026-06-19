@@ -1,7 +1,7 @@
 "use server";
 
 import { connectMongo } from "@/shared/lib/db/mongoose";
-import { UserNoticeQuery } from "../types/user-search";
+import { UserNoticeQuery } from "../types/search";
 import { requireAuth } from "@/shared/lib/auth/requireAuth";
 import { noticeService } from "../services/NoticeService.instance";
 

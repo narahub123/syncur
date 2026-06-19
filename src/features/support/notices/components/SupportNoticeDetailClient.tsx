@@ -1,6 +1,6 @@
 "use client";
 
-import { NoticeResponseDTO } from "@/features/support/notices/dtos";
+import { NoticeResponseDTO } from "@/features/support/notices/dtos/noticeDto";
 import { Button } from "@/shared/components/ui/button"; // 프로젝트 공통 컴포넌트 사용
 import { ArrowLeft } from "lucide-react";
 import { useRouter } from "next/navigation";

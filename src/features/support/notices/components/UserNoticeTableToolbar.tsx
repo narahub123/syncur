@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useDebounce } from "@/shared/hooks/useDebounce";
 import AdminSearchFieldSelect from "@/features/admin/components/AdminSearchFieldSelect";
-import { UserNoticeQuery } from "../types/user-search";
+import { UserNoticeQuery } from "../types/search";
 import AdminSearchInput from "@/features/admin/components/AdminSearchInput";
 import AdminPageSizeSelect from "@/features/admin/components/AdminPageSizeSelect";
 import {
