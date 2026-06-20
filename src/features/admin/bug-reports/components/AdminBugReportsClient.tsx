@@ -119,7 +119,7 @@ const AdminBugReportsClient = () => {
   };
 
   return (
-    <div className="mx-auto w-full max-w-5xl p-6">
+    <div className="w-full p-6">
       <h1 className="mb-6 text-2xl font-bold">버그 신고 관리</h1>
 
       <div className="flex flex-1 flex-col space-y-4">

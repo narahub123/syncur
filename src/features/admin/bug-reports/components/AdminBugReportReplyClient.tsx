@@ -39,7 +39,7 @@ export default function AdminBugReplyClient({
   };
 
   return (
-    <div className="mx-auto w-full max-w-4xl space-y-6 p-6">
+    <div className="w-full space-y-6 p-6">
       <AdminBackButton href={ROUTES.ADMIN_BUG_REPORTS} />
       <div className="flex items-center justify-between border-b pb-4">
         <div>
@@ -61,7 +61,7 @@ export default function AdminBugReplyClient({
         </Badge>
       </div>
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+      <div className="space-y-6">
         <div className="space-y-4 lg:col-span-2">
           <div className="bg-muted/30 space-y-4 rounded-xl border p-6">
             <div className="space-y-1">

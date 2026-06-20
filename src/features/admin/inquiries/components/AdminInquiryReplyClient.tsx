@@ -4,19 +4,19 @@ import { useState } from "react";
 import { Badge } from "@/shared/components/ui/badge";
 import { ImagePreview } from "@/shared/components/common/ImagePreview";
 import { DynamicForm } from "@/shared/components/common/DynamicForm";
-import { useAdminReplyMutation } from "@/features/support/requests/hooks/useAdminReplyMutation";
-import { RequestStatus } from "@/features/support/requests/constants/request-type";
 import {
   ANSWER_STATUS,
   answerFormConfig,
   AnswerFormValues,
   AnswerStatus,
+  InquiryStatus,
   UserInquiryData,
-} from "../types";
+} from "../types/search";
 import { ImageInfo } from "@/shared/lib/cloudinary/image-info.model";
 import { Avatar } from "@/shared/components/common/Avartar";
 import { AdminBackButton } from "../../components/AdminBackButton";
 import { ROUTES } from "@/shared/constants/routes";
+import { useAdminInquiryReplyMutation } from "../hooks/useAdminInquiryReplyMutation";
 
 interface AdminInquiryReplyClientProps {
   inquiry: UserInquiryData;
@@ -34,19 +34,19 @@ export default function AdminInquiryReplyClient({
   const isEditMode = Boolean(existingAnswer);
   const [images, setImages] = useState(inquiry.metadata?.images || []);
 
-  const { mutate: reply } = useAdminReplyMutation(isEditMode);
+  const { mutate: reply } = useAdminInquiryReplyMutation(isEditMode);
 
   const handleReplySubmit = (data: AnswerFormValues) => {
     reply({
-      requestId: inquiry.id,
+      inquiryId: inquiry.id,
       replyContent: data.replyContent,
-      status: data.status as RequestStatus,
+      status: data.status as InquiryStatus,
       images: data.images || [],
     });
   };
 
   return (
-    <div className="mx-auto w-full max-w-3xl space-y-6 p-6">
+    <div className="w-full space-y-6 p-6">
       <AdminBackButton href={ROUTES.ADMIN_INQUIRIES} />
       {/* 1. 문의 상세 정보 */}
       <div className="bg-card rounded-xl border p-6 shadow-sm">

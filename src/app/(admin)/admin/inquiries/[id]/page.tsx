@@ -1,5 +1,8 @@
 import AdminInquiryReplyClient from "@/features/admin/inquiries/components/AdminInquiryReplyClient";
-import { AnswerStatus, InquiryStatus } from "@/features/admin/inquiries/types";
+import {
+  AnswerStatus,
+  InquiryStatus,
+} from "@/features/admin/inquiries/types/search";
 import { getRequestAction } from "@/features/support/requests/actions/getRequestAction";
 import { notFound } from "next/navigation";
 
