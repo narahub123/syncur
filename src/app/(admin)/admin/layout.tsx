@@ -10,6 +10,7 @@ import {
 import { TooltipProvider } from "@/shared/components/ui/tooltip";
 import { ROUTES } from "@/shared/constants/routes";
 import AdminSSEProvider from "@/shared/providers/AdminSSEProvider";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 
 /**
@@ -69,7 +70,9 @@ export default async function AdminLayout({
         <main className="flex-1">
           <header className="flex h-16 items-center border-b px-4">
             <SidebarTrigger /> {/* 사이드바 토글 버튼 */}
-            <h1 className="ml-4 font-semibold">관리자 대시보드</h1>
+            <Link href={ROUTES.ADMIN_DASHBOARD}>
+              <h1 className="ml-4 font-semibold">관리자 대시보드</h1>
+            </Link>
           </header>
           <NotificationPermissionBanner />
           <NotificationDeniedBanner />

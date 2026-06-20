@@ -26,7 +26,7 @@ export const SystemSection = () => {
       ),
       icon: Rss,
       desc: "전체 / 활성 / 비활성",
-      href: ROUTES.ADMIN_SITES,
+      href: ROUTES.ADMIN_FEEDS,
     },
     {
       title: "기사 수집 현황",
@@ -41,7 +41,7 @@ export const SystemSection = () => {
       icon: AlertTriangle,
       desc: "오늘 발생한 수집 오류",
       className: "border-red-200 bg-red-50/50", // 카드 강조
-      href: ROUTES.ADMIN_SITES,
+      href: ROUTES.ADMIN_LOGS,
     },
   ];
 

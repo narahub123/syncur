@@ -1,4 +1,5 @@
 import { StatCard } from "@/shared/components/common/StatCard";
+import { ROUTES } from "@/shared/constants/routes";
 import { MessageSquare, Bug, CheckCircle2 } from "lucide-react";
 
 export const CsSection = () => {
@@ -8,6 +9,7 @@ export const CsSection = () => {
       value: <span className="text-blue-600">5 건</span>,
       icon: MessageSquare,
       desc: "처리 대기 중인 일반 문의",
+      href: ROUTES.ADMIN_INQUIRIES,
     },
     {
       title: "버그 신고 (계류)",
@@ -15,6 +17,7 @@ export const CsSection = () => {
       icon: Bug,
       desc: "즉시 수정이 필요한 버그",
       className: "border-red-200 bg-red-50/50",
+      href: ROUTES.ADMIN_BUG_REPORTS,
     },
     {
       title: "전체 처리율",
