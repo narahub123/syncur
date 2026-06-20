@@ -1,11 +1,11 @@
 "use server";
 
 import { connectMongo } from "@/shared/lib/db/mongoose";
-import { UserNoticeQuery } from "../types/search";
+import { UserNoticesQuery } from "../types/search";
 import { requireAuth } from "@/shared/lib/auth/requireAuth";
 import { noticeService } from "../services/NoticeService.instance";
 
-export async function getNoticesAction(query: UserNoticeQuery) {
+export async function getNoticesAction(query: UserNoticesQuery) {
   await connectMongo();
 
   await requireAuth();

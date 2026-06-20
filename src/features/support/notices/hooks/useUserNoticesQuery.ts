@@ -1,8 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
-import { UserNoticeQuery } from "../types/search";
+import { UserNoticesQuery } from "../types/search";
 import { getNoticesAction } from "../actions/getNoticesAction";
 
-export function useUserNoticesQuery(query: UserNoticeQuery) {
+export function useUserNoticesQuery(query: UserNoticesQuery) {
   return useQuery({
     queryKey: ["notices", query],
     queryFn: () => getNoticesAction(query),

@@ -49,20 +49,11 @@ export const USER_NOTICE_SORT_OPTIONS = Object.entries(
   USER_NOTICE_SORT_LABELS,
 ).map(([value, label]) => ({ value, label }));
 
-export interface UserNoticeQuery {
-  page: number;
-  limit: number;
-  search: string;
-  searchField: UserNoticeSearchField;
-  sort?: UserNoticeSort;
-  sortOrder?: SortOrder;
-}
-
 /**
  * User용 페이지 사이즈 상수
  */
 export const USER_PAGE_SIZE = {
-  TEN: 10,
+  DEFAULT: 10,
   TWENTY: 20,
   FIFTY: 50,
 } as const;
@@ -70,7 +61,7 @@ export const USER_PAGE_SIZE = {
 export type UserPageSize = (typeof USER_PAGE_SIZE)[keyof typeof USER_PAGE_SIZE];
 
 export const USER_PAGE_SIZE_OPTIONS = [
-  { value: USER_PAGE_SIZE.TEN, label: "10개씩 보기" },
+  { value: USER_PAGE_SIZE.DEFAULT, label: "10개씩 보기" },
   { value: USER_PAGE_SIZE.TWENTY, label: "20개씩 보기" },
   { value: USER_PAGE_SIZE.FIFTY, label: "50개씩 보기" },
 ];
@@ -81,8 +72,8 @@ export const userNoticeInitialFilterValue = {
 
 export const USER_NOTICE_FILTER_CONFIG = {
   category: {
-    label: "카테고리",
-    type: FILTER_TYPES.SELECT, // 사용자는 보통 하나씩 확인하므로 Select 선호
+    label: "카테고리",  
+    type: FILTER_TYPES.MULTI_SELECT, // 사용자는 보통 하나씩 확인하므로 Select 선호
     options: [{ label: "전체", value: "all" }, ...NOTICE_CATEGORY_OPTIONS],
   },
 } as const;

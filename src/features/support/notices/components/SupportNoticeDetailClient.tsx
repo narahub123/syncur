@@ -1,11 +1,11 @@
 "use client";
 
 import { NoticeResponseDTO } from "@/features/support/notices/dtos/noticeDto";
-import { Button } from "@/shared/components/ui/button"; // 프로젝트 공통 컴포넌트 사용
-import { ArrowLeft } from "lucide-react";
+import { Button } from "@/shared/components/ui/button";
 import { useRouter } from "next/navigation";
 import { useNoticeDetailQuery } from "../actions/useNoticeDetailQuery";
 import { useIncreaseViewCount } from "../hooks/useIncreaseViewCount";
+import { ROUTES } from "@/shared/constants/routes";
 
 type Props = {
   initialData: NoticeResponseDTO;
@@ -22,17 +22,7 @@ const SupportNoticeDetailClient = ({ initialData }: Props) => {
 
   return (
     <div className="mx-auto w-full max-w-4xl p-6">
-      {/* 상단 네비게이션 및 헤더 */}
       <div className="mb-8">
-        <Button
-          variant="ghost"
-          className="mb-4 pl-0"
-          onClick={() => router.back()}
-        >
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          목록으로 돌아가기
-        </Button>
-
         <div className="space-y-2">
           <h1 className="text-3xl font-bold tracking-tight">{notice.title}</h1>
           <div className="text-muted-foreground flex items-center gap-4 text-sm">
@@ -58,7 +48,10 @@ const SupportNoticeDetailClient = ({ initialData }: Props) => {
 
       {/* 하단 액션 버튼 */}
       <div className="mt-6 flex justify-end">
-        <Button variant="outline" onClick={() => router.push("/notices")}>
+        <Button
+          variant="outline"
+          onClick={() => router.push(ROUTES.SUPPORT_NOTICES)}
+        >
           목록으로
         </Button>
       </div>

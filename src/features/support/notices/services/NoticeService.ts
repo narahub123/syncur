@@ -4,7 +4,7 @@ import { NoticeResponseDTO } from "../dtos/noticeDto";
 import { toNoticeDto, toNoticeDtos } from "../mappers/toNoticeDto";
 
 import { PaginatedResponse } from "@/shared/types/pagination";
-import { UserNoticeQuery } from "../types/search";
+import { UserNoticesQuery } from "../types/search";
 
 /**
  * Notice Service
@@ -48,7 +48,7 @@ export class NoticeService {
    * 유저용 공지사항 목록 검색 및 페이지네이션 처리
    */
   async getNoticesForUser(
-    query: UserNoticeQuery,
+    query: UserNoticesQuery,
   ): Promise<PaginatedResponse<NoticeResponseDTO>> {
     const page = query.page ?? 1;
     const limit = query.limit ?? 10;

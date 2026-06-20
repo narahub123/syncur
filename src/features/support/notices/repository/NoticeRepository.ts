@@ -2,7 +2,8 @@ import { Types } from "mongoose";
 import { NoticeModel } from "../model/Notice";
 import { NoticeLean } from "../types/lean";
 import { toObjectId } from "@/shared/utils/toObjectId";
-import { UserNoticeQuery } from "../types/search";
+import { UserNoticesQuery } from "../types/search";
+import { NOTICE_STATUS } from "@/features/admin/notices/types/search";
 
 /**
  * Notice Repository
@@ -51,10 +52,11 @@ export class NoticeRepository {
   }
 
   /**
-   * 유저용 공지사항 목록 조회 (페이지네이션 + 검색 + 고정글 우선 정렬)
+   * 유저용 공지사항 목록 조회
+   * (페이지네이션 + 검색 + 필터 + 고정글 우선 정렬)
    */
   async findAndCountForUser(
-    params: UserNoticeQuery,
+    params: UserNoticesQuery,
   ): Promise<{ items: NoticeLean[]; totalCount: number }> {
     const {
       page,
@@ -63,30 +65,63 @@ export class NoticeRepository {
       searchField = "title",
       sort = "createdAt",
       sortOrder = "desc",
+      filters = {},
     } = params;
+
     const skip = (page - 1) * limit;
     const mongoOrder = sortOrder === "asc" ? 1 : -1;
 
-    // 💡 고정글 우선 규칙과 동적 정렬 모두 1 | -1 구조로 정밀 매핑
+    /**
+     * 고정글 우선 + 사용자 선택 정렬
+     */
     const sortCondition: Record<string, 1 | -1> = {
       isPinned: -1,
       [sort]: mongoOrder,
     };
 
-    const query: Record<string, unknown> = {};
+    /**
+     * 검색 및 필터 조건
+     */
+    const query: Record<string, unknown> = {
+      status: NOTICE_STATUS.ACTIVE,
+    };
+
+    /**
+     * 검색
+     */
     if (search && search.trim().length > 0) {
-      query[searchField] = { $regex: search, $options: "i" };
+      query[searchField] = {
+        $regex: search,
+        $options: "i",
+      };
+    }
+
+    /**
+     * 카테고리
+     */
+    if (
+      Array.isArray(filters.category) &&
+      filters.category.length > 0 &&
+      !filters.category.includes("all")
+    ) {
+      query.category = {
+        $in: filters.category,
+      };
     }
 
     const [items, totalCount] = await Promise.all([
       NoticeModel.find(query)
-        .sort(sortCondition) // 💡 any 없이 통과
+        .sort(sortCondition)
         .skip(skip)
         .limit(limit)
         .lean(),
+
       NoticeModel.countDocuments(query),
     ]);
 
-    return { items, totalCount };
+    return {
+      items,
+      totalCount,
+    };
   }
 }
