@@ -1,10 +1,10 @@
 "use server";
 
 import { connectMongo } from "@/shared/lib/db/mongoose";
-import { UpdateNoticeRequestDto } from "../dtos/noticeDto";
-import { noticeService } from "../services/NoticeService.instance";
+import { UpdateNoticeRequestDto } from "../../../support/notices/dtos/noticeDto";
 import { requireAdmin } from "@/features/admin/lib/requireAdmin";
 import { deleteCloudinaryImage } from "@/shared/lib/cloudinary/cloudinary.utils";
+import { adminNoticeService } from "../services/AdminNoticeService.instance";
 
 export async function updateNoticeAction(
   id: string,
@@ -24,7 +24,7 @@ export async function updateNoticeAction(
       );
     }
 
-    return await noticeService.updateNotice(id, rest);
+    return await adminNoticeService.updateNotice(id, rest);
   } catch (error) {
     return {
       success: false,

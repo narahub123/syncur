@@ -4,8 +4,11 @@ import { Column, COLUMN_ALIGN } from "../../types/admin-table";
 import {
   AdminNoticeSort,
   NOTICE_CATEGORY_LABELS,
+  NOTICE_STATUS,
+  NOTICE_STATUS_LABELS,
   NoticeCategory,
 } from "../types/search";
+import { Badge } from "@/shared/components/ui/badge";
 
 export const adminNoticeTableColumns: Column<
   AdminNoticeResponseDTO,
@@ -15,6 +18,22 @@ export const adminNoticeTableColumns: Column<
     key: "isPinned",
     header: "고정",
     render: (notice: AdminNoticeResponseDTO) => (notice.isPinned ? "📌" : "-"),
+    sortable: true,
+    align: COLUMN_ALIGN.CENTER,
+  },
+  {
+    key: "status",
+    header: "상태",
+    render: (notice: AdminNoticeResponseDTO) => (
+      <Badge
+        variant={
+          notice.status === NOTICE_STATUS.ACTIVE ? "default" : "secondary"
+        }
+        className="p-3 text-sm"
+      >
+        {NOTICE_STATUS_LABELS[notice.status]}
+      </Badge>
+    ),
     sortable: true,
     align: COLUMN_ALIGN.CENTER,
   },

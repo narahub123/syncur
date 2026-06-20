@@ -1,13 +1,59 @@
 import { NoticeModel } from "@/features/support/notices/model/Notice";
 import {
   NoticeAdminLeanPagedResponse,
+  NoticeLean,
   NoticeWithUserLean,
 } from "@/features/support/notices/types/lean";
 import { toObjectId } from "@/shared/utils/toObjectId";
 import { Types } from "mongoose";
-import { AdminNoticeQuery } from "../types/search";
+import { AdminNoticeQuery, NOTICE_STATUS } from "../types/search";
+import {
+  CreateNoticeDto,
+  UpdateNoticeDto,
+} from "@/features/support/notices/dtos/noticeDto";
+import { NoticeStatsDto } from "@/features/admin/notices/dto/noticeStatsDto";
+import { defaultNoticeStats } from "../constants/stats";
 
 export class AdminNoticeRepository {
+  /**
+   * 공지사항 생성 (어드민 전용)
+   * * @param dto 생성할 공지사항 데이터와 작성자(createdBy)의 ObjectId 결합 객체
+   * @returns Mongoose 도큐먼트가 Plain Object로 변환된 공지사항 Lean 객체
+   */
+  async create(
+    dto: CreateNoticeDto & { createdBy: Types.ObjectId },
+  ): Promise<NoticeLean> {
+    const notice = await NoticeModel.create(dto);
+    return notice.toObject();
+  }
+
+  /**
+   * 공지사항 수정 (어드민 전용)
+   * * @param id 수정할 공지사항의 고유 ID
+   * @param dto 업데이트할 공지사항 데이터 필드 집합 ($set 원자적 반영)
+   * @returns 수정이 완료된 이후의 공지사항 Lean 객체 (존재하지 않을 경우 null)
+   */
+  async update(
+    id: Types.ObjectId | string,
+    dto: UpdateNoticeDto,
+  ): Promise<NoticeLean | null> {
+    return NoticeModel.findByIdAndUpdate(
+      toObjectId(id),
+      { $set: dto },
+      { returnDocument: "after" },
+    ).lean();
+  }
+
+  /**
+   * 공지사항 삭제 (어드민 전용)
+   * * @param id 삭제할 공지사항의 고유 ID
+   * @returns 실제 도큐먼트가 삭제되었는지 여부 (true: 삭제 성공, false: 대상 없음)
+   */
+  async deleteById(id: Types.ObjectId | string): Promise<boolean> {
+    const result = await NoticeModel.deleteOne({ _id: toObjectId(id) });
+    return result.deletedCount > 0;
+  }
+
   /**
    * 관리자 전용 공지사항 목록 조회
    * * 페이지네이션 + 동적 검색 + 작성자 어드민 JOIN
@@ -36,6 +82,7 @@ export class AdminNoticeRepository {
       views: { views: mongoOrder },
       category: { category: mongoOrder },
       isPinned: { isPinned: mongoOrder },
+      status: { status: mongoOrder },
       createdAt: { createdAt: mongoOrder },
       createdBy: { "author.name": mongoOrder },
     };
@@ -73,6 +120,14 @@ export class AdminNoticeRepository {
      */
     if (filters.isPinned && filters.isPinned !== "all") {
       matchStage.isPinned = filters.isPinned === "true";
+    }
+
+    /**
+     * 상태 필터 적용
+     */
+    if (filters.status && filters.status !== "all") {
+      // filters.status 자체가 "ACTIVE" 또는 "INACTIVE" 문자열입니다.
+      matchStage.status = filters.status;
     }
 
     /**
@@ -137,7 +192,7 @@ export class AdminNoticeRepository {
       },
     ];
 
-    const [items, countResult] = await Promise.all([
+    const [items, countResult, statsResult] = await Promise.all([
       /**
        * 목록 조회
        */
@@ -157,6 +212,7 @@ export class AdminNoticeRepository {
             _id: 1,
             title: 1,
             content: 1,
+            status: 1,
             category: 1,
             views: 1,
             isPinned: 1,
@@ -183,11 +239,53 @@ export class AdminNoticeRepository {
           $count: "totalCount",
         },
       ]),
+
+      // 운영 통계
+      NoticeModel.aggregate<NoticeStatsDto>([
+        {
+          $group: {
+            _id: null,
+
+            totalCount: {
+              $sum: 1,
+            },
+
+            activeCount: {
+              $sum: {
+                $cond: [{ $eq: ["$status", NOTICE_STATUS.ACTIVE] }, 1, 0],
+              },
+            },
+
+            inactiveCount: {
+              $sum: {
+                $cond: [{ $eq: ["$status", NOTICE_STATUS.INACTIVE] }, 1, 0],
+              },
+            },
+
+            pinnedCount: {
+              $sum: {
+                $cond: ["$isPinned", 1, 0],
+              },
+            },
+          },
+        },
+
+        {
+          $project: {
+            _id: 0,
+            totalCount: 1,
+            activeCount: 1,
+            inactiveCount: 1,
+            pinnedCount: 1,
+          },
+        },
+      ]),
     ]);
 
     return {
       items,
       totalCount: countResult[0]?.totalCount ?? 0,
+      stats: statsResult[0] ?? defaultNoticeStats,
     };
   }
 
@@ -212,6 +310,7 @@ export class AdminNoticeRepository {
         $project: {
           _id: 1,
           title: 1,
+          status: 1,
           content: 1,
           category: 1,
           views: 1,

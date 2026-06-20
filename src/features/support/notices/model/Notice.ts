@@ -1,4 +1,9 @@
 import {
+  NOTICE_CATEGORY,
+  NOTICE_STATUS,
+  NoticeStatus,
+} from "@/features/admin/notices/types/search";
+import {
   ImageInfo,
   ImageInfoSchema,
 } from "@/shared/lib/cloudinary/image-info.model";
@@ -48,6 +53,11 @@ export interface NoticeDocument extends Document {
    * 이미지 배열
    */
   images: ImageInfo[];
+
+  /**
+   * 공지 사항 상태
+   */
+  status: NoticeStatus;
 }
 
 /**
@@ -76,8 +86,8 @@ const NoticeSchema = new Schema<NoticeDocument>(
     category: {
       type: String,
       required: true,
-      enum: ["GENERAL", "SERVICE", "EVENT", "MAINTENANCE"], // 데이터 무결성 보장
-      default: "GENERAL",
+      enum: Object.values(NOTICE_CATEGORY), // ["GENERAL", "SERVICE", "EVENT", "MAINTENANCE"]
+      default: NOTICE_CATEGORY.GENERAL, // "GENERAL"
     },
 
     /**
@@ -108,6 +118,17 @@ const NoticeSchema = new Schema<NoticeDocument>(
     images: {
       type: [ImageInfoSchema],
       default: [],
+    },
+
+    /**
+     * 공지사항 상태
+     * ACTIVE: 공개, INACTIVE: 비공개
+     */
+    status: {
+      type: String,
+      enum: Object.values(NOTICE_STATUS),
+      default: NOTICE_STATUS.ACTIVE,
+      required: true,
     },
   },
   {

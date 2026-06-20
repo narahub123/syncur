@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { UpdateNoticeRequestDto } from "../dtos/noticeDto";
+import { UpdateNoticeRequestDto } from "../../../support/notices/dtos/noticeDto";
 import { updateNoticeAction } from "../actions/updateNoticeAction";
 
 export function useUpdateNoticeMutation() {

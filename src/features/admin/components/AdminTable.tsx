@@ -46,8 +46,6 @@ export function AdminTable<T extends { _id: string }, K extends string>({
     return "justify-start";
   };
 
-  console.log(data);
-
   return (
     <>
       <div className="hidden w-full overflow-x-auto border md:block">

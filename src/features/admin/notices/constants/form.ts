@@ -2,10 +2,19 @@ import { CLOUDINARY_FOLDERS } from "@/shared/lib/cloudinary/cloudinary.constant"
 import {
   NOTICE_CATEGORY_OPTIONS,
   NOTICE_PIN_STATUS_OPTIONS,
+  NOTICE_STATUS_OPTIONS,
 } from "../types/search";
 import { FormFieldConfig } from "@/shared/types/form";
 
 export const noticeFormConfig: FormFieldConfig[] = [
+  {
+    name: "status",
+    label: "공지 상태",
+    type: "select",
+    placeholder: "공지 노출 상태를 선택해주세요",
+    options: NOTICE_STATUS_OPTIONS,
+    required: true,
+  },
   {
     name: "title",
     label: "공지 제목",

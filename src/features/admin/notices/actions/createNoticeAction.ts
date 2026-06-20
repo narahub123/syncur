@@ -1,10 +1,10 @@
 "use server";
 
 import { connectMongo } from "@/shared/lib/db/mongoose";
-import { noticeService } from "@/features/support/notices/services/NoticeService.instance";
 import { CreateNoticeRequestDto } from "@/features/support/notices/dtos/noticeDto";
 import { deleteCloudinaryImage } from "@/shared/lib/cloudinary/cloudinary.utils";
 import { requireAdmin } from "@/features/admin/lib/requireAdmin";
+import { adminNoticeService } from "@/features/admin/notices/services/AdminNoticeService.instance";
 
 export async function createNoticeAction(data: CreateNoticeRequestDto) {
   try {
@@ -22,7 +22,7 @@ export async function createNoticeAction(data: CreateNoticeRequestDto) {
     }
 
     // 2. 게시글 생성
-    return await noticeService.createNotice(rest, session.user.id);
+    return await adminNoticeService.createNotice(rest, session.user.id);
   } catch (error) {
     console.error("Notice 생성 실패:", error);
 

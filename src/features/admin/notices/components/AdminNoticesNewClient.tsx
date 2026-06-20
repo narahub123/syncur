@@ -1,9 +1,9 @@
 "use client";
 
 import { DynamicForm } from "@/shared/components/common/DynamicForm";
-import { useCreateNoticeMutation } from "@/features/support/notices/hooks/useCreateNoticeMutation";
-import { useUpdateNoticeMutation } from "@/features/support/notices/hooks/useUpdateNoticeMutation";
-import { useDeleteNoticeMutation } from "@/features/support/notices/hooks/useDeleteNoticeMutation";
+import { useCreateNoticeMutation } from "@/features/admin/notices/hooks/useCreateNoticeMutation";
+import { useUpdateNoticeMutation } from "@/features/admin/notices/hooks/useUpdateNoticeMutation";
+import { useDeleteNoticeMutation } from "@/features/admin/notices/hooks/useDeleteNoticeMutation";
 import { toast } from "sonner";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
@@ -47,6 +47,7 @@ export default function AdminNoticesNewClient({
     // 3. payload 구성 (DB에는 유지할 이미지만 저장)
     const payload = {
       title: data.title,
+      status: data.status,
       content: data.content,
       category: data.category,
       isPinned: data.isPinned === "fixed",

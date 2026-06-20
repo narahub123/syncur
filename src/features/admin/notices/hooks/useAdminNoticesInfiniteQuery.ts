@@ -2,10 +2,10 @@ import { AdminNoticeResponseDTO } from "@/features/support/notices/dtos/noticeDt
 import { createInfiniteQuery } from "../../hooks/createInfiniteQuery";
 import { AdminNoticeQuery } from "../types/search";
 import { getAdminNotices } from "../api/getAdminNotices";
-import { NoticeStatDto } from "../dto/noticeStatDto";
+import { NoticeStatsDto } from "../dto/noticeStatsDto";
 
 export const useAdminNoticesInfiniteQuery = createInfiniteQuery<
   AdminNoticeQuery,
   AdminNoticeResponseDTO,
-  NoticeStatDto
+  NoticeStatsDto
 >("admin-notices-infinite", getAdminNotices);

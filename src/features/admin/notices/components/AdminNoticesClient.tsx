@@ -31,6 +31,8 @@ import { useInfiniteScroll } from "@/shared/hooks/useInfiniteScroll";
 import LoadMoreTrigger from "@/shared/components/common/LoadMoreTrigger";
 import { AdminTableToolbar } from "../../components/AdminTableToolbar";
 import { ADMIN_NOTICE_PAGE_SIZE_OPTIONS } from "@/features/support/notices/constants/search";
+import { AdminStatsCard } from "../../components/AdminStatsCard";
+import { defaultNoticeStats, getNoticeStatusList } from "../constants/stats";
 
 const AdminNoticesClient = () => {
   const router = useRouter();
@@ -90,9 +92,15 @@ const AdminNoticesClient = () => {
     enabled: !!hasNextPage,
   });
 
-  const noticeStats = stats ?? {};
+  console.log(stats);
+  const noticeStats = stats ?? defaultNoticeStats;
 
   const totalPages = pagination?.totalPages ?? 1;
+
+  const activeRate =
+    noticeStats.totalCount > 0
+      ? (noticeStats.activeCount / noticeStats.totalCount) * 100
+      : 0;
 
   const handleRowClick = (item: AdminNoticeResponseDTO) => {
     router.push(`${ROUTES.ADMIN_NOTICES}/${item._id}`);
@@ -117,6 +125,12 @@ const AdminNoticesClient = () => {
       </div>
 
       <div className="flex flex-1 flex-col space-y-2">
+        <AdminStatsCard
+          title="공지사항 현황"
+          items={getNoticeStatusList(noticeStats)}
+          progressValue={activeRate}
+          total={noticeStats.totalCount}
+        />
         <AdminTableToolbar
           query={query}
           onChange={setQuery}

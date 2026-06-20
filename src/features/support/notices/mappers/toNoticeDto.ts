@@ -9,6 +9,7 @@ export const toNoticeDto = (lean: NoticeLean): NoticeResponseDTO => {
     _id: lean._id.toString(),
     title: lean.title,
     content: lean.content,
+    status: lean.status,
     category: lean.category,
     isPinned: lean.isPinned,
     views: lean.views,

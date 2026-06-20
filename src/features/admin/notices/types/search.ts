@@ -2,6 +2,28 @@ import { SortOrder } from "@/shared/types/pagination";
 import { FILTER_TYPES, FilterValue } from "../../constants/filters";
 
 /**
+ * 공지사항 상태 정의
+ */
+export const NOTICE_STATUS = {
+  ACTIVE: "ACTIVE",
+  INACTIVE: "INACTIVE",
+} as const;
+
+export type NoticeStatus = (typeof NOTICE_STATUS)[keyof typeof NOTICE_STATUS];
+
+export const NOTICE_STATUS_LABELS: Record<NoticeStatus, string> = {
+  [NOTICE_STATUS.ACTIVE]: "공개",
+  [NOTICE_STATUS.INACTIVE]: "비공개",
+};
+
+/**
+ * 선택용 옵션 배열 (자동 생성)
+ */
+export const NOTICE_STATUS_OPTIONS = Object.entries(NOTICE_STATUS_LABELS).map(
+  ([value, label]) => ({ value, label }),
+);
+
+/**
  * NOTICE_CATEGORY 상수 객체
  */
 export const NOTICE_CATEGORY = {
@@ -86,6 +108,7 @@ export const ADMIN_NOTICE_SEARCH_FIELD_OPTIONS = Object.entries(
 export const ADMIN_NOTICE_SORT = {
   TITLE: "title",
   CATEGORY: "category",
+  STATUS: "status",
   VIEWS: "views",
   IS_PINNED: "isPinned",
   CREATED_AT: "createdAt",
@@ -97,6 +120,7 @@ export type AdminNoticeSort =
 
 export const ADMIN_NOTICE_SORT_LABELS: Record<AdminNoticeSort, string> = {
   [ADMIN_NOTICE_SORT.TITLE]: "제목순",
+  [ADMIN_NOTICE_SORT.STATUS]: "상태순",
   [ADMIN_NOTICE_SORT.CATEGORY]: "카테고리순",
   [ADMIN_NOTICE_SORT.VIEWS]: "조회수순",
   [ADMIN_NOTICE_SORT.IS_PINNED]: "고정 여부순",
@@ -129,12 +153,22 @@ export const ADMIN_NOTICE_SORT_OPTIONS = Object.entries(
 ).map(([value, label]) => ({ value, label }));
 
 export const adminNoticeInitialFilterValue = {
+  status: "all",
   category: ["all"],
   isPinned: "all",
   createdAt: { start: null, end: null },
 };
 
 export const ADMIN_NOTICE_FILTER_CONFIG = {
+  status: {
+    label: "상태",
+    type: FILTER_TYPES.SELECT,
+    options: [
+      { label: "전체", value: "all" },
+      { label: "활성", value: NOTICE_STATUS.ACTIVE },
+      { label: "비활성", value: NOTICE_STATUS.INACTIVE },
+    ],
+  },
   category: {
     label: "카테고리",
     type: FILTER_TYPES.MULTI_SELECT,

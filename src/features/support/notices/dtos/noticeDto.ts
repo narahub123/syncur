@@ -1,3 +1,4 @@
+import { NoticeStatus } from "@/features/admin/notices/types/search";
 import { ImageInfo } from "@/shared/lib/cloudinary/image-info.model";
 
 /**
@@ -6,6 +7,7 @@ import { ImageInfo } from "@/shared/lib/cloudinary/image-info.model";
 export interface NoticeResponseDTO {
   _id: string; // 💡 Types.ObjectId -> string 변환
   title: string;
+  status: NoticeStatus;
   content: string;
   category: string;
   isPinned: boolean;
@@ -21,6 +23,7 @@ export interface NoticeResponseDTO {
  */
 export interface CreateNoticeDto {
   title: string;
+  status: NoticeStatus;
   content: string; // 리치 에디터 HTML/Markdown 데이터
   category: string;
   isPinned?: boolean; // 상단 고정 여부
@@ -36,6 +39,7 @@ export interface CreateNoticeRequestDto extends CreateNoticeDto {
  */
 export interface UpdateNoticeDto {
   title?: string;
+  status?: NoticeStatus;
   content?: string;
   category?: string;
   isPinned?: boolean;
@@ -49,6 +53,7 @@ export interface UpdateNoticeRequestDto extends UpdateNoticeDto {
 export interface AdminNoticeResponseDTO {
   _id: string;
   title: string;
+  status: NoticeStatus;
   content: string;
   category: string;
   views: number;

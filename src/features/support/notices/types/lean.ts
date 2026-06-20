@@ -1,6 +1,8 @@
+import { NoticeStatus } from "@/features/admin/notices/types/search";
 import { UserLean } from "@/features/users/types/lean";
 import { ImageInfo } from "@/shared/lib/cloudinary/image-info.model";
 import { Types } from "mongoose";
+import { NoticeStatsDto } from "../../../admin/notices/dto/noticeStatsDto";
 
 /**
  * 몽고디비 원본 타입을 그대로 유지하는 Notice Lean 타입
@@ -8,6 +10,7 @@ import { Types } from "mongoose";
 export interface NoticeLean {
   _id: Types.ObjectId;
   title: string;
+  status: NoticeStatus;
   content: string;
   category: string;
   isPinned: boolean;
@@ -21,6 +24,7 @@ export interface NoticeLean {
 export interface NoticeWithUserLean {
   _id: string;
   title: string;
+  status: NoticeStatus;
   content: string;
   category: string;
   views: number;
@@ -38,5 +42,6 @@ export interface NoticeWithUserLean {
  */
 export interface NoticeAdminLeanPagedResponse {
   items: NoticeWithUserLean[];
+  stats: NoticeStatsDto;
   totalCount: number;
 }

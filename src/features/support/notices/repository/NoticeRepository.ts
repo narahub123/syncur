@@ -2,7 +2,6 @@ import { Types } from "mongoose";
 import { NoticeModel } from "../model/Notice";
 import { NoticeLean } from "../types/lean";
 import { toObjectId } from "@/shared/utils/toObjectId";
-import { CreateNoticeDto, UpdateNoticeDto } from "../dtos/noticeDto";
 import { UserNoticeQuery } from "../types/search";
 
 /**
@@ -11,18 +10,6 @@ import { UserNoticeQuery } from "../types/search";
  * 원시 객체(Lean) 형태로 데이터를 격리하여 반환합니다.
  */
 export class NoticeRepository {
-  /**
-   * 공지사항 생성 (어드민 전용)
-   * * @param dto 생성할 공지사항 데이터와 작성자(createdBy)의 ObjectId 결합 객체
-   * @returns Mongoose 도큐먼트가 Plain Object로 변환된 공지사항 Lean 객체
-   */
-  async create(
-    dto: CreateNoticeDto & { createdBy: Types.ObjectId },
-  ): Promise<NoticeLean> {
-    const notice = await NoticeModel.create(dto);
-    return notice.toObject();
-  }
-
   /**
    * 단일 공지사항 조회
    * * @param id 조회할 공지사항의 고유 ID (Types.ObjectId 또는 문자열)
@@ -61,33 +48,6 @@ export class NoticeRepository {
       .sort({ isPinned: -1, createdAt: -1 })
       .limit(limit)
       .lean();
-  }
-
-  /**
-   * 공지사항 수정 (어드민 전용)
-   * * @param id 수정할 공지사항의 고유 ID
-   * @param dto 업데이트할 공지사항 데이터 필드 집합 ($set 원자적 반영)
-   * @returns 수정이 완료된 이후의 공지사항 Lean 객체 (존재하지 않을 경우 null)
-   */
-  async update(
-    id: Types.ObjectId | string,
-    dto: UpdateNoticeDto,
-  ): Promise<NoticeLean | null> {
-    return NoticeModel.findByIdAndUpdate(
-      toObjectId(id),
-      { $set: dto },
-      { returnDocument: "after" },
-    ).lean();
-  }
-
-  /**
-   * 공지사항 삭제 (어드민 전용)
-   * * @param id 삭제할 공지사항의 고유 ID
-   * @returns 실제 도큐먼트가 삭제되었는지 여부 (true: 삭제 성공, false: 대상 없음)
-   */
-  async deleteById(id: Types.ObjectId | string): Promise<boolean> {
-    const result = await NoticeModel.deleteOne({ _id: toObjectId(id) });
-    return result.deletedCount > 0;
   }
 
   /**
