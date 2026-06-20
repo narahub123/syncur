@@ -3,7 +3,7 @@ import type { UserLeanPaagedResponse } from "../dto/userDto";
 import {
   AdminUserSearchField,
   AdminUserSort,
-} from "@/features/admin/users/types";
+} from "@/features/admin/users/types/search";
 import { SortOrder } from "@/shared/types/pagination";
 import { USER_ROLE } from "../constants/user-role";
 import { UserLean } from "../types/lean";

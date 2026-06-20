@@ -1,9 +1,9 @@
 "use server";
 
-import { userService } from "@/features/users/services/UserService.instance";
 import { requireAdmin } from "../../lib/requireAdmin";
 import { connectMongo } from "@/shared/lib/db/mongoose";
-import { AdminUsersQuery } from "../types";
+import { AdminUsersQuery } from "../types/search";
+import { adminUserService } from "../services/AdminUserService.instance";
 
 /**
  * Admin - 사용자 목록 조회 Action
@@ -40,7 +40,7 @@ export async function getAdminUsersPaginatedAction(query: AdminUsersQuery) {
    * - service layer에서 pagination 처리
    * - DTO 변환 및 response 구조 생성
    */
-  const users = await userService.getUsersPaginated(query);
+  const users = await adminUserService.getUsersPaginated(query);
 
   return users;
 }

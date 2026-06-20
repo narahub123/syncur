@@ -2,56 +2,151 @@
 
 import { useState } from "react";
 
-import { useAdminUsersQuery } from "../hooks/useAdminUsersQuery";
-import AdminUserTable from "./AdminUserTable";
-import AdminUsersTableToolbar from "./AdminUsersTableToolbar";
-import { AdminUsersQuery } from "../types";
 import AdminPagination from "../../components/AdminPagination";
+import { useAdminUsersQuery } from "../hooks/useAdminUsersQuery";
+import { useAdminUsersInfiniteQuery } from "../hooks/useAdminUsersInfiniteQuery";
+
+import { useListMode } from "@/features/admin/hooks/useListMode";
+import { useMediaQuery } from "@/features/admin/hooks/useMediaQuery";
+import { useInfiniteScroll } from "@/shared/hooks/useInfiniteScroll";
+
+import { AdminTable } from "@/features/admin/components/AdminTable";
+import { AdminTableToolbar } from "@/features/admin/components/AdminTableToolbar";
+import LoadMoreTrigger from "@/shared/components/common/LoadMoreTrigger";
+
+import { useTableSort } from "@/features/admin/hooks/useTableSort";
+
+import { ROUTES } from "@/shared/constants/routes";
+
+import {
+  ADMIN_USER_SEARCH_FIELD_OPTIONS,
+  ADMIN_USER_SEARCH_FIELD,
+  ADMIN_USER_SORT,
+  ADMIN_USER_PAGE_SIZE,
+  ADMIN_USER_FILTER_CONFIG,
+  adminUserInitialFilterValue,
+  AdminUserFilterKey,
+  AdminUserSort,
+  ADMIN_USER_PAGE_SIZE_OPTIONS,
+} from "../types/search";
+
+import { FilterValue } from "@/features/admin/constants/filters";
+import { adminUserTableColumns } from "../constants/adminUserTable";
+import { UserDto } from "@/features/users/dto/userDto";
+import { FilterToolbar } from "../../components/FilterToolbar";
 
 const AdminUsersClient = () => {
-  /**
-   * 🔹 검색 / 정렬 / 페이지 상태를 하나의 query object로 관리
-   * → React Query key와 완전히 동기화되는 구조
-   */
-  const [query, setQuery] = useState<AdminUsersQuery>({
-    search: "",
-    searchField: "name",
-    sort: "name",
-    sortOrder: "desc",
+  const isMobile = useMediaQuery("(max-width: 768px)");
+
+  const [query, setQuery] = useState({
     page: 1,
-    limit: 10,
+    limit: ADMIN_USER_PAGE_SIZE.DEFAULT,
+    search: "",
+    searchField: ADMIN_USER_SEARCH_FIELD.NAME,
+    sort: ADMIN_USER_SORT.NAME,
+    sortOrder: "desc" as const,
+    filters: adminUserInitialFilterValue,
   });
 
   /**
-   * 🔹 데이터 요청
-   * isFetching: 데이터 갱신 중 포함 (pagination / search 변경 시 사용)
+   * =========================
+   * filter handler
+   * =========================
    */
-  const { data, isFetching } = useAdminUsersQuery(query);
+  const handleFilterChange = (key: AdminUserFilterKey, value: FilterValue) => {
+    setQuery((prev) => ({
+      ...prev,
+      filters: {
+        ...prev.filters,
+        [key]: value,
+      },
+    }));
+  };
 
   /**
-   * 🔹 안전한 기본값 처리
-   * 데이터 없을 때도 table 구조 유지하기 위해 빈 배열 사용
+   * =========================
+   * sort handler
+   * =========================
    */
-  const users = data?.items ?? [];
+  const { sort, onSort } = useTableSort<typeof query, AdminUserSort>(
+    query,
+    setQuery,
+  );
 
-  const totalPages = data?.pagination.totalPages ?? 1;
+  /**
+   * =========================
+   * data mode (pagination / infinite)
+   * =========================
+   */
+  const {
+    isLoading,
+    items: users,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    pagination,
+  } = useListMode({
+    isMobile,
+    query,
+    useQueryHook: useAdminUsersQuery,
+    useInfiniteHook: useAdminUsersInfiniteQuery,
+  });
+
+  const totalPages = pagination?.totalPages ?? 1;
+
+  /**
+   * =========================
+   * infinite scroll (mobile)
+   * =========================
+   */
+  const loadMoreRef = useInfiniteScroll({
+    onIntersect: () => {
+      if (hasNextPage && !isFetchingNextPage) {
+        fetchNextPage();
+      }
+    },
+    enabled: !!hasNextPage,
+  });
+
+  /**
+   * =========================
+   * row click
+   * =========================
+   */
+  const handleRowClick = (item: UserDto) => {
+    window.location.href = `${ROUTES.ADMIN_USERS}/${item._id}`;
+  };
 
   return (
-    <div className="flex flex-1 flex-col">
-      {/* 페이지 타이틀 */}
-      <h3 className="p-2 font-medium">이용자 목록</h3>
+    <div className="w-full p-6">
+      <h1 className="mb-6 text-2xl font-bold">유저 관리</h1>
 
-      <div className="flex flex-1 flex-col space-y-2">
-        {/* 🔹 검색 / 정렬 / 페이지 사이즈 컨트롤 */}
-        <AdminUsersTableToolbar query={query} onChange={setQuery} />
-        {/* 🔹 테이블 유지 구조 * - 로딩 중에도 UI 유지 * - 데이터 변경 시 깜빡임 방지 */}{" "}
-        <AdminUserTable
-          users={users}
-          isFetching={isFetching}
+      <div className="flex flex-1 flex-col space-y-4">
+        <AdminTableToolbar
           query={query}
           onChange={setQuery}
+          searchFieldOptions={ADMIN_USER_SEARCH_FIELD_OPTIONS}
+          pageSizeOptions={ADMIN_USER_PAGE_SIZE_OPTIONS}
         />
-        {totalPages !== 1 && (
+
+        <FilterToolbar
+          filters={query.filters}
+          onChange={handleFilterChange}
+          config={ADMIN_USER_FILTER_CONFIG}
+          initialValue={adminUserInitialFilterValue}
+        />
+
+        <AdminTable
+          columns={adminUserTableColumns}
+          data={users}
+          isFetching={isLoading}
+          sort={sort}
+          onSort={onSort}
+          onRowClick={handleRowClick}
+        />
+
+        {/* pagination (desktop) */}
+        {totalPages > 1 && !isMobile && (
           <AdminPagination
             page={query.page}
             totalPages={totalPages}
@@ -62,6 +157,13 @@ const AdminUsersClient = () => {
               }))
             }
           />
+        )}
+
+        {/* infinite scroll (mobile) */}
+        {isMobile && <LoadMoreTrigger ref={loadMoreRef} className="h-10" />}
+
+        {isMobile && isFetchingNextPage && (
+          <div className="-mt-20 p-4 text-center">loading...</div>
         )}
       </div>
     </div>

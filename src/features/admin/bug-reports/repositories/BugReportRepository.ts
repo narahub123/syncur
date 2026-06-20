@@ -19,9 +19,6 @@ export class BugReportRepository {
     const { page, limit, search, searchField, sort, sortOrder, filters } =
       params;
 
-    console.log("검색 필드", searchField);
-    console.log("검색어", search);
-
     const skip = (page - 1) * limit;
     const mongoOrder = sortOrder === "asc" ? 1 : -1;
 

@@ -4,7 +4,7 @@ import { UserDto, UserDtoPagedResponse } from "../dto/userDto";
 import { toUserDto, toUserDtos } from "../mappers/toUserDto";
 import { ADMIN_CONFIG } from "@/features/admin/constants/admin-config";
 import { PAGINATION } from "@/shared/constants/pagination";
-import { AdminUsersQuery } from "@/features/admin/users/types";
+import { AdminUsersQuery } from "@/features/admin/users/types/search";
 import { USER_ROLE } from "../constants/user-role";
 import { ImageInfo } from "@/shared/lib/cloudinary/image-info.model";
 import { deleteCloudinaryImage } from "@/shared/lib/cloudinary/cloudinary.utils";

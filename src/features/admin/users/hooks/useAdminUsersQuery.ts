@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { fetchAdminUsers } from "../api/fetchAdminUsers";
-import { AdminUsersQuery } from "../types";
+import { AdminUsersQuery } from "../types/search";
 
 export function useAdminUsersQuery(query: AdminUsersQuery) {
   return useQuery({
