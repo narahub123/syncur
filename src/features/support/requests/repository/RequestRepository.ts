@@ -10,7 +10,12 @@ import {
   RequestWithUserAndAdminLean,
 } from "../types/admin-search";
 import { ImageInfo } from "@/shared/lib/cloudinary/image-info.model";
-import { UserRequestQuery } from "../types/user-search";
+import {
+  USER_REQUEST_SEARCH_FIELD,
+  USER_REQUEST_SORT,
+  UserRequestQuery,
+} from "../types/search";
+import { SORT_ORDER } from "@/shared/types/pagination";
 
 /**
  * Request Repository
@@ -239,33 +244,64 @@ export class RequestRepository {
       page,
       limit,
       search,
-      searchField = "title",
-      sort = "createdAt",
-      sortOrder = "desc",
-      type,
-      status,
+      searchField = USER_REQUEST_SEARCH_FIELD.TITLE,
+      sort = USER_REQUEST_SORT.CREATED_AT,
+      sortOrder = SORT_ORDER.DESC,
+      filters,
     } = params;
+
     const skip = (page - 1) * limit;
     const mongoOrder = sortOrder === "asc" ? 1 : -1;
 
-    const query: Record<string, unknown> = { userId: toObjectId(userId) };
-    if (type) query.type = type;
-    if (status) query.status = status;
-    if (search && search.trim().length > 0) {
-      query[searchField] = { $regex: search, $options: "i" };
+    const query: Record<string, unknown> = {
+      userId: toObjectId(userId),
+    };
+
+    /**
+     * 검색
+     */
+    if (search?.trim()) {
+      query[searchField] = {
+        $regex: search,
+        $options: "i",
+      };
     }
 
-    // 💡 Mongoose 내장 모델 정렬 가이드와 호환되는 리터럴 레코드 타입 선언
+    /**
+     * 문의 유형 (SELECT)
+     */
+    const type = filters?.type;
+
+    if (typeof type === "string" && type !== "all") {
+      query.type = type;
+    }
+
+    /**
+     * 처리 상태 (MULTI SELECT)
+     */
+    const status = filters?.status;
+
+    if (Array.isArray(status)) {
+      const validStatuses = status.filter((v): v is string => v !== "all");
+
+      if (validStatuses.length > 0) {
+        query.status = {
+          $in: validStatuses,
+        };
+      }
+    }
+
     const userSortCondition: Record<string, 1 | -1> = {
       [sort]: mongoOrder,
     };
 
     const [items, totalCount] = await Promise.all([
       RequestModel.find(query)
-        .sort(userSortCondition) // 💡 any 없이 통과
+        .sort(userSortCondition)
         .skip(skip)
         .limit(limit)
         .lean(),
+
       RequestModel.countDocuments(query),
     ]);
 

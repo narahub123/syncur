@@ -3,7 +3,7 @@
 import { connectMongo } from "@/shared/lib/db/mongoose";
 import { requireAuth } from "@/shared/lib/auth/requireAuth";
 import { requestService } from "../services/RequestService.instance";
-import { UserRequestQuery } from "../types/user-search";
+import { UserRequestQuery } from "../types/search";
 
 export async function getMyRequestsAction(query: UserRequestQuery) {
   await connectMongo();

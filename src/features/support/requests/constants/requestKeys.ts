@@ -1,6 +1,5 @@
-
 import { AdminRequestQuery } from "../types/admin-search";
-import { UserRequestQuery } from "../types/user-search";
+import { UserRequestQuery } from "../types/search";
 
 export const requestKeys = {
   all: ["requests"] as const,

@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { getMyRequestsAction } from "../actions/getMyRequestsAction";
 import { requestKeys } from "../constants/requestKeys";
-import { UserRequestQuery } from "../types/user-search";
+import { UserRequestQuery } from "../types/search";
 
 export function useUserRequestsQuery(query: UserRequestQuery) {
   return useQuery({

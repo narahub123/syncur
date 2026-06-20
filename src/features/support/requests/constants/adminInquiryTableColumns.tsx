@@ -3,11 +3,7 @@ import {
   AdminRequestSort,
 } from "../types/admin-search";
 import { Badge } from "@/shared/components/ui/badge"; // Shadcn UI Badge 활용
-import {
-  REQUEST_STATUS,
-  REQUEST_STATUS_OPTIONS,
-  REQUEST_TYPE,
-} from "./request-type";
+import { REQUEST_STATUS, REQUEST_TYPE } from "./request-type";
 
 export const adminInquiryTableColumns: {
   key: AdminRequestSort;
@@ -35,7 +31,7 @@ export const adminInquiryTableColumns: {
           r.status === REQUEST_STATUS.COMPLETED ? "secondary" : "outline"
         }
       >
-        {REQUEST_STATUS_OPTIONS[r.status]}
+        {r.status === REQUEST_STATUS.COMPLETED ? "답변완료" : "처리중"}
       </Badge>
     ),
   },

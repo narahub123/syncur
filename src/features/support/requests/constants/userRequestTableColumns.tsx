@@ -1,52 +1,60 @@
 import { RequestResponseDTO } from "../dtos";
 import { REQUEST_STATUS, REQUEST_TYPE } from "../constants/request-type";
-import { UserRequestSort } from "../types/user-search";
+import { Column, COLUMN_ALIGN } from "@/features/admin/types/admin-table";
+import { UserRequestSort } from "../types/search";
+import { Badge } from "@/shared/components/ui/badge";
 
-export type UserRequestTableColumn = {
-  key: UserRequestSort | string; // 정렬 키가 아닌 컬럼도 수용
-  header: string;
-  align?: "left" | "center" | "right";
-  render: (request: RequestResponseDTO) => React.ReactNode;
-};
-
-export const userRequestTableColumns: UserRequestTableColumn[] = [
+export const userRequestTableColumns: Column<
+  RequestResponseDTO,
+  UserRequestSort
+>[] = [
   {
     key: "status",
     header: "상태",
-    align: "center",
-    render: (r) => (
-      <span
-        className={`rounded px-2 py-0.5 text-[10px] ${
-          r.status === REQUEST_STATUS.COMPLETED
-            ? "bg-green-100 text-green-700"
-            : "bg-gray-100 text-gray-600"
-        }`}
+    align: COLUMN_ALIGN.CENTER,
+    render: (r: RequestResponseDTO) => (
+      <Badge
+        variant={
+          r.status === REQUEST_STATUS.COMPLETED ? "secondary" : "outline"
+        }
       >
         {r.status === REQUEST_STATUS.COMPLETED ? "답변완료" : "처리중"}
-      </span>
+      </Badge>
     ),
+    sortable: true,
   },
+
   {
-    key: "type", // 유형별 정렬을 위해 키 추가
+    key: "type",
     header: "유형",
-    align: "center",
-    render: (r) => (
+    align: COLUMN_ALIGN.CENTER,
+    render: (r: RequestResponseDTO) => (
       <span
-        className={`text-xs font-semibold ${r.type === REQUEST_TYPE.BUG_REPORT ? "text-red-600" : "text-blue-600"}`}
+        className={`text-xs font-semibold ${
+          r.type === REQUEST_TYPE.BUG_REPORT ? "text-red-600" : "text-blue-600"
+        }`}
       >
         {r.type === REQUEST_TYPE.BUG_REPORT ? "버그" : "문의"}
       </span>
     ),
+    sortable: true,
   },
+
   {
     key: "title",
     header: "제목",
-    render: (r) => <span className="truncate font-medium">{r.title}</span>,
+    render: (r: RequestResponseDTO) => (
+      <span className="truncate font-medium">{r.title}</span>
+    ),
+    sortable: true,
   },
 
   {
     key: "createdAt",
     header: "접수일",
-    render: (r) => new Date(r.createdAt).toLocaleDateString("ko-KR"),
+    align: COLUMN_ALIGN.CENTER,
+    render: (r: RequestResponseDTO) =>
+      new Date(r.createdAt).toLocaleDateString("ko-KR"),
+    sortable: true,
   },
-];
+] as const;

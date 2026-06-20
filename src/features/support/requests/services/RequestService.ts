@@ -13,7 +13,7 @@ import {
   toAdminRequestDtos,
 } from "../mappers/toAdminRequestDtos";
 import { ImageInfo } from "@/shared/lib/cloudinary/image-info.model";
-import { UserRequestQuery } from "../types/user-search";
+import { UserRequestQuery } from "../types/search";
 
 export class RequestService {
   constructor(private readonly requestRepository: RequestRepository) {}
