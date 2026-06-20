@@ -24,7 +24,6 @@ export default function SupportRequestDetailClient({
   if (error || !request)
     return <div className="p-6">문의 내역을 찾을 수 없습니다.</div>;
 
-  console.log("사아ㅇㄴ으ㅜㄴ일나ㅣ런ㅇㄹ", request.adminReply?.images);
   const handleEdit = () => {
     if (!request) return;
     router.push(`${ROUTES.SUPPORT_REQUESTS}/${request._id}/edit`);

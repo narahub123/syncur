@@ -1,5 +1,5 @@
 import AdminBugReportReplyClient from "@/features/admin/bug-reports/components/AdminBugReportReplyClient";
-import { BugStatus } from "@/features/admin/bug-reports/types";
+import { BugReportStatus } from "@/features/admin/bug-reports/types/search";
 import { getRequestAction } from "@/features/support/requests/actions/getRequestAction";
 import { notFound } from "next/navigation";
 
@@ -24,7 +24,7 @@ export default async function AdminBugReportReplyPage({ params }: PageProps) {
         title: bugReportData.title,
         content: bugReportData.content,
         createdAt: new Date(bugReportData.createdAt).toLocaleDateString(),
-        currentStatus: bugReportData.status as BugStatus,
+        currentStatus: bugReportData.status as BugReportStatus,
         metadata: bugReportData.metadata,
       }}
       // 답변이 있으면 기존 답변 데이터를 넘겨 수정 모드로 전환
@@ -33,7 +33,7 @@ export default async function AdminBugReportReplyPage({ params }: PageProps) {
           ? {
               replyContent: bugReportData.adminReply.replyContent,
               images: bugReportData.adminReply.images,
-              status: bugReportData.status as BugStatus,
+              status: bugReportData.status as BugReportStatus,
             }
           : null
       }

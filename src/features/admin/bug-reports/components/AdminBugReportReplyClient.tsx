@@ -2,17 +2,17 @@
 
 import { Badge } from "@/shared/components/ui/badge";
 import { LaptopIcon } from "lucide-react";
-import {
-  AdminBugReportDetail,
-  BUG_STATUS,
-  bugAnswerFormConfig,
-  BugAnswerFormValues,
-} from "../types";
 import { DynamicForm } from "@/shared/components/common/DynamicForm";
-import { useAdminReplyMutation } from "@/features/support/requests/hooks/useAdminReplyMutation";
 import { ImagePreview } from "@/shared/components/common/ImagePreview";
 import { useState } from "react";
 import { Avatar } from "@/shared/components/common/Avartar";
+import { AdminBackButton } from "../../components/AdminBackButton";
+import { ROUTES } from "@/shared/constants/routes";
+import { AdminBugReportDetail } from "../dto/bugReportDto";
+import { BugAnswerFormValues } from "../types/form";
+import { bugAnswerFormConfig } from "../constants/form";
+import { BUG_REPORT_STATUS } from "../types/search";
+import { useAdminBugReportReplyMutation } from "../hooks/useAdminBugReportReplyMutation";
 
 interface AdminBugReplyClientProps {
   bugReport: AdminBugReportDetail;
@@ -27,11 +27,11 @@ export default function AdminBugReplyClient({
   const [images, setImages] = useState(bugReport.metadata?.images || []);
 
   // 훅에서 onSuccess 시 토스트 처리
-  const { mutate: reply } = useAdminReplyMutation(isEditMode);
+  const { mutate: reply } = useAdminBugReportReplyMutation(isEditMode);
 
   const handleBugReplySubmit = (data: BugAnswerFormValues) => {
     reply({
-      requestId: bugReport._id,
+      bugReportId: bugReport._id,
       replyContent: data.replyContent,
       status: data.status,
       images: data.images || [],
@@ -40,6 +40,7 @@ export default function AdminBugReplyClient({
 
   return (
     <div className="mx-auto w-full max-w-4xl space-y-6 p-6">
+      <AdminBackButton href={ROUTES.ADMIN_BUG_REPORTS} />
       <div className="flex items-center justify-between border-b pb-4">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">
@@ -51,7 +52,7 @@ export default function AdminBugReplyClient({
         </div>
         <Badge
           variant={
-            bugReport.currentStatus === BUG_STATUS.COMPLETED
+            bugReport.currentStatus === BUG_REPORT_STATUS.COMPLETED
               ? "default"
               : "secondary"
           }
@@ -119,7 +120,7 @@ export default function AdminBugReplyClient({
             }
             initialValues={
               existingAnswer || {
-                status: BUG_STATUS.CHECKING,
+                status: BUG_REPORT_STATUS.CHECKING,
                 replyContent: "",
                 images: [],
               }

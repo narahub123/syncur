@@ -15,6 +15,8 @@ import {
 } from "../types";
 import { ImageInfo } from "@/shared/lib/cloudinary/image-info.model";
 import { Avatar } from "@/shared/components/common/Avartar";
+import { AdminBackButton } from "../../components/AdminBackButton";
+import { ROUTES } from "@/shared/constants/routes";
 
 interface AdminInquiryReplyClientProps {
   inquiry: UserInquiryData;
@@ -45,6 +47,7 @@ export default function AdminInquiryReplyClient({
 
   return (
     <div className="mx-auto w-full max-w-3xl space-y-6 p-6">
+      <AdminBackButton href={ROUTES.ADMIN_INQUIRIES} />
       {/* 1. 문의 상세 정보 */}
       <div className="bg-card rounded-xl border p-6 shadow-sm">
         <div className="mb-6 flex items-start justify-between">
