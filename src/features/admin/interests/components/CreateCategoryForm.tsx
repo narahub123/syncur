@@ -21,6 +21,7 @@ import { CategoryDTO } from "@/features/interests/dtos/categoryDto";
 import ConfirmDialog from "@/shared/components/common/ConfirmDialog";
 import { useCreateCategoryMutation } from "../hooks/useCreateCategoryMutation";
 import { useUpdateCategoryMutation } from "../hooks/useUpdateCategoryMutation";
+import { toast } from "sonner";
 
 type ServerActionResponse = {
   success: boolean;
@@ -78,8 +79,13 @@ export const CreateCategoryForm = () => {
         onSuccess: (res: ServerActionResponse) => {
           if (!res.success) {
             form.setError("slug", { message: res.error });
+            toast.error("카테고리 생성에 실패했습니다.");
+          } else {
+            toast.success("카테고리가 성공적으로 생성되었습니다.");
+            // 생성 후에도 데이터 유지 (reset 호출 안 함)
           }
         },
+        onError: () => toast.error("시스템 오류가 발생했습니다."),
       });
     }
   };
@@ -93,10 +99,15 @@ export const CreateCategoryForm = () => {
           setIsConfirmOpen(false);
           if (!res.success) {
             form.setError("slug", { message: res.error });
+            toast.error("카테고리 수정에 실패했습니다.");
             return;
           }
-          if (res.data) setSelectedCategory(res.data);
+          if (res.data) {
+            setSelectedCategory(res.data);
+            toast.success("카테고리가 성공적으로 수정되었습니다.");
+          }
         },
+        onError: () => toast.error("시스템 오류가 발생했습니다."),
       },
     );
   };

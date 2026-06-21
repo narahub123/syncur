@@ -1,5 +1,5 @@
 import { InterestDTO } from "../dtos/interestDto";
-import { Interest, InterestCategory } from "../types/interests";
+import { InterestCategory } from "../types/interests";
 import InterestButton from "./InterestButton";
 
 type InterestSelectorProps = {

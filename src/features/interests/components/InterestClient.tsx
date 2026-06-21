@@ -1,7 +1,6 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Interest } from "../types/interests";
 import {
   InterestModalErrorCode,
   MAX_INTEREST_COUNT,

@@ -87,4 +87,34 @@ export class InterestRepository {
       { session },
     );
   }
+
+  /**
+   * 조건부 관심사 목록 조회 (카테고리 필터링 + 키워드 검색)
+   */
+  async findFiltered(filter: {
+    categoryId?: string;
+    keyword?: string;
+  }): Promise<InterestLean[]> {
+    const query: Record<string, unknown> = {};
+
+    if (filter.categoryId) {
+      query.categoryId = new Types.ObjectId(filter.categoryId);
+    }
+
+    if (filter.keyword) {
+      // name 필드를 정규표현식으로 부분 일치 검색 (대소문자 무시)
+      query.name = { $regex: filter.keyword, $options: "i" };
+    }
+
+    return (await InterestModel.find(query)
+      .sort({ name: 1 })
+      .lean()) as InterestLean[];
+  }
+
+  /**
+   * Slug로 관심사 조회 (중복 검사 및 상세 조회용)
+   */
+  async findBySlug(slug: string): Promise<InterestLean | null> {
+    return await InterestModel.findOne({ slug }).lean();
+  }
 }

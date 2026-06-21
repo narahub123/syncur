@@ -3,6 +3,7 @@ import { InterestDTO } from "../dtos/interestDto";
 import { toInterestDTO, toInterestDTOs } from "../mappers/toInterestDTO";
 import { categoryRepository } from "../repositories/CategoryRepository.instance";
 import { interestRepository } from "../repositories/InterestRepository.instance";
+import { categoryService } from "./CategoryService.instance";
 
 export class InterestService {
   /**
@@ -14,16 +15,26 @@ export class InterestService {
     name: string;
     categoryId: string;
   }): Promise<InterestDTO> {
-    // 1. 카테고리 존재 여부 검증
-    const category = await categoryRepository.findById(data.categoryId);
+    // 1. 카테고리 존재 여부 및 상세 정보(slug) 조회
+    const category = await categoryService.getCategoryById(data.categoryId);
     if (!category) {
       throw new Error(`카테고리 ID ${data.categoryId}를 찾을 수 없습니다.`);
     }
 
-    // 2. 비즈니스 로직 수행 (필요 시 슬러그 중복 체크 등 추가 가능)
+    // 2. 비즈니스 로직: 네임스페이스 전략 (categorySlug/interestSlug)
+    const compositeSlug = `${category.slug}/${data.slug}`;
 
-    // 3. 리포지토리 호출
-    const doc = await interestRepository.create(data);
+    // 3. 중복 검사: 해당 조합의 slug가 이미 존재하는지 리포지토리에서 확인
+    const exists = await interestRepository.findBySlug(compositeSlug);
+    if (exists) {
+      throw new Error(`이미 존재하는 관심사입니다: ${compositeSlug}`);
+    }
+
+    // 4. 조합된 slug로 데이터 생성
+    const doc = await interestRepository.create({
+      ...data,
+      slug: compositeSlug,
+    });
 
     return toInterestDTO(doc);
   }
@@ -77,5 +88,20 @@ export class InterestService {
     session?: ClientSession,
   ): Promise<void> {
     await interestRepository.decrementUserCount(ids, session);
+  }
+
+  /**
+   * 관심사 목록 조회 (카테고리 필터링 및 키워드 검색 지원)
+   * filter: categoryId 또는 keyword를 포함하는 객체
+   */
+  async getInterests(filter: {
+    categoryId?: string;
+    keyword?: string;
+  }): Promise<InterestDTO[]> {
+    // 리포지토리의 조건부 조회 메서드 호출
+    const docs = await interestRepository.findFiltered(filter);
+
+    // DTO 변환 (기존 매핑 로직 유지)
+    return toInterestDTOs(docs);
   }
 }
