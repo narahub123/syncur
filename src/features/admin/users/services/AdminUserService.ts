@@ -6,11 +6,13 @@ import { ADMIN_CONFIG } from "../../constants/admin-config";
 import { toUserDto } from "@/features/users/mappers/toUserDto";
 import { UserStatsService } from "./UserStatsService";
 import { userStatsDefault } from "../constants/stats";
+import { SubscriptionService } from "@/features/subscriptions/services/SubscriptionService";
 
 export class AdminUserService {
   constructor(
     private readonly userRepository: AdminUserRepository,
     private readonly userStatsService: UserStatsService,
+    private readonly subscriptionService: SubscriptionService,
   ) {}
 
   /**
@@ -44,6 +46,32 @@ export class AdminUserService {
 
       // 2. 통계 데이터를 포함 (데이터가 없을 경우 0으로 초기화된 상태 반환)
       stats: stats ?? userStatsDefault(today),
+    };
+  }
+
+  /**
+   * 관리자용 사용자 상세 정보 조회
+   * 유저 기본 정보와 구독 중인 피드 목록을 함께 가져옵니다.
+   */
+  async getUserDetailForAdmin(
+    userId: string,
+    page: number = 1,
+    limit: number = 10,
+  ) {
+    // 1. 유저 정보 조회
+    const user = await this.userRepository.findById(userId);
+    if (!user) return null;
+
+    // 2. 구독 정보 조회 (SubscriptionService 활용)
+    const subscriptions = await this.subscriptionService.getUserSubscriptions(
+      userId,
+      page,
+      limit,
+    );
+
+    return {
+      user: toUserDto(user),
+      subscriptions,
     };
   }
 }

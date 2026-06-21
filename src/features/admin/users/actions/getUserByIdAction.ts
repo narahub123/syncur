@@ -1,8 +1,8 @@
 "use server";
 
-import { userService } from "@/features/users/services/UserService.instance";
 import { connectMongo } from "@/shared/lib/db/mongoose";
 import { requireAdmin } from "../../lib/requireAdmin";
+import { adminUserService } from "../services/AdminUserService.instance";
 
 export async function getUserByIdAction(userId: string) {
   try {
@@ -11,13 +11,13 @@ export async function getUserByIdAction(userId: string) {
     await requireAdmin();
 
     // 2. 사용자 정보 조회
-    const user = await userService.getUserById(userId);
+    const result = await adminUserService.getUserDetailForAdmin(userId);
 
-    if (!user) {
+    if (!result) {
       throw new Error("USER_NOT_FOUND");
     }
 
-    return user;
+    return result;
   } catch (error) {
     if (error instanceof Error) {
       if (error.message === "UNAUTHORIZED")
@@ -25,6 +25,7 @@ export async function getUserByIdAction(userId: string) {
       if (error.message === "USER_NOT_FOUND")
         throw new Error("사용자를 찾을 수 없습니다.");
     }
+    console.error("에러", error);
     throw new Error("사용자 정보를 가져오는 중 오류가 발생했습니다.");
   }
 }

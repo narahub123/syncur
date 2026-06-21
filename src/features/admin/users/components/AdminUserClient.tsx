@@ -6,6 +6,8 @@ import AdminUserRoleConfirmDialog from "./AdminUserRoleConfirmDialog";
 import { useUserById } from "../hooks/useUserById";
 import { useUpdateUserRoleMutation } from "../hooks/useUpdateUserRoleMutation";
 import { UserDetailCard } from "./UserDetailCard";
+import { UserSubscriptionCard } from "./UserSubscriptionCard";
+import { toast } from "sonner";
 
 interface Props {
   userId: string;
@@ -15,8 +17,13 @@ const AdminUserClient = ({ userId }: Props) => {
   const [selectedRole, setSelectedRole] = useState<UserRole | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-  const { data: user, isLoading } = useUserById(userId);
+  const { data, isLoading } = useUserById(userId);
+
   const { mutate: updateRole } = useUpdateUserRoleMutation();
+
+  if (isLoading || !data) return <div>로딩 중...</div>;
+
+  const { user, subscriptions } = data;
 
   // 1. 셀렉트 박스에서 값 변경 시
   const handleRoleChange = (newRole: UserRole) => {
@@ -29,20 +36,30 @@ const AdminUserClient = ({ userId }: Props) => {
     if (!selectedRole) return;
 
     try {
-      // 여기에 updateUserRoleAction(user.id, selectedRole) 같은 서버 액션 호출
-      updateRole({ userId, role: selectedRole });
-      console.log(`${user?.name}의 권한을 ${selectedRole}(으)로 변경 요청`);
+      // 1. 서버 액션 호출 (비동기 처리를 위해 await 추가)
+      await updateRole({ userId, role: selectedRole });
+
+      // 2. 성공 메시지
+      toast.success("권한 변경 완료", {
+        description: `${user?.name}님의 권한이 ${selectedRole}(으)로 성공적으로 변경되었습니다.`,
+      });
+
       setIsDialogOpen(false);
     } catch (error) {
+      // 3. 실패 메시지
       console.error("권한 변경 실패", error);
+
+      toast.error("권한 변경 실패", {
+        description: "권한 변경 중 문제가 발생했습니다. 다시 시도해 주세요.",
+      });
     }
   };
 
-  if (isLoading || !user) return <div>로딩 중...</div>;
   return (
-    <div className="p-6">
+    <div className="space-y-6 p-6">
       <h1 className="mb-6 text-xl font-bold">사용자 상세 정보</h1>
       <UserDetailCard user={user} onRoleChange={handleRoleChange} />
+      <UserSubscriptionCard subscriptions={subscriptions} />
       <AdminUserRoleConfirmDialog
         open={isDialogOpen}
         onOpenChange={setIsDialogOpen}

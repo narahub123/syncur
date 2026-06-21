@@ -109,4 +109,14 @@ export class AdminUserRepository {
   async countAllUsers(): Promise<number> {
     return await User.countDocuments();
   }
+
+  /**
+   * ID로 사용자 조회
+   *
+   * @param userId 사용자 ObjectId
+   * @returns UserLean | null
+   */
+  async findById(userId: string): Promise<UserLean | null> {
+    return User.findById(userId).lean<UserLean>().exec();
+  }
 }
