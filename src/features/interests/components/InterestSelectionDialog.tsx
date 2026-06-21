@@ -18,7 +18,6 @@ import {
 } from "../constants/interest-selection-modal";
 
 import InterestSelector from "./InterestSelector";
-import { INTEREST_CATEGORIES } from "../constants/interests";
 import { useState } from "react";
 import InterestSaveButton from "./InterestSaveButton";
 import { InterestDTO } from "../dtos/interestDto";
@@ -74,7 +73,7 @@ const InterestSelectionDialog = ({
 
         <div className="min-h-0 flex-1 overflow-y-auto">
           <InterestSelector
-            categories={INTEREST_CATEGORIES}
+            categories={[]}
             selectedInterests={selectedInterests}
             onSelect={handleToggleInterest}
           />

@@ -21,6 +21,7 @@ import { CategoryDTO } from "@/features/interests/dtos/categoryDto";
 import ConfirmDialog from "@/shared/components/common/ConfirmDialog";
 import { useCreateCategoryMutation } from "../hooks/useCreateCategoryMutation";
 import { useUpdateCategoryMutation } from "../hooks/useUpdateCategoryMutation";
+import { useDeleteCategoryMutation } from "../hooks/useDeleteCategoryMutation"; // 추가
 import { toast } from "sonner";
 
 type ServerActionResponse = {
@@ -29,8 +30,14 @@ type ServerActionResponse = {
   data?: CategoryDTO;
 };
 
-export const CreateCategoryForm = () => {
+interface Props {
+  initialData?: CategoryDTO;
+  onSuccess?: () => void;
+}
+
+export const CreateCategoryForm = ({ initialData, onSuccess }: Props) => {
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+  const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false); // 삭제 확인 상태 추가
   const [selectedCategory, setSelectedCategory] = useState<CategoryDTO | null>(
     null,
   );
@@ -42,6 +49,8 @@ export const CreateCategoryForm = () => {
     useCreateCategoryMutation();
   const { mutate: updateCategory, isPending: isUpdating } =
     useUpdateCategoryMutation();
+  const { mutate: deleteCategory, isPending: isDeleting } =
+    useDeleteCategoryMutation(); // 삭제 훅 추가
 
   const form = useForm<CategoryFormData>({
     resolver: zodResolver(categorySchema),
@@ -55,6 +64,19 @@ export const CreateCategoryForm = () => {
     ? watchedName !== selectedCategory.name ||
       watchedSlug !== selectedCategory.slug
     : watchedName.trim().length > 0 && watchedSlug.trim().length > 0;
+
+  useEffect(() => {
+    if (initialData) {
+      setSelectedCategory(initialData);
+      form.reset({
+        name: initialData.name,
+        slug: initialData.slug,
+      });
+    } else {
+      setSelectedCategory(null);
+      form.reset({ name: "", slug: "" });
+    }
+  }, [initialData, form]);
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -82,7 +104,7 @@ export const CreateCategoryForm = () => {
             toast.error("카테고리 생성에 실패했습니다.");
           } else {
             toast.success("카테고리가 성공적으로 생성되었습니다.");
-            // 생성 후에도 데이터 유지 (reset 호출 안 함)
+            onSuccess?.();
           }
         },
         onError: () => toast.error("시스템 오류가 발생했습니다."),
@@ -105,6 +127,7 @@ export const CreateCategoryForm = () => {
           if (res.data) {
             setSelectedCategory(res.data);
             toast.success("카테고리가 성공적으로 수정되었습니다.");
+            onSuccess?.();
           }
         },
         onError: () => toast.error("시스템 오류가 발생했습니다."),
@@ -112,12 +135,25 @@ export const CreateCategoryForm = () => {
     );
   };
 
-  return (
-    <section className="space-y-6 rounded-lg border p-6">
-      <h2 className="text-xl font-semibold">
-        {isEditMode ? "카테고리 수정" : "카테고리 관리"}
-      </h2>
+  // 삭제 실행 함수 추가
+  const handleDelete = () => {
+    if (!selectedCategory) return;
+    deleteCategory(selectedCategory._id, {
+      onSuccess: (res: ServerActionResponse) => {
+        setIsDeleteConfirmOpen(false);
+        if (res.success) {
+          toast.success("카테고리가 삭제되었습니다.");
+          onSuccess?.();
+        } else {
+          toast.error("삭제 실패: " + res.error);
+        }
+      },
+      onError: () => toast.error("시스템 오류가 발생했습니다."),
+    });
+  };
 
+  return (
+    <section className="flex-1 space-y-6 rounded-lg border p-6">
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
           <FormField
@@ -133,7 +169,7 @@ export const CreateCategoryForm = () => {
                     placeholder="이름을 입력하거나 선택하세요"
                     onFocus={() => setShowDropdown(true)}
                     onChange={(e) => {
-                      form.clearErrors("slug"); // [에러 해결] 수정 시 에러 제거
+                      form.clearErrors("slug");
                       field.onChange(e);
                       setShowDropdown(true);
                       if (selectedCategory) setSelectedCategory(null);
@@ -154,7 +190,7 @@ export const CreateCategoryForm = () => {
                           key={cat._id}
                           className="cursor-pointer px-4 py-2 text-sm hover:bg-gray-100"
                           onClick={() => {
-                            form.clearErrors("slug"); // [에러 해결] 선택 시 에러 제거
+                            form.clearErrors("slug");
                             setSelectedCategory(cat);
                             form.setValue("name", cat.name);
                             form.setValue("slug", cat.slug);
@@ -181,7 +217,7 @@ export const CreateCategoryForm = () => {
                   <Input
                     {...field}
                     onChange={(e) => {
-                      form.clearErrors("slug"); // [에러 해결] Slug 수정 시 에러 제거
+                      form.clearErrors("slug");
                       field.onChange(e);
                     }}
                     placeholder="예: it-news"
@@ -192,20 +228,34 @@ export const CreateCategoryForm = () => {
             )}
           />
 
-          <Button
-            type="submit"
-            disabled={!isDirty || isCreating || isUpdating}
-            className="w-full"
-            variant={isEditMode ? "destructive" : "default"}
-          >
-            {isEditMode
-              ? isUpdating
-                ? "수정 중..."
-                : "수정하기"
-              : isCreating
-                ? "생성 중..."
-                : "생성하기"}
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              type="submit"
+              disabled={!isDirty || isCreating || isUpdating || isDeleting}
+              className="flex-1"
+              variant={isEditMode ? "default" : "default"}
+            >
+              {isEditMode
+                ? isUpdating
+                  ? "수정 중..."
+                  : "수정하기"
+                : isCreating
+                  ? "생성 중..."
+                  : "생성하기"}
+            </Button>
+
+            {isEditMode && (
+              <Button
+                type="button"
+                variant="destructive"
+                disabled={isCreating || isUpdating || isDeleting}
+                onClick={() => setIsDeleteConfirmOpen(true)}
+                className="flex-1"
+              >
+                {isDeleting ? "삭제 중..." : "삭제"}
+              </Button>
+            )}
+          </div>
         </form>
       </Form>
 
@@ -216,6 +266,16 @@ export const CreateCategoryForm = () => {
         description="이 내용을 수정하시겠습니까?"
         onConfirm={handleConfirmUpdate}
         confirm="수정"
+        confirmVariant="destructive"
+      />
+
+      <ConfirmDialog
+        open={isDeleteConfirmOpen}
+        onOpenChange={setIsDeleteConfirmOpen}
+        title="삭제 확인"
+        description="정말로 이 카테고리를 삭제하시겠습니까?"
+        onConfirm={handleDelete}
+        confirm="삭제"
         confirmVariant="destructive"
       />
     </section>

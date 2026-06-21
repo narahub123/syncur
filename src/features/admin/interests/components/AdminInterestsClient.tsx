@@ -1,13 +1,11 @@
 "use client";
 
-import { CreateCategoryForm } from "./CreateCategoryForm";
-import { CreateInterestForm } from "./CreateInterestForm";
+import { CategoryListSection } from "./CategoryListSection";
 
 const AdminInterestsClient = () => {
   return (
-    <div>
-      <CreateCategoryForm />
-      <CreateInterestForm />
+    <div className="p-6">
+      <CategoryListSection />
     </div>
   );
 };

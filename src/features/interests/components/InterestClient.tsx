@@ -9,7 +9,7 @@ import {
 import InterestActionBar from "./InterestActionBar";
 import SettingsPageHeader from "../../settings/components/SettingsPageHeader";
 import InterestSelector from "./InterestSelector";
-import { INTEREST_CATEGORIES } from "../constants/interests";
+
 import { UserInterestProfilePopulatedDTO } from "../dtos/userInterestProfileDto";
 import { InterestDTO } from "../dtos/interestDto";
 
@@ -71,7 +71,7 @@ const InterestClient = ({ interests }: InterestClientProps) => {
 
       <section className="min-h-0 p-6">
         <InterestSelector
-          categories={INTEREST_CATEGORIES}
+          categories={[]}
           selectedInterests={selectedInterests}
           onSelect={handleToggleInterest}
         />

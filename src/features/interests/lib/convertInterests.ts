@@ -1,4 +1,3 @@
-import { INTEREST_CATEGORIES } from "../constants/interests";
 import { InterestDTO } from "../dtos/interestDto";
 
 export const convertInterests = (interestIds: string[]): InterestDTO[] => {
@@ -6,13 +5,13 @@ export const convertInterests = (interestIds: string[]): InterestDTO[] => {
 
   const interests: InterestDTO[] = [];
 
-  for (const category of INTEREST_CATEGORIES) {
-    for (const interest of category.interests) {
-      if (interestIdSet.has(interest._id)) {
-        interests.push(interest);
-      }
-    }
-  }
+  // for (const category of []) {
+  //   for (const interest of category.interests) {
+  //     if (interestIdSet.has(interest._id)) {
+  //       interests.push(interest);
+  //     }
+  //   }
+  // }
 
   return interests;
 };

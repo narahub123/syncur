@@ -2,6 +2,9 @@ import { ClientSession } from "mongoose";
 import { CategoryDTO } from "../dtos/categoryDto";
 import { toCategoryDTO, toCategoryDTOs } from "../mappers/toCategoryDTO";
 import { categoryRepository } from "../repositories/CategoryRepository.instance";
+import { toInterestDTOs } from "../mappers/toInterestDTO";
+import mongoose from "mongoose";
+import { interestService } from "./InterestService.instance";
 
 export class CategoryService {
   /**
@@ -56,10 +59,28 @@ export class CategoryService {
   /**
    * 카테고리 삭제
    */
+  /**
+   * 카테고리 삭제 (관심사 일괄 삭제 포함)
+   */
   async deleteCategory(id: string): Promise<boolean> {
-    // 삭제 전, 해당 카테고리를 참조하는 Interest가 있는지 확인하는 로직을
-    // 여기서 수행하면 데이터 정합성을 더 완벽하게 지킬 수 있습니다.
-    return await categoryRepository.delete(id);
+    const session = await mongoose.startSession(); // 올바른 문법
+    session.startTransaction();
+
+    try {
+      // 1. 관심사 삭제 시 세션 전달
+      await interestService.deleteInterestsByCategoryId(id, session);
+
+      // 2. 카테고리 삭제 시 세션 전달
+      await categoryRepository.delete(id, session);
+
+      await session.commitTransaction();
+      return true;
+    } catch (error) {
+      await session.abortTransaction();
+      throw error;
+    } finally {
+      session.endSession();
+    }
   }
 
   async incrementUserCount(
@@ -74,5 +95,20 @@ export class CategoryService {
     session?: ClientSession,
   ): Promise<void> {
     await categoryRepository.decrementUserCount(ids, session);
+  }
+
+  /**
+   * 카테고리와 그 안의 모든 관심사를 계층 구조로 조회
+   */
+  async getAllCategoriesWithInterests() {
+    // 1. 레포지토리에서 조인된 데이터 조회
+    const categoriesWithInterests =
+      await categoryRepository.findAllWithInterests();
+
+    // 2. DTO 변환 (관심사도 함께 변환)
+    return categoriesWithInterests.map((item) => ({
+      ...toCategoryDTO(item),
+      interests: toInterestDTOs(item.interests),
+    }));
   }
 }

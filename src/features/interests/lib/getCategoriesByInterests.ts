@@ -1,5 +1,3 @@
-import { INTEREST_CATEGORIES } from "../constants/interests";
-
 /**
  * 선택된 관심사 ID 목록으로부터
  * 해당 관심사가 속한 카테고리 ID 목록을 반환한다.
@@ -18,8 +16,11 @@ import { INTEREST_CATEGORIES } from "../constants/interests";
  * - 선택된 interestIds 중 하나라도 포함되어 있으면
  *   해당 카테고리를 결과에 포함한다.
  */
+
 export const getCategoryIdsByInterestIds = (interestIds: string[]) => {
-  return INTEREST_CATEGORIES.filter((category) =>
-    category.interests.some((interest) => interestIds.includes(interest._id)),
-  ).map((category) => category.id);
+  return [];
+  // .filter((category) =>
+  //   category.interests.some((interest) => interestIds.includes(interest._id)),
+  // )
+  // .map((category) => category.id);
 };

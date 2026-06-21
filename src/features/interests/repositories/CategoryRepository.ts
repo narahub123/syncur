@@ -1,6 +1,7 @@
 import { ClientSession, Types } from "mongoose";
 import { CategoryLean } from "../types/category-leans";
 import { CategoryModel } from "../models/Category";
+import { InterestLean } from "../types/interest-leans";
 
 export class CategoryRepository {
   /**
@@ -43,10 +44,11 @@ export class CategoryRepository {
   /**
    * 카테고리 삭제
    */
-  async delete(id: string): Promise<boolean> {
-    const result = await CategoryModel.deleteOne({
-      _id: new Types.ObjectId(id),
-    });
+  async delete(id: string, session?: ClientSession): Promise<boolean> {
+    const result = await CategoryModel.deleteOne(
+      { _id: new Types.ObjectId(id) },
+      { session }, // 세션 전달
+    );
     return result.deletedCount > 0;
   }
 
@@ -70,5 +72,21 @@ export class CategoryRepository {
       { $inc: { userCount: -1 } },
       { session },
     );
+  }
+
+  async findAllWithInterests(): Promise<
+    (CategoryLean & { interests: InterestLean[] })[]
+  > {
+    return await CategoryModel.aggregate([
+      {
+        $lookup: {
+          from: "interests", // 실제 MongoDB 컬렉션 이름
+          localField: "_id",
+          foreignField: "categoryId",
+          as: "interests",
+        },
+      },
+      { $sort: { createdAt: -1 } },
+    ]).exec();
   }
 }

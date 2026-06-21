@@ -1,9 +1,8 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-
 import { Button } from "@/shared/components/ui/button";
 import {
   Form,
@@ -21,123 +20,115 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/shared/components/ui/select";
-
 import { useCategoriesQuery } from "../hooks/useCategoriesQuery";
-import { useInterestsQuery } from "../hooks/useInterestsQuery";
 import { useCreateInterestMutation } from "../hooks/useCreateInterestMutation";
 import { useUpdateInterestMutation } from "../hooks/useUpdateInterestMutation";
+import { useDeleteInterestMutation } from "../hooks/useDeleteInterestMutation";
 import { InterestFormData, interestSchema } from "../schemas/interest";
 import { InterestDTO } from "@/features/interests/dtos/interestDto";
 import { CategoryDTO } from "@/features/interests/dtos/categoryDto";
 import ConfirmDialog from "@/shared/components/common/ConfirmDialog";
 import { toast } from "sonner";
 
-type ServerActionResponse = {
-  success: boolean;
-  error?: string;
-  data?: InterestDTO;
-};
+interface Props {
+  categoryId: string;
+  initialData?: InterestDTO;
+  onSuccess?: () => void;
+}
 
-export const CreateInterestForm = () => {
+export const CreateInterestForm = ({
+  categoryId,
+  initialData,
+  onSuccess,
+}: Props) => {
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
-  const [selectedInterest, setSelectedInterest] = useState<InterestDTO | null>(
-    null,
-  );
-  const [showDropdown, setShowDropdown] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
+  const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
 
   const { data: categoriesData } = useCategoriesQuery();
 
   const form = useForm<InterestFormData>({
     resolver: zodResolver(interestSchema),
-    defaultValues: { slug: "", name: "", categoryId: "" },
+    defaultValues: {
+      categoryId,
+      name: initialData?.name || "",
+      slug: initialData?.slug || "",
+    },
   });
 
   const watchedName = form.watch("name");
   const watchedSlug = form.watch("slug");
   const watchedCategoryId = form.watch("categoryId");
 
-  const { data: interestsData } = useInterestsQuery({
-    categoryId: watchedCategoryId,
-    keyword: watchedName,
-  });
+  const isDirty = initialData
+    ? watchedName !== initialData.name ||
+      watchedSlug !== initialData.slug ||
+      watchedCategoryId !== initialData.categoryId
+    : watchedName.trim().length > 0 &&
+      watchedSlug.trim().length > 0 &&
+      watchedCategoryId.trim().length > 0;
 
   const { mutate: addInterest, isPending: isCreating } =
     useCreateInterestMutation();
   const { mutate: updateInterest, isPending: isUpdating } =
     useUpdateInterestMutation();
+  const { mutate: deleteInterest, isPending: isDeleting } =
+    useDeleteInterestMutation();
 
-  const isEditMode = !!selectedInterest;
-  const isDirty = selectedInterest
-    ? watchedName !== selectedInterest.name ||
-      watchedSlug !== selectedInterest.slug ||
-      watchedCategoryId !== selectedInterest.categoryId
-    : watchedName.trim().length > 0 &&
-      watchedSlug.trim().length > 0 &&
-      watchedCategoryId.trim().length > 0;
-
-  useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(e.target as Node)
-      ) {
-        setShowDropdown(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+  const isEditMode = !!initialData;
 
   const onSubmit = (data: InterestFormData) => {
     if (isEditMode) {
       setIsConfirmOpen(true);
     } else {
       addInterest(data, {
-        onSuccess: (res: ServerActionResponse) => {
-          if (!res.success) {
-            form.setError("slug", { type: "manual", message: res.error });
-            toast.error("관심사 생성에 실패했습니다.");
+        onSuccess: (res) => {
+          if (res.success) {
+            toast.success("관심사가 추가되었습니다.");
+            onSuccess?.();
           } else {
-            toast.success("관심사가 성공적으로 생성되었습니다.");
-            if (res.data) {
-              setSelectedInterest(res.data);
-            }
+            form.setError("slug", { message: res.error });
+            toast.error("생성 실패");
           }
         },
-        onError: () => toast.error("시스템 오류가 발생했습니다."),
       });
     }
   };
 
   const handleConfirmUpdate = () => {
-    const data = form.getValues();
-    if (!selectedInterest) return;
+    if (!initialData) return;
     updateInterest(
-      { id: selectedInterest._id, data },
+      { id: initialData._id, data: form.getValues() },
       {
-        onSuccess: (res: ServerActionResponse) => {
+        onSuccess: (res) => {
           setIsConfirmOpen(false);
-          if (!res.success) {
-            form.setError("slug", { type: "manual", message: res.error });
-            toast.error("관심사 수정에 실패했습니다.");
+          if (res.success) {
+            toast.success("수정되었습니다.");
+            onSuccess?.();
           } else {
-            toast.success("관심사가 성공적으로 수정되었습니다.");
-            if (res.data) {
-              setSelectedInterest(res.data);
-            }
+            toast.error("수정 실패");
           }
         },
-        onError: () => toast.error("시스템 오류가 발생했습니다."),
       },
     );
   };
 
+  const handleDelete = () => {
+    if (!initialData) return;
+    deleteInterest(initialData._id, {
+      onSuccess: (res) => {
+        setIsDeleteConfirmOpen(false);
+        if (res.success) {
+          toast.success("삭제되었습니다.");
+          onSuccess?.();
+        } else {
+          toast.error("삭제 실패");
+        }
+      },
+    });
+  };
+
   return (
-    <section className="space-y-6 rounded-lg border p-6">
-      <h2 className="text-xl font-semibold">
-        {isEditMode ? "관심사 수정" : "관심사 관리"}
-      </h2>
+    <div className="space-y-6">
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
           <FormField
@@ -147,16 +138,13 @@ export const CreateInterestForm = () => {
               <FormItem>
                 <FormLabel>카테고리</FormLabel>
                 <Select
-                  onValueChange={(val) => {
-                    form.clearErrors();
-                    field.onChange(val);
-                    setSelectedInterest(null);
-                  }}
+                  disabled
                   value={field.value}
+                  onValueChange={field.onChange}
                 >
                   <FormControl>
                     <SelectTrigger>
-                      <SelectValue placeholder="카테고리를 선택하세요" />
+                      <SelectValue />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
@@ -167,7 +155,6 @@ export const CreateInterestForm = () => {
                     ))}
                   </SelectContent>
                 </Select>
-                <FormMessage />
               </FormItem>
             )}
           />
@@ -176,41 +163,11 @@ export const CreateInterestForm = () => {
             control={form.control}
             name="name"
             render={({ field }) => (
-              <FormItem className="relative" ref={dropdownRef}>
+              <FormItem>
                 <FormLabel>관심사 이름</FormLabel>
                 <FormControl>
-                  <Input
-                    {...field}
-                    autoComplete="off"
-                    onFocus={() => setShowDropdown(true)}
-                    onChange={(e) => {
-                      form.clearErrors();
-                      field.onChange(e);
-                      setShowDropdown(true);
-                      if (selectedInterest) setSelectedInterest(null);
-                    }}
-                  />
+                  <Input {...field} placeholder="관심사 이름을 입력하세요" />
                 </FormControl>
-                {showDropdown && interestsData?.data && (
-                  <div className="absolute z-50 mt-1 max-h-48 w-full overflow-y-auto rounded-md border border-gray-200 bg-white shadow-lg">
-                    {interestsData.data.map((item: InterestDTO) => (
-                      <div
-                        key={item._id}
-                        className="cursor-pointer px-4 py-2 text-sm hover:bg-gray-100"
-                        onClick={() => {
-                          form.clearErrors();
-                          setSelectedInterest(item);
-                          form.setValue("name", item.name);
-                          form.setValue("slug", item.slug);
-                          form.setValue("categoryId", item.categoryId);
-                          setShowDropdown(false);
-                        }}
-                      >
-                        {item.name}
-                      </div>
-                    ))}
-                  </div>
-                )}
                 <FormMessage />
               </FormItem>
             )}
@@ -225,9 +182,17 @@ export const CreateInterestForm = () => {
                 <FormControl>
                   <Input
                     {...field}
+                    value={
+                      field.value.includes("/")
+                        ? field.value.split("/").pop()
+                        : field.value
+                    }
                     onChange={(e) => {
-                      form.clearErrors("slug");
-                      field.onChange(e);
+                      const shortSlug = e.target.value;
+                      const prefix = field.value.includes("/")
+                        ? field.value.split("/").slice(0, -1).join("/") + "/"
+                        : "";
+                      field.onChange(`${prefix}${shortSlug}`);
                     }}
                     placeholder="예: react"
                   />
@@ -237,20 +202,33 @@ export const CreateInterestForm = () => {
             )}
           />
 
-          <Button
-            type="submit"
-            disabled={!isDirty || isCreating || isUpdating}
-            className="w-full"
-            variant={isEditMode ? "destructive" : "default"}
-          >
-            {isEditMode
-              ? isUpdating
-                ? "수정 중..."
-                : "수정하기"
-              : isCreating
-                ? "생성 중..."
-                : "생성하기"}
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              type="submit"
+              className="flex-1"
+              disabled={!isDirty || isCreating || isUpdating || isDeleting}
+            >
+              {isEditMode
+                ? isUpdating
+                  ? "수정 중..."
+                  : "수정하기"
+                : isCreating
+                  ? "생성 중..."
+                  : "생성하기"}
+            </Button>
+
+            {isEditMode && (
+              <Button
+                type="button"
+                variant="destructive"
+                disabled={isCreating || isUpdating || isDeleting}
+                onClick={() => setIsDeleteConfirmOpen(true)}
+                className="flex-1"
+              >
+                삭제
+              </Button>
+            )}
+          </div>
         </form>
       </Form>
 
@@ -258,11 +236,20 @@ export const CreateInterestForm = () => {
         open={isConfirmOpen}
         onOpenChange={setIsConfirmOpen}
         title="수정 확인"
-        description="이 내용을 수정하시겠습니까?"
+        description="내용을 수정하시겠습니까?"
         onConfirm={handleConfirmUpdate}
         confirm="수정"
+      />
+
+      <ConfirmDialog
+        open={isDeleteConfirmOpen}
+        onOpenChange={setIsDeleteConfirmOpen}
+        title="삭제 확인"
+        description="정말로 이 관심사를 삭제하시겠습니까?"
+        onConfirm={handleDelete}
+        confirm="삭제"
         confirmVariant="destructive"
       />
-    </section>
+    </div>
   );
 };

@@ -104,4 +104,29 @@ export class InterestService {
     // DTO 변환 (기존 매핑 로직 유지)
     return toInterestDTOs(docs);
   }
+
+  /**
+   * 관심사 한 개 삭제
+   */
+  async deleteInterest(id: string, session?: ClientSession): Promise<boolean> {
+    const deleted = await interestRepository.delete(id, session);
+    if (!deleted) {
+      throw new Error("관심사를 찾을 수 없거나 삭제에 실패했습니다.");
+    }
+    return deleted;
+  }
+
+  /**
+   * 관심사 일괄 삭제 (카테고리 ID 기준)
+   */
+  async deleteInterestsByCategoryId(
+    categoryId: string,
+    session?: ClientSession,
+  ): Promise<number> {
+    const deletedCount = await interestRepository.deleteManyByCategoryId(
+      categoryId,
+      session,
+    );
+    return deletedCount;
+  }
 }

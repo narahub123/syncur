@@ -56,16 +56,6 @@ export class InterestRepository {
     ).lean();
   }
 
-  /**
-   * 관심사 삭제
-   */
-  async delete(id: string): Promise<boolean> {
-    const result = await InterestModel.deleteOne({
-      _id: new Types.ObjectId(id),
-    });
-    return result.deletedCount > 0;
-  }
-
   async incrementUserCount(
     ids: string[],
     session?: ClientSession,
@@ -116,5 +106,30 @@ export class InterestRepository {
    */
   async findBySlug(slug: string): Promise<InterestLean | null> {
     return await InterestModel.findOne({ slug }).lean();
+  }
+
+  /**
+   * 관심사 한 개 삭제
+   */
+  async delete(id: string, session?: ClientSession): Promise<boolean> {
+    const result = await InterestModel.deleteOne(
+      { _id: new Types.ObjectId(id) },
+      { session }, // 세션 전달
+    );
+    return result.deletedCount > 0;
+  }
+
+  /**
+   * 카테고리 ID로 관심사 일괄 삭제
+   */
+  async deleteManyByCategoryId(
+    categoryId: string,
+    session?: ClientSession,
+  ): Promise<number> {
+    const result = await InterestModel.deleteMany(
+      { categoryId: new Types.ObjectId(categoryId) },
+      { session }, // 세션 전달
+    );
+    return result.deletedCount;
   }
 }
