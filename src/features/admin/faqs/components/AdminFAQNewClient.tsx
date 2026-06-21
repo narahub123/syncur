@@ -11,7 +11,7 @@ import { ROUTES } from "@/shared/constants/routes";
 import { DeleteButton } from "@/shared/components/common/DeleteButton";
 import { useDeleteFaqMutation } from "@/features/admin/faqs/hooks/useDeleteFaqMutation";
 import { FaqFormValues } from "../types/fom";
-import { faqFormConfig } from "../constans/form";
+import { faqFormConfig } from "../constants/form";
 
 interface AdminFAQNewClientProps {
   faqId?: string;

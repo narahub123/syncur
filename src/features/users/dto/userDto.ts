@@ -2,6 +2,7 @@ import { UserRole } from "@/features/users/constants/user-role";
 import { ImageInfo } from "@/shared/lib/cloudinary/image-info.model";
 import { PaginatedResponse } from "@/shared/types/pagination";
 import { UserLean } from "../types/lean";
+import { UserStatsDTO } from "@/features/admin/users/dto/UserStatsDTO";
 
 /**
  * User API Response Type
@@ -62,7 +63,9 @@ export type UserLeanPaagedResponse = {
   items: UserLean[];
   totalCount: number;
 };
-export type UserDtoPagedResponse = PaginatedResponse<UserDto>;
+export type UserDtoPagedResponse = PaginatedResponse<UserDto> & {
+  stats: UserStatsDTO;
+};
 
 // 프론트엔드용 공통 DTO
 export interface UserBasicDto {

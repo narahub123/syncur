@@ -1,14 +1,21 @@
 import { UserFeedInteractionRepository } from "../repositories/UserFeedInteractionRepository";
+import { userStatsService } from "@/features/admin/users/services/UserStatsService.instance"; // 인스턴스 import
 
 export class UserFeedInteractionService {
   constructor(private readonly repo = new UserFeedInteractionRepository()) {}
 
   /**
-   * LIKE 토글
+   * 공통으로 사용할 활성 사용자 기록 메서드
+   * 비동기로 호출하여 메인 로직의 속도를 저하시키지 않음
    */
+  private trackActiveUser(userId: string) {
+    const today = new Date().toISOString().split("T")[0];
+    // .catch()를 붙여 혹시 모를 DB 에러가 메인 로직을 방해하지 않도록 처리
+    userStatsService.recordActiveUser(today, userId).catch(console.error);
+  }
+
   async toggleLike(userId: string, feedItemId: string) {
     const doc = await this.repo.findOrCreate(userId, feedItemId);
-
     const nextState = !doc.hasLiked;
 
     await this.repo.update(userId, feedItemId, {
@@ -17,15 +24,12 @@ export class UserFeedInteractionService {
       lastInteractedAt: new Date(),
     });
 
+    this.trackActiveUser(userId); // 활동 기록
     return nextState;
   }
 
-  /**
-   * BOOKMARK 토글
-   */
   async toggleBookmark(userId: string, feedItemId: string) {
     const doc = await this.repo.find(userId, feedItemId);
-
     const nextState = !doc?.hasBookmarked;
 
     await this.repo.update(userId, feedItemId, {
@@ -34,12 +38,10 @@ export class UserFeedInteractionService {
       lastInteractedAt: new Date(),
     });
 
+    this.trackActiveUser(userId); // 활동 기록
     return nextState;
   }
 
-  /**
-   * CONTENT CLICK (누적)
-   */
   async recordContentClick(userId: string, feedItemId: string) {
     await this.repo.update(userId, feedItemId, {
       hasContentClicked: true,
@@ -47,12 +49,10 @@ export class UserFeedInteractionService {
       lastInteractedAt: new Date(),
     });
 
+    this.trackActiveUser(userId); // 활동 기록
     return true;
   }
 
-  /**
-   * SOURCE CLICK (누적)
-   */
   async recordSourceClick(userId: string, feedItemId: string) {
     await this.repo.update(userId, feedItemId, {
       hasSourceClicked: true,
@@ -60,12 +60,10 @@ export class UserFeedInteractionService {
       lastInteractedAt: new Date(),
     });
 
+    this.trackActiveUser(userId); // 활동 기록
     return true;
   }
 
-  /**
-   * HIDE
-   */
   async hide(userId: string, feedItemId: string) {
     await this.repo.update(userId, feedItemId, {
       isHidden: true,
@@ -73,6 +71,7 @@ export class UserFeedInteractionService {
       lastInteractedAt: new Date(),
     });
 
+    this.trackActiveUser(userId); // 활동 기록
     return true;
   }
 }

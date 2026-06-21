@@ -4,6 +4,7 @@ import { MongoDBAdapter } from "@auth/mongodb-adapter";
 
 import clientPromise from "@/shared/lib/db/mongodb";
 import { USER_ROLE } from "./features/users/constants/user-role";
+import { userStatsService } from "./features/admin/users/services/UserStatsService.instance";
 
 /**
  * NextAuth v5 인증 설정.
@@ -124,6 +125,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     async createUser({ user }) {
       const db = (await clientPromise).db();
 
+      // 1. 유저 역할 및 기본값 설정
       await db.collection("users").updateOne(
         { email: user.email },
         {
@@ -136,6 +138,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           },
         },
       );
+
+      // 2. 가입 통계 기록 (signIn 콜백에서 뺄 것)
+      const today = new Date().toISOString().split("T")[0];
+      await userStatsService.recordNewUser(today);
     },
   },
 });

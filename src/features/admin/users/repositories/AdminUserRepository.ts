@@ -105,4 +105,8 @@ export class AdminUserRepository {
       totalCount,
     };
   }
+
+  async countAllUsers(): Promise<number> {
+    return await User.countDocuments();
+  }
 }

@@ -1,10 +1,7 @@
 import { UserRepository } from "../repositories/UserRepository";
 import { connectMongo } from "@/shared/lib/db/mongoose";
-import { UserDto, UserDtoPagedResponse } from "../dto/userDto";
+import { UserDto } from "../dto/userDto";
 import { toUserDto, toUserDtos } from "../mappers/toUserDto";
-import { ADMIN_CONFIG } from "@/features/admin/constants/admin-config";
-import { PAGINATION } from "@/shared/constants/pagination";
-import { AdminUsersQuery } from "@/features/admin/users/types/search";
 import { USER_ROLE } from "../constants/user-role";
 import { ImageInfo } from "@/shared/lib/cloudinary/image-info.model";
 import { deleteCloudinaryImage } from "@/shared/lib/cloudinary/cloudinary.utils";
@@ -97,40 +94,6 @@ export class UserService {
     }
 
     return toUserDto(lean);
-  }
-
-  /**
-   * 사용자 목록 조회 (페이지네이션 + 검색)
-   *
-   * - admin 리스트용
-   * - pagination meta 포함 응답 생성
-   */
-  async getUsersPaginated(
-    query: AdminUsersQuery,
-  ): Promise<UserDtoPagedResponse> {
-    const page = query.page ?? PAGINATION.DEFAULT_PAGE;
-    const limit = query.limit ?? ADMIN_CONFIG.USERS.PAGINATION_LIMIT;
-
-    const { items, totalCount } = await this.userRepository.findAllPaginated({
-      page,
-      limit,
-      search: query.search,
-      searchField: query.searchField,
-      sort: query.sort,
-      sortOrder: query.sortOrder,
-    });
-
-    const totalPages = Math.max(Math.ceil(totalCount / limit), 0);
-
-    return {
-      items: items.map(toUserDto),
-      pagination: {
-        page,
-        limit,
-        totalCount,
-        totalPages,
-      },
-    };
   }
 
   /**

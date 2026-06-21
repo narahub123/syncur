@@ -34,6 +34,8 @@ import { FilterValue } from "@/features/admin/constants/filters";
 import { adminUserTableColumns } from "../constants/adminUserTable";
 import { UserDto } from "@/features/users/dto/userDto";
 import { FilterToolbar } from "../../components/FilterToolbar";
+import { AdminStatsCard } from "../../components/AdminStatsCard";
+import { getUserStatsStatusList, userStatsDefault } from "../constants/stats";
 
 const AdminUsersClient = () => {
   const isMobile = useMediaQuery("(max-width: 768px)");
@@ -81,6 +83,7 @@ const AdminUsersClient = () => {
   const {
     isLoading,
     items: users,
+    stats,
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
@@ -92,7 +95,15 @@ const AdminUsersClient = () => {
     useInfiniteHook: useAdminUsersInfiniteQuery,
   });
 
+  const today = new Date().toISOString().split("T")[0];
+
+  const userStats = stats ?? userStatsDefault(today);
   const totalPages = pagination?.totalPages ?? 1;
+
+  const activeRate =
+    userStats.totalUsersSnapshot > 0
+      ? (userStats.activeUsersCount / userStats.totalUsersSnapshot) * 100
+      : 0;
 
   /**
    * =========================
@@ -118,9 +129,23 @@ const AdminUsersClient = () => {
   };
 
   return (
-    <div className="w-full p-6">
-      <h1 className="mb-6 text-2xl font-bold">유저 관리</h1>
+    <div className="w-full space-y-6 p-6">
+      <div className="mb-6 flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold">사용자 관리</h1>
+          <p className="text-muted-foreground text-sm">
+            서비스에 가입된 사용자의 목록과 활동 상태를 관리합니다.
+          </p>
+        </div>
+        {/* 필요하다면 여기에  버튼 등을 배치하세요 */}
+      </div>
 
+      <AdminStatsCard
+        title="사용자 현황"
+        items={getUserStatsStatusList(userStats)}
+        progressValue={activeRate}
+        total={userStats.totalUsersSnapshot}
+      />
       <div className="flex flex-1 flex-col space-y-4">
         <AdminTableToolbar
           query={query}
