@@ -2,14 +2,14 @@ import {
   INTEREST_MODAL_ERROR_MESSAGE,
   InterestModalErrorCode,
 } from "../constants/interest-selection-modal";
-import { Interest } from "../types/interests";
+import { InterestDTO } from "../dtos/interestDto";
 import InterestSaveButton from "./InterestSaveButton";
 
 type InterestActionBarProps = {
   selectedCount: number;
   errorCode: InterestModalErrorCode | null;
   disabled: boolean;
-  selectedInterests: Interest[];
+  selectedInterests: InterestDTO[];
 };
 
 const InterestActionBar = ({

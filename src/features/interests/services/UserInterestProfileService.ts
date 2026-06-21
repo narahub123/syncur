@@ -1,102 +1,110 @@
-import { UserInterestProfileLean } from "@/shared/types/domain-leans";
+import mongoose from "mongoose";
 import { UserInterestProfileRepository } from "../repositories/UserInterestProfileRepository";
-import { Interest } from "../types/interests";
+import { UserInterestProfilePopulatedDTO } from "../dtos/userInterestProfileDto";
 import { requireAuth } from "@/shared/lib/auth/requireAuth";
-import { convertInterests } from "../lib/convertInterests";
-
-type UpdateUserInterestProfileServiceParams = {
-  userEmail: string;
-  categoryIds: string[];
-  interestIds: string[];
-};
+import { toUserInterestProfilePopulatedDTO } from "../mappers/toUserInterestProfilePopulatedDTO";
+import { InterestService } from "./InterestService";
+import { CategoryService } from "./CategoryService";
 
 /**
  * UserInterestProfile Service
- *
- * 사용자 관심사 비즈니스 로직 계층
- * - 온보딩 관심사 저장
- * - 관심사 조회
- * - repository 호출 제어
+ * - userId 기반 1:1 관계 관리
+ * - populate된 데이터 제공
  */
 export class UserInterestProfileService {
   constructor(
     private readonly userInterestProfileRepository: UserInterestProfileRepository,
+    private readonly interestService: InterestService,
+    private readonly categoryService: CategoryService,
   ) {}
 
   /**
-   * 사용자 관심사 프로필 조회
-   *
-   * @param userEmail 사용자 이메일
-   * @returns UserInterestProfileLean | null
+   * 사용자 관심사 프로필 조회 (DTO 반환)
    */
-  async getProfile(userEmail: string): Promise<UserInterestProfileLean | null> {
-    return this.userInterestProfileRepository.findByEmail(userEmail);
+  async getProfileByUserId(
+    userId: string,
+  ): Promise<UserInterestProfilePopulatedDTO | null> {
+    const profile =
+      await this.userInterestProfileRepository.findByUserId(userId);
+    if (!profile) return null;
+
+    return toUserInterestProfilePopulatedDTO(profile);
   }
 
   /**
-   * 사용자 관심사 프로필 생성/수정 (온보딩 저장)
-   *
-   * - 최초 생성 or 업데이트 처리
-   * - categoryIds / interestIds 저장
-   *
-   * @param userEmail 사용자 이메일
-   * @param categoryIds 선택한 카테고리 ID 목록
-   * @param interestIds 선택한 관심사 ID 목록
-   * @returns 업데이트된 UserInterestProfileLean
+   * 현재 로그인한 사용자의 프로필 조회
    */
-  async upsertProfile(params: {
-    userEmail: string;
-    categoryIds: string[];
-    interestIds: string[];
-  }): Promise<UserInterestProfileLean> {
-    return this.userInterestProfileRepository.updateProfile(params);
-  }
-
-  /**
-   * 현재 로그인한 사용자의 관심사 리스트 조회
-   *
-   * 처리 흐름:
-   * 1. 인증 확인
-   * 2. 관심사 프로필 조회
-   * 3. interestIds → Interest 변환
-   */
-  async getCurrentUserInterestProfile(): Promise<Interest[]> {
+  async getCurrentUserProfile(): Promise<UserInterestProfilePopulatedDTO | null> {
     const session = await requireAuth();
+    // 세션에서 userId를 가져온다고 가정 (구현에 따라 다를 수 있음)
+    const userId = session.user?.id;
 
-    const userEmail = session.user?.email;
-
-    if (!userEmail) {
-      throw new Error("사용자 이메일을 확인할 수 없습니다.");
+    if (!userId) {
+      throw new Error("사용자 정보를 확인할 수 없습니다.");
     }
 
-    const profile =
-      await this.userInterestProfileRepository.findByEmail(userEmail);
-
-    const interestIds = profile?.interestIds ?? [];
-
-    return convertInterests(interestIds);
+    return await this.getProfileByUserId(userId);
   }
 
   /**
    * 사용자 관심사 프로필 업데이트 (upsert)
-   *
-   * 처리 방식:
-   * - userEmail 기준으로 프로필 조회 후 없으면 생성
-   * - 존재하면 categoryIds / interestIds 갱신
-   *
-   * 반환값을 사용하지 않는 이유:
-   * - 관심사 저장은 상태 변경만 중요하고 결과 데이터가 필요 없음
-   * - UI에서 즉시 다시 조회하지 않고 optimistic update 또는 refetch 사용
+   * Repository에서 populate된 데이터를 반환받아 DTO로 변환하여 반환
    */
-  async updateUserInterestProfile({
-    userEmail,
-    categoryIds,
-    interestIds,
-  }: UpdateUserInterestProfileServiceParams): Promise<void> {
-    await this.userInterestProfileRepository.updateProfile({
-      userEmail,
-      categoryIds,
-      interestIds,
-    });
+  async updateUserInterestProfile(params: {
+    userId: string;
+    categoryIds: string[];
+    interestIds: string[];
+  }): Promise<UserInterestProfilePopulatedDTO> {
+    const session = await mongoose.startSession();
+    session.startTransaction();
+
+    try {
+      // 1. 기존 프로필 조회
+      const oldProfile = await this.userInterestProfileRepository.findByUserId(
+        params.userId,
+      );
+
+      // 2. 추가/삭제 대상 계산 (Set을 이용하면 편리합니다)
+      const oldCategoryIds =
+        oldProfile?.categoryIds.map((c) => c._id.toString()) || [];
+      const oldInterestIds =
+        oldProfile?.interestIds.map((i) => i._id.toString()) || [];
+
+      const toAddCategoryIds = params.categoryIds.filter(
+        (id) => !oldCategoryIds.includes(id),
+      );
+      const toRemoveCategoryIds = oldCategoryIds.filter(
+        (id) => !params.categoryIds.includes(id),
+      );
+
+      const toAddInterestIds = params.interestIds.filter(
+        (id) => !oldInterestIds.includes(id),
+      );
+      const toRemoveInterestIds = oldInterestIds.filter(
+        (id) => !params.interestIds.includes(id),
+      );
+
+      // 3. 카운트 조정
+      await Promise.all([
+        this.categoryService.incrementUserCount(toAddCategoryIds, session),
+        this.categoryService.decrementUserCount(toRemoveCategoryIds, session),
+        this.interestService.incrementUserCount(toAddInterestIds, session),
+        this.interestService.decrementUserCount(toRemoveInterestIds, session),
+      ]);
+
+      // 4. 프로필 업데이트
+      const updated = await this.userInterestProfileRepository.updateProfile({
+        ...params,
+        session,
+      });
+
+      await session.commitTransaction();
+      return toUserInterestProfilePopulatedDTO(updated!);
+    } catch (error) {
+      await session.abortTransaction();
+      throw error;
+    } finally {
+      session.endSession();
+    }
   }
 }

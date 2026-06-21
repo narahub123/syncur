@@ -11,34 +11,37 @@ import InterestActionBar from "./InterestActionBar";
 import SettingsPageHeader from "../../settings/components/SettingsPageHeader";
 import InterestSelector from "./InterestSelector";
 import { INTEREST_CATEGORIES } from "../constants/interests";
+import { UserInterestProfilePopulatedDTO } from "../dtos/userInterestProfileDto";
+import { InterestDTO } from "../dtos/interestDto";
 
 type InterestClientProps = {
-  interests: Interest[];
+  interests: UserInterestProfilePopulatedDTO | null;
 };
 
-const isSameInterestIds = (prev: Interest[], next: Interest[]) => {
+const isSameInterestIds = (prev: InterestDTO[], next: InterestDTO[]) => {
   if (prev.length !== next.length) return false;
 
-  const prevIdSet = new Set(prev.map((interest) => interest.id));
+  const prevIdSet = new Set(prev.map((interest) => interest._id));
 
-  return next.every((interest) => prevIdSet.has(interest.id));
+  return next.every((interest) => prevIdSet.has(interest._id));
 };
 
 const InterestClient = ({ interests }: InterestClientProps) => {
-  const [selectedInterests, setSelectedInterests] =
-    useState<Interest[]>(interests);
+  const [selectedInterests, setSelectedInterests] = useState<InterestDTO[]>(
+    interests?.interests ?? [],
+  );
   const [errorCode, setErrorCode] = useState<InterestModalErrorCode | null>(
     null,
   );
 
   const isChanged = useMemo(
-    () => !isSameInterestIds(interests, selectedInterests),
+    () => !isSameInterestIds(interests?.interests || [], selectedInterests),
     [interests, selectedInterests],
   );
 
-  const handleToggleInterest = (interest: Interest) => {
+  const handleToggleInterest = (interest: InterestDTO) => {
     const isSelected = selectedInterests.some(
-      (item) => item.id === interest.id,
+      (item) => item._id === interest._id,
     );
 
     if (selectedInterests.length >= MAX_INTEREST_COUNT && !isSelected) {
@@ -47,7 +50,7 @@ const InterestClient = ({ interests }: InterestClientProps) => {
     }
 
     const nextSelectedInterests = isSelected
-      ? selectedInterests.filter((item) => item.id !== interest.id)
+      ? selectedInterests.filter((item) => item._id !== interest._id)
       : [...selectedInterests, interest];
 
     setSelectedInterests(nextSelectedInterests);

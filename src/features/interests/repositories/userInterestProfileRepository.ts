@@ -1,60 +1,67 @@
-import { UserInterestProfileLean } from "@/shared/types/domain-leans";
-import UserInterestProfile from "../models/UserInterestProfile";
+import { ClientSession, Types } from "mongoose";
+import { UserInterestProfileModel } from "../models/UserInterestProfile";
+import { UserInterestProfilePopulatedLean } from "../types/user-interest-profile-lean";
 
-/**
- * UserInterestProfile Repository
- *
- * 사용자 관심사 프로필 관련 DB 접근 계층
- * - 온보딩 관심사 저장/조회
- * - userEmail 기반 1:1 구조
- */
 export class UserInterestProfileRepository {
   /**
-   * 사용자 관심사 프로필 조회
-   *
-   * @param userEmail 사용자 이메일 (unique key)
-   * @returns UserInterestProfileLean | null
+   * 사용자 관심사 프로필 조회 (카테고리/관심사 데이터 포함)
+   * * @param userId 사용자 ObjectId
+   * @returns Populated된 Lean 객체
    */
-  async findByEmail(
-    userEmail: string,
-  ): Promise<UserInterestProfileLean | null> {
-    return UserInterestProfile.findOne({ userEmail })
-      .lean<UserInterestProfileLean>()
+  async findByUserId(
+    userId: string,
+  ): Promise<UserInterestProfilePopulatedLean | null> {
+    return await UserInterestProfileModel.findOne({
+      userId: new Types.ObjectId(userId),
+    })
+      .populate("categoryIds") // 실제 마스터 데이터 가져오기
+      .populate("interestIds")
+      .lean<UserInterestProfilePopulatedLean>()
       .exec();
   }
 
   /**
    * 사용자 관심사 프로필 생성/업데이트 (upsert)
-   *
-   * - 존재하지 않으면 생성
-   * - 존재하면 categoryIds, interestIds 갱신
-   *
-   * @param userEmail 사용자 이메일
-   * @param categoryIds 선택한 카테고리 ID 목록
-   * @param interestIds 선택한 관심사 ID 목록
-   * @returns 업데이트된 UserInterestProfileLean
+   * * @param userId 사용자 ObjectId
+   * @param categoryIds 선택한 카테고리 ID 목록 (string[])
+   * @param interestIds 선택한 관심사 ID 목록 (string[])
+   * @returns 업데이트된 프로필 (Populated 적용)
    */
   async updateProfile(params: {
-    userEmail: string;
+    userId: string;
     categoryIds: string[];
     interestIds: string[];
-  }): Promise<UserInterestProfileLean> {
-    const result = await UserInterestProfile.findOneAndUpdate(
-      { userEmail: params.userEmail },
+    session?: ClientSession;
+  }): Promise<UserInterestProfilePopulatedLean | null> {
+    // 1. ID 문자열을 ObjectId로 변환
+    const userIdObj = new Types.ObjectId(params.userId);
+    const categoryIdsObj = params.categoryIds.map(
+      (id) => new Types.ObjectId(id),
+    );
+    const interestIdsObj = params.interestIds.map(
+      (id) => new Types.ObjectId(id),
+    );
+
+    // 2. Upsert 수행
+    const updatedDoc = await UserInterestProfileModel.findOneAndUpdate(
+      { userId: userIdObj },
       {
         $set: {
-          categoryIds: params.categoryIds,
-          interestIds: params.interestIds,
+          categoryIds: categoryIdsObj,
+          interestIds: interestIdsObj,
         },
       },
       {
         upsert: true,
         returnDocument: "after",
+        session: params.session,
       },
     )
-      .lean<UserInterestProfileLean>()
+      .populate("categoryIds")
+      .populate("interestIds")
+      .lean<UserInterestProfilePopulatedLean>()
       .exec();
 
-    return result!;
+    return updatedDoc;
   }
 }

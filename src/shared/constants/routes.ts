@@ -43,6 +43,7 @@ export const ROUTES = {
   ADMIN_NOTIFICATIONS: "/admin/notifications",
   ADMIN_NOTICES: "/admin/notices",
   ADMIN_INQUIRIES: "/admin/inquiries",
+  ADMIN_INTERESTS: "/admin/interests",
   ADMIN_BUG_REPORTS: "/admin/bug-reports",
   ADMIN_FAQS: "/admin/faqs",
 } as const;

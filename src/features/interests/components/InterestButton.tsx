@@ -1,9 +1,9 @@
 import { Button } from "@/shared/components/ui/button";
-import { Interest } from "../types/interests";
 import { cn } from "@/shared/utils/cn";
+import { InterestDTO } from "../dtos/interestDto";
 
 type InterestButtonProps = {
-  interest: Interest;
+  interest: InterestDTO;
   onClick: () => void;
   isSelected: boolean;
   className?: string;

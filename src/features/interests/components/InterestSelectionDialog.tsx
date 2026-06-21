@@ -20,8 +20,8 @@ import {
 import InterestSelector from "./InterestSelector";
 import { INTEREST_CATEGORIES } from "../constants/interests";
 import { useState } from "react";
-import { Interest } from "../types/interests";
 import InterestSaveButton from "./InterestSaveButton";
+import { InterestDTO } from "../dtos/interestDto";
 
 type InterestSelectionDialogProps = {
   open: boolean;
@@ -32,14 +32,14 @@ const InterestSelectionDialog = ({
   open,
   onClose,
 }: InterestSelectionDialogProps) => {
-  const [selectedInterests, setSelectedInterests] = useState<Interest[]>([]);
+  const [selectedInterests, setSelectedInterests] = useState<InterestDTO[]>([]);
   const [errorCode, setErrorCode] = useState<InterestModalErrorCode | null>(
     null,
   );
 
-  const handleToggleInterest = (interest: Interest) => {
+  const handleToggleInterest = (interest: InterestDTO) => {
     const isSelected = selectedInterests.some(
-      (item) => item.id === interest.id,
+      (item) => item._id === interest._id,
     );
 
     if (selectedInterests.length >= MAX_INTEREST_COUNT && !isSelected) {
@@ -48,7 +48,7 @@ const InterestSelectionDialog = ({
     }
 
     const nextSelectedInterests = isSelected
-      ? selectedInterests.filter((item) => item.id !== interest.id)
+      ? selectedInterests.filter((item) => item._id !== interest._id)
       : [...selectedInterests, interest];
 
     setSelectedInterests(nextSelectedInterests);

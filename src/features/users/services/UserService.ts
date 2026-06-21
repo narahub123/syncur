@@ -38,11 +38,11 @@ export class UserService {
    * - onboardingCompleted = true
    * - onboardingCompletedAt = 현재 시간
    *
-   * @param email 사용자 이메일
+   * @param userId 사용자 이메일
    * @returns 업데이트된 UserDto | null
    */
-  async completeInterestOnboarding(email: string): Promise<UserDto | null> {
-    const lean = await this.userRepository.completeInterestOnboarding(email);
+  async completeInterestOnboarding(userId: string): Promise<UserDto | null> {
+    const lean = await this.userRepository.completeInterestOnboarding(userId);
     return lean ? toUserDto(lean) : null;
   }
 

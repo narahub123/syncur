@@ -12,6 +12,7 @@ import {
   HelpCircle,
   Home,
   Globe,
+  LayoutList,
 } from "lucide-react";
 
 // constants/admin-nav.ts
@@ -76,5 +77,11 @@ export const ADMIN_NAV_LIST = [
     href: ROUTES.ADMIN_FAQS,
     icon: HelpCircle,
     tooltip: "FAQ 관리",
+  },
+  {
+    label: "관심사 관리",
+    href: ROUTES.ADMIN_INTERESTS,
+    icon: LayoutList, // 교체
+    tooltip: "관심사 관리",
   },
 ];

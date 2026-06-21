@@ -39,9 +39,9 @@ export async function saveUserInterestsAction({
   selectedInterestIds,
 }: SaveUserInterestsActionInput): Promise<SaveUserInterestsActionResult> {
   const session = await auth();
-  const userEmail = session?.user?.email;
+  const userId = session?.user?.id;
 
-  if (!userEmail) {
+  if (!userId) {
     return {
       ok: false,
       message: "로그인이 필요합니다.",
@@ -69,7 +69,7 @@ export async function saveUserInterestsAction({
 
   try {
     await completeUserInterestOnboardingService({
-      userEmail,
+      userId,
       categoryIds,
       interestIds,
     });

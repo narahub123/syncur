@@ -1,10 +1,11 @@
+import { InterestDTO } from "../dtos/interestDto";
 import { Interest, InterestCategory } from "../types/interests";
 import InterestButton from "./InterestButton";
 
 type InterestSelectorProps = {
   categories: InterestCategory[];
-  selectedInterests: Interest[];
-  onSelect: (value: Interest) => void;
+  selectedInterests: InterestDTO[];
+  onSelect: (value: InterestDTO) => void;
 };
 
 const InterestSelector = ({
@@ -23,11 +24,11 @@ const InterestSelector = ({
             <ul className="flex flex-wrap gap-2">
               {category.interests.map((interest) => {
                 const isSelected = selectedInterests.some(
-                  (selectedInterest) => selectedInterest.id === interest.id,
+                  (selectedInterest) => selectedInterest._id === interest._id,
                 );
 
                 return (
-                  <li key={interest.id}>
+                  <li key={interest._id}>
                     <InterestButton
                       interest={interest}
                       onClick={() => onSelect(interest)}

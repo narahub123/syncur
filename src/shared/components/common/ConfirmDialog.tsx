@@ -18,6 +18,24 @@ type Props = {
   cancel?: string;
   onConfirm: () => void | Promise<void>;
   className?: string;
+  confirmVariant?:
+    | "link"
+    | "default"
+    | "outline"
+    | "secondary"
+    | "ghost"
+    | "destructive"
+    | null
+    | undefined;
+  cancelVariant?:
+    | "link"
+    | "default"
+    | "outline"
+    | "secondary"
+    | "ghost"
+    | "destructive"
+    | null
+    | undefined;
 };
 
 const ConfirmDialog = ({
@@ -29,6 +47,8 @@ const ConfirmDialog = ({
   cancel = "취소",
   onConfirm,
   className,
+  confirmVariant = "default",
+  cancelVariant = "outline",
 }: Props) => {
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
@@ -40,9 +60,13 @@ const ConfirmDialog = ({
         </AlertDialogHeader>
 
         <AlertDialogFooter>
-          <AlertDialogCancel>{cancel}</AlertDialogCancel>
+          <AlertDialogCancel variant={cancelVariant}>
+            {cancel}
+          </AlertDialogCancel>
 
-          <AlertDialogAction onClick={onConfirm}>{confirm}</AlertDialogAction>
+          <AlertDialogAction onClick={onConfirm} variant={confirmVariant}>
+            {confirm}
+          </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

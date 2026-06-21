@@ -2,7 +2,7 @@ import { userInterestProfileService } from "./UserInterestProfileService.instanc
 import { userService } from "@/features/users/services/UserService.instance";
 
 type CompleteUserInterestOnboardingServiceParams = {
-  userEmail: string;
+  userId: string;
   categoryIds: string[];
   interestIds: string[];
 };
@@ -19,18 +19,18 @@ type CompleteUserInterestOnboardingServiceParams = {
  * - 실패 시 전체 온보딩은 미완료 상태로 간주
  */
 export async function completeUserInterestOnboardingService({
-  userEmail,
+  userId,
   categoryIds,
   interestIds,
 }: CompleteUserInterestOnboardingServiceParams): Promise<void> {
   try {
     await userInterestProfileService.updateUserInterestProfile({
-      userEmail,
+      userId,
       categoryIds,
       interestIds,
     });
 
-    await userService.completeInterestOnboarding(userEmail);
+    await userService.completeInterestOnboarding(userId);
   } catch (error) {
     console.error("[OnboardingService] 실패:", error);
     throw new Error("사용자 관심사 온보딩 처리에 실패했습니다.");

@@ -26,9 +26,9 @@ export class UserRepository {
    *
    * @param email 사용자 이메일 (NextAuth 기준)
    */
-  async completeInterestOnboarding(email: string): Promise<UserLean | null> {
+  async completeInterestOnboarding(userId: string): Promise<UserLean | null> {
     return User.findOneAndUpdate(
-      { email },
+      { userId },
       {
         $set: {
           onboardingCompleted: true,

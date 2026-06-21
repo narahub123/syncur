@@ -1,15 +1,15 @@
 import { Button } from "@/shared/components/ui/button";
-import { Interest } from "../types/interests";
 import { useState } from "react";
 import { LoaderCircle } from "lucide-react";
 import { saveUserInterestsAction } from "../actions/saveUserInterestsAction";
 import { getCategoryIdsByInterestIds } from "../lib/getCategoriesByInterests";
 import { toast } from "sonner";
 import { SAVE_USER_INTERESTS_ERROR_MESSAGE } from "../constants/interest-selection-modal";
+import { InterestDTO } from "../dtos/interestDto";
 
 type InterestSaveButtonProps = {
   disabled: boolean;
-  selectedInterests: Interest[];
+  selectedInterests: InterestDTO[];
   onClose?: () => void;
 };
 
@@ -26,7 +26,7 @@ const InterestSaveButton = ({
     try {
       setIsFetching(true);
 
-      const interestIds = selectedInterests.map((interest) => interest.id);
+      const interestIds = selectedInterests.map((interest) => interest._id);
 
       const result = await saveUserInterestsAction({
         selectedCategoryIds: getCategoryIdsByInterestIds(interestIds),

@@ -20,6 +20,6 @@ import { INTEREST_CATEGORIES } from "../constants/interests";
  */
 export const getCategoryIdsByInterestIds = (interestIds: string[]) => {
   return INTEREST_CATEGORIES.filter((category) =>
-    category.interests.some((interest) => interestIds.includes(interest.id)),
+    category.interests.some((interest) => interestIds.includes(interest._id)),
   ).map((category) => category.id);
 };
