@@ -35,16 +35,19 @@ const feedStatsSchema = new Schema<FeedStatsDocument>(
     total: {
       type: Number,
       default: 0,
+      min: 0,
     },
 
     active: {
       type: Number,
       default: 0,
+      min: 0,
     },
 
     inactive: {
       type: Number,
       default: 0,
+      min: 0,
     },
   },
   {

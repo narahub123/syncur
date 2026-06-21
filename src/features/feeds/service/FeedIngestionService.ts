@@ -1,5 +1,6 @@
 import { RSS_CONFIG } from "@/ingestion/rss/rss-config";
 import { FeedRepository } from "../repository/FeedRepository";
+import { feedStatsService } from "./FeedStatService.instance";
 
 /**
  * FeedIngestionService
@@ -36,6 +37,8 @@ export class FeedIngestionService {
 
     if (errorCount >= RSS_CONFIG.ERROR_THRESHOLD) {
       await this.repo.disableFeed(feedId);
+
+      await feedStatsService.updateStats({ active: -1, inactive: 1 });
 
       return {
         disabled: true,
