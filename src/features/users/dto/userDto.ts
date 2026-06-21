@@ -55,6 +55,8 @@ export type UserDto = {
    */
   role: UserRole;
 
+  lastActiveAt: string; // 마지막 활동 시각
+
   createdAt: string;
   updatedAt: string;
 };

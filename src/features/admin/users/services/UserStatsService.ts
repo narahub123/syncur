@@ -3,14 +3,18 @@ import { UserStatsRepository } from "../repositories/UserStatsRepository";
 import { toUserStatsDTO } from "@/features/admin/users/mappers/toUserStatsDTO";
 import { UserStatsLean } from "../types/leans";
 import { AdminUserRepository } from "../repositories/AdminUserRepository";
+import { UserService } from "@/features/users/services/UserService";
+import { UserRepository } from "@/features/users/repositories/UserRepository";
 
 export class UserStatsService {
   private repo: UserStatsRepository;
   private userRepository: AdminUserRepository;
+  private userService: UserService;
 
   constructor() {
     this.repo = new UserStatsRepository();
     this.userRepository = new AdminUserRepository();
+    this.userService = new UserService(new UserRepository());
   }
 
   /**
@@ -75,6 +79,7 @@ export class UserStatsService {
   async recordActiveUser(date: string, userId: string): Promise<void> {
     await this.ensureStatsInitialized(date);
     await this.repo.addActiveUser(date, userId);
+    await this.userService.updateLastActive(userId);
   }
 
   /**

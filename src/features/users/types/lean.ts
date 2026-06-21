@@ -50,6 +50,8 @@ export type UserLean = {
    */
   role: UserRole;
 
+  lastActiveAt: Date; // 마지막 활동 시각
+
   createdAt: Date;
   updatedAt: Date;
 };

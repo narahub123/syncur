@@ -66,6 +66,8 @@ export interface UserDocument extends Document {
    * - admin: 관리자
    */
   role: UserRole;
+
+  lastActiveAt: Date; // 마지막 활동 시각
 }
 
 /**
@@ -169,6 +171,11 @@ const userSchema = new Schema<UserDocument>(
       type: String,
       enum: [USER_ROLE.USER, USER_ROLE.ADMIN],
       default: USER_ROLE.USER,
+    },
+
+    lastActiveAt: {
+      type: Date,
+      default: Date.now, // 생성 시점부터 기록
     },
   },
   {

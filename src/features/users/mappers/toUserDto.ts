@@ -32,6 +32,8 @@ export function toUserDto(user: UserLean): UserDto {
 
     role: user.role,
 
+    lastActiveAt: user.lastActiveAt?.toISOString() ?? "",
+
     createdAt: user.createdAt?.toISOString() ?? "",
     updatedAt: user.updatedAt?.toISOString() ?? "",
   };

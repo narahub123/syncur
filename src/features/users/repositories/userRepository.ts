@@ -216,4 +216,20 @@ export class UserRepository {
       .lean<UserLean>()
       .exec();
   }
+
+  /**
+   * 사용자의 마지막 활동 시각을 현재 시간으로 업데이트합니다.
+   * * @param userId 사용자 ObjectId
+   */
+  async updateLastActive(userId: string): Promise<void> {
+    await User.findByIdAndUpdate(
+      userId,
+      {
+        $set: {
+          lastActiveAt: new Date(),
+        },
+      },
+      { runValidators: true }, // 스키마 유효성 검사 실행
+    ).exec();
+  }
 }

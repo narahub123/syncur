@@ -129,4 +129,13 @@ export class UserService {
 
     return toUserDto(updatedUser);
   }
+
+  /**
+   * 사용자 마지막 활동 시각 업데이트
+   *
+   * @param userId 사용자 ObjectId
+   */
+  async updateLastActive(userId: string): Promise<void> {
+    await this.userRepository.updateLastActive(userId);
+  }
 }

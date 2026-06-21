@@ -2,11 +2,10 @@
 
 import { useState } from "react";
 import { UserRole } from "@/features/users/constants/user-role";
-import AdminUserRoleSelect from "./AdminUserRoleSelect";
 import AdminUserRoleConfirmDialog from "./AdminUserRoleConfirmDialog";
 import { useUserById } from "../hooks/useUserById";
 import { useUpdateUserRoleMutation } from "../hooks/useUpdateUserRoleMutation";
-import { Avatar } from "@/shared/components/common/Avartar";
+import { UserDetailCard } from "./UserDetailCard";
 
 interface Props {
   userId: string;
@@ -41,30 +40,9 @@ const AdminUserClient = ({ userId }: Props) => {
 
   if (isLoading || !user) return <div>로딩 중...</div>;
   return (
-    <div className="max-w-2xl p-6">
+    <div className="p-6">
       <h1 className="mb-6 text-xl font-bold">사용자 상세 정보</h1>
-
-      <div className="flex items-center gap-6 rounded-lg border p-4">
-        <Avatar
-          src={user.profileImage || user.image}
-          name={user.name}
-          className="h-20 w-20"
-        />
-
-        <div className="flex-1">
-          <p className="text-lg font-semibold">{user.name}</p>
-          <p className="text-sm text-gray-500">{user.email}</p>
-          <p className="mt-1 text-xs text-gray-400">ID: {user._id}</p>
-        </div>
-
-        <div className="text-right">
-          <label className="mb-1 block text-sm text-gray-600">
-            사용자 권한
-          </label>
-          <AdminUserRoleSelect user={user} onValueChange={handleRoleChange} />
-        </div>
-      </div>
-
+      <UserDetailCard user={user} onRoleChange={handleRoleChange} />
       <AdminUserRoleConfirmDialog
         open={isDialogOpen}
         onOpenChange={setIsDialogOpen}
