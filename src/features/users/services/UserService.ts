@@ -5,6 +5,7 @@ import { toUserDto, toUserDtos } from "../mappers/toUserDto";
 import { USER_ROLE } from "../constants/user-role";
 import { ImageInfo } from "@/shared/lib/cloudinary/image-info.model";
 import { deleteCloudinaryImage } from "@/shared/lib/cloudinary/cloudinary.utils";
+import { ClientSession } from "mongoose";
 
 /**
  * User Service
@@ -41,8 +42,15 @@ export class UserService {
    * @param userId 사용자 이메일
    * @returns 업데이트된 UserDto | null
    */
-  async completeInterestOnboarding(userId: string): Promise<UserDto | null> {
-    const lean = await this.userRepository.completeInterestOnboarding(userId);
+  async completeInterestOnboarding(
+    userId: string,
+    session: ClientSession, // 트랜잭션 세션 추가
+  ): Promise<UserDto | null> {
+    // 레포지토리에 세션 전달
+    const lean = await this.userRepository.completeInterestOnboarding(
+      userId,
+      session,
+    );
     return lean ? toUserDto(lean) : null;
   }
 

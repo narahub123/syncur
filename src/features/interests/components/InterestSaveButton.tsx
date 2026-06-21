@@ -6,16 +6,19 @@ import { getCategoryIdsByInterestIds } from "../lib/getCategoriesByInterests";
 import { toast } from "sonner";
 import { SAVE_USER_INTERESTS_ERROR_MESSAGE } from "../constants/interest-selection-modal";
 import { InterestDTO } from "../dtos/interestDto";
+import { CategoryWithInterests } from "../dtos/categoryDto";
 
 type InterestSaveButtonProps = {
   disabled: boolean;
   selectedInterests: InterestDTO[];
+  categories: CategoryWithInterests[]; // 2. 카테고리 목록 추가
   onClose?: () => void;
 };
 
 const InterestSaveButton = ({
   disabled,
   selectedInterests,
+  categories,
   onClose,
 }: InterestSaveButtonProps) => {
   const [isFetching, setIsFetching] = useState(false);
@@ -29,7 +32,10 @@ const InterestSaveButton = ({
       const interestIds = selectedInterests.map((interest) => interest._id);
 
       const result = await saveUserInterestsAction({
-        selectedCategoryIds: getCategoryIdsByInterestIds(interestIds),
+        selectedCategoryIds: getCategoryIdsByInterestIds(
+          interestIds,
+          categories,
+        ),
         selectedInterestIds: interestIds,
       });
 

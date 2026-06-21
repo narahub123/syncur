@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+import { ClientSession } from "mongoose";
 import { UserInterestProfileRepository } from "../repositories/UserInterestProfileRepository";
 import { UserInterestProfilePopulatedDTO } from "../dtos/userInterestProfileDto";
 import { requireAuth } from "@/shared/lib/auth/requireAuth";
@@ -24,11 +24,16 @@ export class UserInterestProfileService {
   async getProfileByUserId(
     userId: string,
   ): Promise<UserInterestProfilePopulatedDTO | null> {
+    const all = await this.categoryService.getAllCategoriesWithInterests();
     const profile =
       await this.userInterestProfileRepository.findByUserId(userId);
     if (!profile) return null;
 
-    return toUserInterestProfilePopulatedDTO(profile);
+    const result = toUserInterestProfilePopulatedDTO(profile);
+    return {
+      ...result,
+      categories: all,
+    };
   }
 
   /**
@@ -54,57 +59,55 @@ export class UserInterestProfileService {
     userId: string;
     categoryIds: string[];
     interestIds: string[];
+    session: ClientSession;
   }): Promise<UserInterestProfilePopulatedDTO> {
-    const session = await mongoose.startSession();
-    session.startTransaction();
+    const oldProfile = await this.userInterestProfileRepository.findByUserId(
+      params.userId,
+    );
 
-    try {
-      // 1. 기존 프로필 조회
-      const oldProfile = await this.userInterestProfileRepository.findByUserId(
-        params.userId,
-      );
+    const oldCategoryIds =
+      oldProfile?.categoryIds.map((c) => c._id.toString()) || [];
+    const oldInterestIds =
+      oldProfile?.interestIds.map((i) => i._id.toString()) || [];
 
-      // 2. 추가/삭제 대상 계산 (Set을 이용하면 편리합니다)
-      const oldCategoryIds =
-        oldProfile?.categoryIds.map((c) => c._id.toString()) || [];
-      const oldInterestIds =
-        oldProfile?.interestIds.map((i) => i._id.toString()) || [];
+    const toAddCategoryIds = params.categoryIds.filter(
+      (id) => !oldCategoryIds.includes(id),
+    );
+    const toRemoveCategoryIds = oldCategoryIds.filter(
+      (id) => !params.categoryIds.includes(id),
+    );
+    const toAddInterestIds = params.interestIds.filter(
+      (id) => !oldInterestIds.includes(id),
+    );
+    const toRemoveInterestIds = oldInterestIds.filter(
+      (id) => !params.interestIds.includes(id),
+    );
 
-      const toAddCategoryIds = params.categoryIds.filter(
-        (id) => !oldCategoryIds.includes(id),
-      );
-      const toRemoveCategoryIds = oldCategoryIds.filter(
-        (id) => !params.categoryIds.includes(id),
-      );
+    await this.categoryService.incrementUserCount(
+      toAddCategoryIds,
+      params.session,
+    );
 
-      const toAddInterestIds = params.interestIds.filter(
-        (id) => !oldInterestIds.includes(id),
-      );
-      const toRemoveInterestIds = oldInterestIds.filter(
-        (id) => !params.interestIds.includes(id),
-      );
+    await this.categoryService.decrementUserCount(
+      toRemoveCategoryIds,
+      params.session,
+    );
 
-      // 3. 카운트 조정
-      await Promise.all([
-        this.categoryService.incrementUserCount(toAddCategoryIds, session),
-        this.categoryService.decrementUserCount(toRemoveCategoryIds, session),
-        this.interestService.incrementUserCount(toAddInterestIds, session),
-        this.interestService.decrementUserCount(toRemoveInterestIds, session),
-      ]);
+    await this.interestService.incrementUserCount(
+      toAddInterestIds,
+      params.session,
+    );
 
-      // 4. 프로필 업데이트
-      const updated = await this.userInterestProfileRepository.updateProfile({
-        ...params,
-        session,
-      });
+    await this.interestService.decrementUserCount(
+      toRemoveInterestIds,
+      params.session,
+    );
 
-      await session.commitTransaction();
-      return toUserInterestProfilePopulatedDTO(updated!);
-    } catch (error) {
-      await session.abortTransaction();
-      throw error;
-    } finally {
-      session.endSession();
-    }
+    const updated = await this.userInterestProfileRepository.updateProfile({
+      ...params,
+      session: params.session,
+    });
+
+    return toUserInterestProfilePopulatedDTO(updated!);
   }
 }

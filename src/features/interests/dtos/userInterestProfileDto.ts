@@ -1,4 +1,4 @@
-import { CategoryDTO } from "./categoryDto";
+import { CategoryWithInterests } from "./categoryDto";
 import { InterestDTO } from "./interestDto";
 
 export interface UserInterestProfileDTO {
@@ -11,9 +11,9 @@ export interface UserInterestProfileDTO {
 }
 
 export interface UserInterestProfilePopulatedDTO {
-  _id: string; // _id -> id (string)
+  _id: string;
   userId: string; // userId (string)
-  categories: CategoryDTO[];
+  categories: CategoryWithInterests[];
   interests: InterestDTO[];
   createdAt: string; // ISO Date String
   updatedAt: string; // ISO Date String

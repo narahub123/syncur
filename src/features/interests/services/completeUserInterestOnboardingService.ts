@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import { userInterestProfileService } from "./UserInterestProfileService.instance";
 import { userService } from "@/features/users/services/UserService.instance";
 
@@ -18,21 +19,30 @@ type CompleteUserInterestOnboardingServiceParams = {
  * - 두 작업은 순차 실행되며 partial failure 가능성이 있음
  * - 실패 시 전체 온보딩은 미완료 상태로 간주
  */
+
 export async function completeUserInterestOnboardingService({
   userId,
   categoryIds,
   interestIds,
 }: CompleteUserInterestOnboardingServiceParams): Promise<void> {
+  const session = await mongoose.startSession();
+  session.startTransaction();
+
   try {
     await userInterestProfileService.updateUserInterestProfile({
       userId,
       categoryIds,
       interestIds,
+      session,
     });
 
-    await userService.completeInterestOnboarding(userId);
+    await userService.completeInterestOnboarding(userId, session);
+
+    await session.commitTransaction();
   } catch (error) {
-    console.error("[OnboardingService] 실패:", error);
-    throw new Error("사용자 관심사 온보딩 처리에 실패했습니다.");
+    await session.abortTransaction();
+    throw error;
+  } finally {
+    session.endSession();
   }
 }

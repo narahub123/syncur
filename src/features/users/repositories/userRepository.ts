@@ -8,6 +8,7 @@ import { SortOrder } from "@/shared/types/pagination";
 import { USER_ROLE } from "../constants/user-role";
 import { UserLean } from "../types/lean";
 import { ImageInfo } from "@/shared/lib/cloudinary/image-info.model";
+import { ClientSession } from "mongoose";
 
 /**
  * User Repository
@@ -26,7 +27,10 @@ export class UserRepository {
    *
    * @param email 사용자 이메일 (NextAuth 기준)
    */
-  async completeInterestOnboarding(userId: string): Promise<UserLean | null> {
+  async completeInterestOnboarding(
+    userId: string,
+    session: ClientSession,
+  ): Promise<UserLean | null> {
     return User.findOneAndUpdate(
       { userId },
       {
@@ -35,7 +39,7 @@ export class UserRepository {
           onboardingCompletedAt: new Date(),
         },
       },
-      { returnDocument: "after" },
+      { returnDocument: "after", session },
     )
       .lean<UserLean>()
       .exec();

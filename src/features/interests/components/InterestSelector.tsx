@@ -1,9 +1,9 @@
+import { CategoryWithInterests } from "../dtos/categoryDto";
 import { InterestDTO } from "../dtos/interestDto";
-import { InterestCategory } from "../types/interests";
 import InterestButton from "./InterestButton";
 
 type InterestSelectorProps = {
-  categories: InterestCategory[];
+  categories: CategoryWithInterests[];
   selectedInterests: InterestDTO[];
   onSelect: (value: InterestDTO) => void;
 };
@@ -18,7 +18,7 @@ const InterestSelector = ({
   return (
     <ul className="space-y-4">
       {categories.map((category) => (
-        <li key={category.id} className="space-y-2">
+        <li key={category._id} className="space-y-2">
           <h3 className="font-medium">{category.name}</h3>
           <div>
             <ul className="flex flex-wrap gap-2">

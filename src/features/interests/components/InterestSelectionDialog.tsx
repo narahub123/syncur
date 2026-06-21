@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -18,9 +19,9 @@ import {
 } from "../constants/interest-selection-modal";
 
 import InterestSelector from "./InterestSelector";
-import { useState } from "react";
 import InterestSaveButton from "./InterestSaveButton";
 import { InterestDTO } from "../dtos/interestDto";
+import { useCategoriesWithInterestsQuery } from "@/features/admin/interests/hooks/useCategoriesWithInterestsQuery";
 
 type InterestSelectionDialogProps = {
   open: boolean;
@@ -31,6 +32,9 @@ const InterestSelectionDialog = ({
   open,
   onClose,
 }: InterestSelectionDialogProps) => {
+  // 1. 카테고리 데이터 페칭
+  const { data: categoriesData, isLoading } = useCategoriesWithInterestsQuery();
+
   const [selectedInterests, setSelectedInterests] = useState<InterestDTO[]>([]);
   const [errorCode, setErrorCode] = useState<InterestModalErrorCode | null>(
     null,
@@ -72,11 +76,18 @@ const InterestSelectionDialog = ({
         </DialogHeader>
 
         <div className="min-h-0 flex-1 overflow-y-auto">
-          <InterestSelector
-            categories={[]}
-            selectedInterests={selectedInterests}
-            onSelect={handleToggleInterest}
-          />
+          {/* 2. 페칭된 데이터를 InterestSelector로 전달 */}
+          {isLoading ? (
+            <div className="flex h-32 items-center justify-center text-sm text-gray-500">
+              로딩 중...
+            </div>
+          ) : (
+            <InterestSelector
+              categories={categoriesData || []}
+              selectedInterests={selectedInterests}
+              onSelect={handleToggleInterest}
+            />
+          )}
         </div>
 
         <DialogFooter className="flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -98,6 +109,7 @@ const InterestSelectionDialog = ({
             disabled={selectedInterests.length < MIN_INTEREST_COUNT}
             selectedInterests={selectedInterests}
             onClose={onClose}
+            categories={categoriesData || []}
           />
         </DialogFooter>
       </DialogContent>

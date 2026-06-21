@@ -1,5 +1,5 @@
 import { ClientSession } from "mongoose";
-import { CategoryDTO } from "../dtos/categoryDto";
+import { CategoryDTO, CategoryWithInterests } from "../dtos/categoryDto";
 import { toCategoryDTO, toCategoryDTOs } from "../mappers/toCategoryDTO";
 import { categoryRepository } from "../repositories/CategoryRepository.instance";
 import { toInterestDTOs } from "../mappers/toInterestDTO";
@@ -100,7 +100,7 @@ export class CategoryService {
   /**
    * 카테고리와 그 안의 모든 관심사를 계층 구조로 조회
    */
-  async getAllCategoriesWithInterests() {
+  async getAllCategoriesWithInterests(): Promise<CategoryWithInterests[]> {
     // 1. 레포지토리에서 조인된 데이터 조회
     const categoriesWithInterests =
       await categoryRepository.findAllWithInterests();

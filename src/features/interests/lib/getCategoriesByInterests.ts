@@ -1,26 +1,21 @@
-/**
- * 선택된 관심사 ID 목록으로부터
- * 해당 관심사가 속한 카테고리 ID 목록을 반환한다.
- *
- * 사용 예:
- * ["ai", "backend"]
- * →
- * ["tech"]
- *
- * 목적:
- * - 관심사 선택 결과를 기반으로 상위 카테고리를 계산한다.
- * - 관심사 저장 시 categoryIds 필드를 생성하는 데 사용한다.
- *
- * 동작 방식:
- * - 각 카테고리의 interests 목록을 순회한다.
- * - 선택된 interestIds 중 하나라도 포함되어 있으면
- *   해당 카테고리를 결과에 포함한다.
- */
+import { CategoryWithInterests } from "../dtos/categoryDto";
 
-export const getCategoryIdsByInterestIds = (interestIds: string[]) => {
-  return [];
-  // .filter((category) =>
-  //   category.interests.some((interest) => interestIds.includes(interest._id)),
-  // )
-  // .map((category) => category.id);
+export const getCategoryIdsByInterestIds = (
+  interestIds: string[],
+  categories: CategoryWithInterests[], // 인자로 전체 카테고리 목록을 전달받아야 합니다.
+): string[] => {
+  // 선택된 관심사 ID를 Set으로 변환하여 검색 속도를 O(1)로 최적화
+  const selectedInterestSet = new Set(interestIds);
+
+  const categoryIds = categories
+    .filter((category) =>
+      // 카테고리 내의 관심사 중 선택된 ID가 하나라도 포함되어 있는지 확인
+      category.interests.some((interest) =>
+        selectedInterestSet.has(interest._id),
+      ),
+    )
+    .map((category) => category._id); // 카테고리 ID 추출
+
+  // 중복이 발생할 수 있다면 Array.from(new Set(categoryIds))를 반환하세요.
+  return categoryIds;
 };

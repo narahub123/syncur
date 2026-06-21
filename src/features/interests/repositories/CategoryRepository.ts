@@ -56,10 +56,12 @@ export class CategoryRepository {
     ids: string[],
     session?: ClientSession,
   ): Promise<void> {
+    // 옵션을 명확히 하나로 합침
+    const options = session ? { session } : {};
     await CategoryModel.updateMany(
       { _id: { $in: ids.map((id) => new Types.ObjectId(id)) } },
       { $inc: { userCount: 1 } },
-      { session },
+      options,
     );
   }
 
@@ -67,10 +69,11 @@ export class CategoryRepository {
     ids: string[],
     session?: ClientSession,
   ): Promise<void> {
+    const options = session ? { session } : {};
     await CategoryModel.updateMany(
       { _id: { $in: ids.map((id) => new Types.ObjectId(id)) } },
       { $inc: { userCount: -1 } },
-      { session },
+      options,
     );
   }
 

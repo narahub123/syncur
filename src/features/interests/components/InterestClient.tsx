@@ -71,7 +71,7 @@ const InterestClient = ({ interests }: InterestClientProps) => {
 
       <section className="min-h-0 p-6">
         <InterestSelector
-          categories={[]}
+          categories={interests?.categories || []}
           selectedInterests={selectedInterests}
           onSelect={handleToggleInterest}
         />
@@ -81,6 +81,7 @@ const InterestClient = ({ interests }: InterestClientProps) => {
         errorCode={errorCode}
         disabled={selectedInterests.length < MIN_INTEREST_COUNT || !isChanged}
         selectedInterests={selectedInterests}
+        categories={interests?.categories || []}
       />
     </main>
   );
