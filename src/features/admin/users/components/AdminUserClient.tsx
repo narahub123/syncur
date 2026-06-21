@@ -8,6 +8,7 @@ import { useUpdateUserRoleMutation } from "../hooks/useUpdateUserRoleMutation";
 import { UserDetailCard } from "./UserDetailCard";
 import { UserSubscriptionCard } from "./UserSubscriptionCard";
 import { toast } from "sonner";
+import { UserActivityCard } from "./UserActivityCard";
 
 interface Props {
   userId: string;
@@ -23,7 +24,7 @@ const AdminUserClient = ({ userId }: Props) => {
 
   if (isLoading || !data) return <div>로딩 중...</div>;
 
-  const { user, subscriptions } = data;
+  const { user, subscriptions, activity } = data;
 
   // 1. 셀렉트 박스에서 값 변경 시
   const handleRoleChange = (newRole: UserRole) => {
@@ -60,6 +61,7 @@ const AdminUserClient = ({ userId }: Props) => {
       <h1 className="mb-6 text-xl font-bold">사용자 상세 정보</h1>
       <UserDetailCard user={user} onRoleChange={handleRoleChange} />
       <UserSubscriptionCard subscriptions={subscriptions} />
+      <UserActivityCard activity={activity}/>
       <AdminUserRoleConfirmDialog
         open={isDialogOpen}
         onOpenChange={setIsDialogOpen}

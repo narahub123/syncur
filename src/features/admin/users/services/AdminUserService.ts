@@ -7,12 +7,14 @@ import { toUserDto } from "@/features/users/mappers/toUserDto";
 import { UserStatsService } from "./UserStatsService";
 import { userStatsDefault } from "../constants/stats";
 import { SubscriptionService } from "@/features/subscriptions/services/SubscriptionService";
+import { AdminUserFeedInteractionService } from "./AdminUserFeedInteractionService";
 
 export class AdminUserService {
   constructor(
     private readonly userRepository: AdminUserRepository,
     private readonly userStatsService: UserStatsService,
     private readonly subscriptionService: SubscriptionService,
+    private readonly interactionService: AdminUserFeedInteractionService,
   ) {}
 
   /**
@@ -62,16 +64,28 @@ export class AdminUserService {
     const user = await this.userRepository.findById(userId);
     if (!user) return null;
 
-    // 2. 구독 정보 조회 (SubscriptionService 활용)
+    // 2. 구독 정보 조회
     const subscriptions = await this.subscriptionService.getUserSubscriptions(
       userId,
       page,
       limit,
     );
 
+    // 3. 활동 정보 조회 (통계 + 최근 활동 목록)
+    const [stats, activities] = await Promise.all([
+      this.interactionService.getInteractionStats(userId),
+      this.interactionService.getUserActivityList(userId, page, limit),
+    ]);
+
+    // 4. 통합된 결과 반환
     return {
       user: toUserDto(user),
       subscriptions,
+      activity: {
+        stats,
+        items: activities.items,
+        totalCount: activities.totalCount,
+      },
     };
   }
 }

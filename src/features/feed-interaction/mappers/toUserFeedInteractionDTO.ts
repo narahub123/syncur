@@ -1,8 +1,8 @@
+import { UserFeedInteractionLean } from "@/shared/types/domain-leans";
 import { UserFeedInteractionDTO } from "../dtos/userFeedInteractionDTO";
-import { UserFeedInteractionDocument } from "../models/user-feed-interaction";
 
 export function toUserFeedInteractionDTO(
-  doc: UserFeedInteractionDocument,
+  doc: UserFeedInteractionLean,
 ): UserFeedInteractionDTO {
   return {
     userId: doc.userId.toString(),
@@ -28,3 +28,6 @@ export function toUserFeedInteractionDTO(
     updatedAt: doc.updatedAt.toISOString(),
   };
 }
+
+export const toUserFeedInteractionDTOs = (items: UserFeedInteractionLean[]) =>
+  items.map(toUserFeedInteractionDTO);
