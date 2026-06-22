@@ -5,6 +5,8 @@ import { FeedItemModel } from "@/features/feed-items/models/feed-item";
 import { fetchRSS } from "@/ingestion/rss/fetchRss";
 import { parseRSS } from "@/ingestion/rss/parseRss";
 import { upsertFeedItems } from "@/ingestion/rss/upsertFeedItems";
+import { feedFetchObservationService } from "@/features/feed-fetch-observation/services/FeedFetchObservationService.instance";
+import { feedExecutionLogService } from "@/features/feed-execution-logs/service/FeedExecutionLogService.instance";
 
 dotenv.config({ path: ".env.local" });
 
@@ -35,7 +37,12 @@ async function resetAndReingest() {
       console.log(`FEED: ${feed.feedUrl}`);
       console.log(`====================================`);
 
-      const result = await fetchRSS(feed);
+      const execution = await feedExecutionLogService.startExecution(feed._id);
+      const executionId = execution.executionId;
+
+      const result = await fetchRSS(feed, executionId, (log) =>
+        feedFetchObservationService.record(log),
+      );
 
       if (result.type === "NOT_MODIFIED") {
         console.log("SKIPPED: NOT_MODIFIED");

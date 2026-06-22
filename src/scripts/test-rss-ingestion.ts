@@ -19,6 +19,8 @@ import dotenv from "dotenv";
 import { fetchRSS } from "@/ingestion/rss/fetchRss";
 import { parseRSS } from "@/ingestion/rss/parseRss";
 import { upsertFeedItems } from "@/ingestion/rss/upsertFeedItems";
+import { feedExecutionLogService } from "@/features/feed-execution-logs/service/FeedExecutionLogService.instance";
+import { feedFetchObservationService } from "@/features/feed-fetch-observation/services/FeedFetchObservationService.instance";
 
 dotenv.config({ path: ".env.local" });
 
@@ -41,11 +43,15 @@ async function run() {
     console.log("Created feed:", feed._id);
   }
 
+  const execution = await feedExecutionLogService.startExecution(feed._id);
+  const executionId = execution.executionId;
   /**
    * STEP 1: Fetch (NEW STRUCTURE)
    * - cache / retry 포함된 결과 반환
    */
-  const result = await fetchRSS(feed);
+  const result = await fetchRSS(feed, executionId, (log) =>
+    feedFetchObservationService.record(log),
+  );
 
   if (result.type === "NOT_MODIFIED") {
     console.log("[TEST] SKIPPED - NOT_MODIFIED");

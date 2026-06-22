@@ -32,3 +32,26 @@ export type RSSFailureType =
   | "TEMPORARY" // retry + 누적
   | "PERMANENT" // 즉시 중단/disabled 후보
   | "PARSE"; // 데이터 문제
+
+/**
+ * RSS Fetch attempt 단위 관측 데이터
+ *
+ * === 역할 ===
+ * - 각 retry 시도에서 어떤 일이 일어났는지 기록
+ * - 운영 분석 / 장애 원인 추적용
+ */
+export type RSSFetchAttemptLog = {
+  attempt: number;
+  startTime: number;
+  endTime: number;
+  durationMs: number;
+
+  feedUrl: string;
+
+  success: boolean;
+
+  errorCode?: string;
+  errorMessage?: string;
+
+  phase?: "dns" | "tcp" | "tls" | "request" | "response" | "unknown";
+};

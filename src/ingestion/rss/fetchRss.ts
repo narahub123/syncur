@@ -1,47 +1,17 @@
 import axios from "axios";
-import { RSS_CONFIG } from "./rss-config";
 import { FeedLean } from "@/features/feeds/types/leans";
+import { RSS_CONFIG } from "./rss-config";
+
+import { executeRSSRequest } from "./executeRSSRequest";
+import { RSSObservationCollector } from "./rss-observation/RSSObservationCollector";
+import { isRetryableError, sleep } from "./rss-policy/isRetryableError";
+import { FeedFetchObservationCreateDTO } from "@/features/feed-fetch-observation/dtos/feedFetchObservationDTO";
 
 /**
- * retry 가능한 에러인지 판단
- */
-function isRetryableError(err: unknown): boolean {
-  if (!axios.isAxiosError(err)) return true;
-
-  const code = err.code as string | undefined;
-  const status = err.response?.status;
-
-  if (
-    code &&
-    (RSS_CONFIG.RETRYABLE_ERRORS as readonly string[]).includes(code)
-  ) {
-    return true;
-  }
-
-  if (status && status >= 500) {
-    return true;
-  }
-
-  return false;
-}
-
-/**
- * sleep util (exponential backoff)
- */
-function sleep(ms: number) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
-/**
- * RSS Fetch Result Type
+ * RSS Fetch Result (❗ 반환 계약 고정)
  *
- * === 역할 ===
- * fetchRSS는 "데이터 + 캐시 메타"를 모두 반환한다
- *
- * === 이유 ===
- * - side-effect (feed mutation) 제거
- * - ingestion layer에서 DB 업데이트 책임 분리
- * - testability 증가
+ * === 중요 ===
+ * - 외부 ingestion / parser / persistence가 의존하는 계약이므로 변경 금지
  */
 export type FetchRSSResult =
   | {
@@ -55,113 +25,188 @@ export type FetchRSSResult =
     };
 
 /**
- * RSS Fetch Layer (retry + caching + timeout)
+ * RSS Fetch Orchestrator
  *
  * === 역할 ===
- * - RSS XML 요청
- * - retry / backoff 처리
- * - HTTP 캐싱 (ETag / Last-Modified)
- * - 304 Not Modified 처리
+ * - HTTP 요청 실행 (executeRSSRequest)
+ * - retry / backoff 정책 적용
+ * - timeout 제어
+ * - observation 수집 (collector)
+ * - 외부 observer로 flush 전달
  *
- * === 캐싱 전략 ===
- * - If-None-Match → ETag 기반
- * - If-Modified-Since → Last-Modified 기반
- * - 304 → 데이터 변경 없음 → ingestion skip
+ * === 핵심 원칙 ===
+ * - fetchRSS는 DB를 몰라야 한다
+ * - observer만 호출한다
+ * - context(feedId, executionId)는 fetchRSS가 주입한다
  */
-export async function fetchRSS(feed: FeedLean): Promise<FetchRSSResult> {
+export async function fetchRSS(
+  feed: FeedLean,
+  executionId: string,
+  observer?: (log: FeedFetchObservationCreateDTO) => void,
+) {
+  /**
+   * RSS fetch 시작 (실행 단위 메타 정보)
+   * - feed: 대상 RSS feed
+   * - executionId: 실행 단위 식별자
+   */
+  const collector = new RSSObservationCollector();
+
   let lastError: unknown;
+  let result: FetchRSSResult | null = null;
 
-  for (let attempt = 0; attempt < RSS_CONFIG.MAX_RETRY_COUNT; attempt++) {
-    const controller = new AbortController();
-
-    const timeout = setTimeout(() => {
-      controller.abort();
-    }, RSS_CONFIG.RSS_FETCH_TIMEOUT);
-
-    try {
-      /**
-       * HTTP Request with caching headers
-       */
-      const res = await axios.get(feed.feedUrl, {
-        signal: controller.signal,
-        validateStatus: (status) =>
-          (status >= 200 && status < 300) || status === 304,
-        headers: {
-          "User-Agent": RSS_CONFIG.RSS_USER_AGENT,
-          Accept: RSS_CONFIG.RSS_ACCEPT,
-
-          /**
-           * Conditional Request Headers
-           *
-           * - 이전 fetch 결과 기반으로 서버에 변경 여부 확인
-           */
-          ...(feed.etag && {
-            "If-None-Match": feed.etag,
-          }),
-          ...(feed.lastModified && {
-            "If-Modified-Since": feed.lastModified,
-          }),
-        },
-      });
+  try {
+    /**
+     * =========================
+     * RETRY LOOP
+     * =========================
+     * - MAX_RETRY_COUNT 만큼 재시도
+     * - 네트워크/일시적 오류 대응
+     */
+    for (let attempt = 0; attempt < RSS_CONFIG.MAX_RETRY_COUNT; attempt++) {
+      const start = Date.now();
+      const controller = new AbortController();
 
       /**
-       * 304 Not Modified
-       *
-       * === 의미 ===
-       * RSS 내용 변경 없음 → parsing / DB 작업 모두 skip 가능
+       * 요청 timeout 설정
+       * - 일정 시간 초과 시 abort
        */
-      if (res.status === 304) {
-        return {
-          type: "NOT_MODIFIED",
+      const timeout = setTimeout(() => {
+        controller.abort();
+      }, RSS_CONFIG.RSS_FETCH_TIMEOUT);
+
+      try {
+        /**
+         * =========================
+         * HTTP REQUEST EXECUTION
+         * =========================
+         * RSS feed 실제 요청 수행
+         */
+        const res = await executeRSSRequest({
+          url: feed.feedUrl,
+          timeout: RSS_CONFIG.RSS_FETCH_TIMEOUT,
+          signal: controller.signal,
+          headers: {
+            "User-Agent": RSS_CONFIG.RSS_USER_AGENT,
+            Accept: RSS_CONFIG.RSS_ACCEPT,
+            ...(feed.etag && { "If-None-Match": feed.etag }),
+            ...(feed.lastModified && {
+              "If-Modified-Since": feed.lastModified,
+            }),
+          },
+        });
+
+        const end = Date.now();
+
+        /**
+         * 성공 observation 기록
+         */
+        collector.add({
+          attempt,
+          feedUrl: feed.feedUrl,
+          startTime: start,
+          endTime: end,
+          durationMs: end - start,
+          success: true,
+        });
+
+        /**
+         * 304 Not Modified 처리
+         */
+        if (res.status === 304) {
+          result = { type: "NOT_MODIFIED" };
+          break;
+        }
+
+        /**
+         * 정상 응답 반환값 구성
+         */
+        result = {
+          type: "OK",
+          xml: res.data,
+          etag: res.headers["etag"],
+          lastModified: res.headers["last-modified"],
         };
-      }
 
-      /**
-       * 캐시 메타 추출
-       *
-       * - ingestion layer에서 DB 저장 책임
-       */
-      const etag = res.headers["etag"];
-      const lastModified = res.headers["last-modified"];
-
-      return {
-        type: "OK",
-        xml: res.data,
-        etag,
-        lastModified,
-      };
-    } catch (err: unknown) {
-      lastError = err;
-
-      /**
-       * retry 불가능한 에러는 즉시 종료
-       */
-      if (!isRetryableError(err)) {
         break;
+      } catch (err) {
+        const end = Date.now();
+
+        /**
+         * 실패 observation 기록
+         */
+        lastError = err;
+
+        collector.add({
+          attempt,
+          feedUrl: feed.feedUrl,
+          startTime: start,
+          endTime: end,
+          durationMs: end - start,
+          success: false,
+          errorCode: axios.isAxiosError(err) ? err.code : "UNKNOWN",
+          errorMessage: err instanceof Error ? err.message : String(err),
+        });
+
+        /**
+         * retry 불가능한 경우 즉시 종료
+         */
+        if (!isRetryableError(err)) break;
+
+        /**
+         * 마지막 retry면 종료
+         */
+        if (attempt === RSS_CONFIG.MAX_RETRY_COUNT - 1) break;
+
+        /**
+         * exponential backoff delay
+         */
+        const delay = RSS_CONFIG.RETRY_BACKOFF_BASE_MS * Math.pow(2, attempt);
+
+        await sleep(delay);
+      } finally {
+        /**
+         * timeout 정리
+         */
+        clearTimeout(timeout);
       }
-
-      /**
-       * 마지막 retry면 종료
-       */
-      if (attempt === RSS_CONFIG.MAX_RETRY_COUNT - 1) {
-        break;
-      }
-
-      /**
-       * exponential backoff
-       *
-       * - 요청 간격 증가 → RSS 서버 보호
-       */
-      const delay = RSS_CONFIG.RETRY_BACKOFF_BASE_MS * Math.pow(2, attempt);
-
-      await sleep(delay);
-    } finally {
-      clearTimeout(timeout);
     }
+  } finally {
+    /**
+     * =========================
+     * OBSERVATION FLUSH
+     * =========================
+     * - retry 과정에서 모은 로그를 외부로 전달
+     * - 반드시 executionId + feedId context 포함
+     */
+    collector.flush(
+      (log) => {
+        /**
+         * 외부 observer로 전달되는 최종 log
+         */
+        observer?.({
+          ...log,
+          executionId,
+          feedId: feed._id.toString(),
+        });
+      },
+      {
+        executionId,
+        feedId: feed._id.toString(),
+      },
+    );
   }
 
   /**
-   * 에러 표준화
+   * =========================
+   * RESULT RETURN
+   * =========================
+   */
+  if (result) return result;
+
+  /**
+   * =========================
+   * ERROR HANDLING
+   * =========================
    */
   if (axios.isAxiosError(lastError)) {
     if (lastError.code === "ERR_CANCELED") {

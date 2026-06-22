@@ -13,6 +13,7 @@ import { upsertFeedItems } from "./upsertFeedItems";
 import { feedIngestionService } from "@/features/feeds/service/FeedIngestionService.instance";
 import { notificationService } from "@/features/notifications/service/NotificationService.instance";
 import { FeedLean } from "@/features/feeds/types/leans";
+import { feedFetchObservationService } from "@/features/feed-fetch-observation/services/FeedFetchObservationService.instance";
 
 export async function runFeedIngestion(feed: FeedLean) {
   const feedId = feed._id.toString();
@@ -42,7 +43,9 @@ export async function runFeedIngestion(feed: FeedLean) {
      */
     currentStage = FEED_EXECUTION_STAGE.FETCH;
 
-    const fetchResult = await fetchRSS(feed);
+    const fetchResult = await fetchRSS(feed, executionId, (log) =>
+      feedFetchObservationService.record(log),
+    );
 
     /**
      * 3. CACHE CHECK
