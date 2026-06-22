@@ -12,7 +12,7 @@ export default async function layout({
   await requireAuth();
   return (
     <div className="mx-auto flex min-h-screen max-w-2xl xl:max-w-6xl">
-      <div className="flex h-screen w-full">
+      <div className="flex min-h-screen w-full">
         <UserSSEProvider />
         <LeftSidebar />
         <Main className="flex min-h-0 flex-1 flex-col">
