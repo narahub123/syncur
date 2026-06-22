@@ -10,4 +10,3 @@ export async function getBugReportAction(bugReportId: string) {
 
   return await bugReportService.getBugReportByIdForAdmin(bugReportId);
 }
-``

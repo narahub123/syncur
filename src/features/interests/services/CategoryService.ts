@@ -63,14 +63,12 @@ export class CategoryService {
    * 카테고리 삭제 (관심사 일괄 삭제 포함)
    */
   async deleteCategory(id: string): Promise<boolean> {
-    const session = await mongoose.startSession(); // 올바른 문법
+    const session = await mongoose.startSession();
     session.startTransaction();
 
     try {
-      // 1. 관심사 삭제 시 세션 전달
+      // interestRepository 대신 interestService 호출
       await interestService.deleteInterestsByCategoryId(id, session);
-
-      // 2. 카테고리 삭제 시 세션 전달
       await categoryRepository.delete(id, session);
 
       await session.commitTransaction();

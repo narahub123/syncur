@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/shared/components/ui/button";
 import {
@@ -55,9 +55,20 @@ export const CreateInterestForm = ({
     },
   });
 
-  const watchedName = form.watch("name");
-  const watchedSlug = form.watch("slug");
-  const watchedCategoryId = form.watch("categoryId");
+  const watchedName = useWatch({
+    control: form.control,
+    name: "name",
+  });
+
+  const watchedSlug = useWatch({
+    control: form.control,
+    name: "slug",
+  });
+
+  const watchedCategoryId = useWatch({
+    control: form.control,
+    name: "categoryId",
+  });
 
   const isDirty = initialData
     ? watchedName !== initialData.name ||

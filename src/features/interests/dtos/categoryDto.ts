@@ -18,3 +18,10 @@ export interface CategoryWithInterests {
   createdAt: string;
   updatedAt: string;
 }
+
+export interface CategoryWithSelection extends Omit<
+  CategoryWithInterests,
+  "interests"
+> {
+  interests: (InterestDTO & { isSelected: boolean })[];
+}

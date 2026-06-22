@@ -89,7 +89,7 @@ export class CategoryRepository {
           as: "interests",
         },
       },
-      { $sort: { createdAt: -1 } },
+      { $sort: { createdAt: 1 } },
     ]).exec();
   }
 }

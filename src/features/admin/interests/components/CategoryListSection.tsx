@@ -123,4 +123,3 @@ const CategorySkeleton = () => (
     <Skeleton className="h-24 w-full" />
   </div>
 );
-``;

@@ -1,6 +1,5 @@
 "use client";
 
-import InterestSelectionDialog from "@/features/interests/components/InterestSelectionDialog";
 import SiteSubscriptionForm from "@/features/subscriptions/components/SiteSubscriptionForm";
 import { useState } from "react";
 import { useMyFeedItems } from "../hooks/useMyFeedItems";
@@ -10,6 +9,7 @@ import EmptyFeed from "./EmptyFeed";
 import { useInfiniteScroll } from "@/shared/hooks/useInfiniteScroll";
 import LoadMoreTrigger from "@/shared/components/common/LoadMoreTrigger";
 import UnreadFeedIndicator from "./UnreadFeedIndicator";
+import { InterestOnboardingDialog } from "@/features/interests/components/InterestOnboardingDialog";
 
 type FeedClientProps = {
   isFirstLogin: boolean;
@@ -36,7 +36,10 @@ const FeedClient = ({ isFirstLogin }: FeedClientProps) => {
 
   return (
     <div>
-      <InterestSelectionDialog open={isOpen} onClose={() => setIsOpen(false)} />
+      <InterestOnboardingDialog
+        open={isOpen}
+        onClose={() => setIsOpen(false)}
+      />
 
       {isLoading && (
         <div>

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import { Button } from "@/shared/components/ui/button";
@@ -57,8 +57,15 @@ export const CreateCategoryForm = ({ initialData, onSuccess }: Props) => {
     defaultValues: { slug: "", name: "" },
   });
 
-  const watchedName = form.watch("name");
-  const watchedSlug = form.watch("slug");
+  const watchedName = useWatch({
+    control: form.control,
+    name: "name",
+  });
+
+  const watchedSlug = useWatch({
+    control: form.control,
+    name: "slug",
+  });
 
   const isDirty = selectedCategory
     ? watchedName !== selectedCategory.name ||

@@ -1,7 +1,6 @@
 import { ClientSession } from "mongoose";
 import { InterestDTO } from "../dtos/interestDto";
 import { toInterestDTO, toInterestDTOs } from "../mappers/toInterestDTO";
-import { categoryRepository } from "../repositories/CategoryRepository.instance";
 import { interestRepository } from "../repositories/InterestRepository.instance";
 import { categoryService } from "./CategoryService.instance";
 
@@ -15,27 +14,22 @@ export class InterestService {
     name: string;
     categoryId: string;
   }): Promise<InterestDTO> {
-    // 1. 카테고리 존재 여부 및 상세 정보(slug) 조회
+    // categoryService 사용
     const category = await categoryService.getCategoryById(data.categoryId);
     if (!category) {
       throw new Error(`카테고리 ID ${data.categoryId}를 찾을 수 없습니다.`);
     }
 
-    // 2. 비즈니스 로직: 네임스페이스 전략 (categorySlug/interestSlug)
     const compositeSlug = `${category.slug}/${data.slug}`;
-
-    // 3. 중복 검사: 해당 조합의 slug가 이미 존재하는지 리포지토리에서 확인
     const exists = await interestRepository.findBySlug(compositeSlug);
     if (exists) {
       throw new Error(`이미 존재하는 관심사입니다: ${compositeSlug}`);
     }
 
-    // 4. 조합된 slug로 데이터 생성
     const doc = await interestRepository.create({
       ...data,
       slug: compositeSlug,
     });
-
     return toInterestDTO(doc);
   }
 
@@ -55,18 +49,16 @@ export class InterestService {
     id: string,
     data: { slug?: string; name?: string; categoryId?: string },
   ): Promise<InterestDTO> {
-    // 카테고리 ID가 변경되는 경우에만 존재 여부 체크
+    // categoryService 사용
     if (data.categoryId) {
-      const category = await categoryRepository.findById(data.categoryId);
+      const category = await categoryService.getCategoryById(data.categoryId);
       if (!category) {
         throw new Error(`카테고리 ID ${data.categoryId}를 찾을 수 없습니다.`);
       }
     }
 
     const updated = await interestRepository.update(id, data);
-    if (!updated) {
-      throw new Error("관심사를 찾을 수 없거나 수정에 실패했습니다.");
-    }
+    if (!updated) throw new Error("관심사를 찾을 수 없습니다.");
     return toInterestDTO(updated);
   }
 
