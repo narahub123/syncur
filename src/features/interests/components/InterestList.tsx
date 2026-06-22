@@ -47,6 +47,18 @@ export function InterestList({
       );
     }
     setSelectedIds(ids);
+
+    if (categories) {
+      const initialSelections: InterestSelectionDTO[] = categories
+        .filter((cat) => cat.interests.some((i) => ids.has(i._id)))
+        .map((cat) => ({
+          categoryId: cat._id,
+          interestIds: cat.interests
+            .filter((i) => ids.has(i._id))
+            .map((i) => i._id),
+        }));
+      onSelectionChange(initialSelections);
+    }
   }, [initialSelections, categories]);
 
   const toggleInterest = (interest: InterestDTO) => {
@@ -123,13 +135,19 @@ function InterestListSkeleton() {
   return (
     <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
       {[1, 2, 3, 4].map((i) => (
-        <Card key={i} className="border-none bg-slate-50 shadow-none">
-          <CardHeader>
-            <Skeleton className="h-4 w-20" />
+        <Card key={i} className="border-slate-100 shadow-sm">
+          <CardHeader className="px-4 py-3 pb-0">
+            {/* 카테고리 제목 너비 확보 */}
+            <Skeleton className="h-4 w-32" />
           </CardHeader>
-          <CardContent className="flex gap-2">
-            <Skeleton className="h-6 w-16" />
-            <Skeleton className="h-6 w-20" />
+
+          <CardContent className="flex flex-wrap gap-1.5 px-4 pt-2 pb-4">
+            {/* 배지들이 실제 영역을 채우도록 유연한 너비 적용 */}
+            <Skeleton className="h-7 w-20 rounded-full" />
+            <Skeleton className="h-7 w-24 rounded-full" />
+            <Skeleton className="h-7 w-16 rounded-full" />
+            <Skeleton className="h-7 w-28 rounded-full" />
+            <Skeleton className="h-7 w-20 rounded-full" />
           </CardContent>
         </Card>
       ))}

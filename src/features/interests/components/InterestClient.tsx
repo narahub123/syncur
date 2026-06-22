@@ -1,90 +1,67 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import {
-  InterestModalErrorCode,
-  MAX_INTEREST_COUNT,
-  MIN_INTEREST_COUNT,
-} from "../constants/interest-selection-modal";
-import InterestActionBar from "./InterestActionBar";
-import SettingsPageHeader from "../../settings/components/SettingsPageHeader";
-import InterestSelector from "./InterestSelector";
+import { useState } from "react";
+import { InterestList } from "./InterestList";
+import { Button } from "@/shared/components/ui/button";
+import { toast } from "sonner";
+import { InterestSelectionDTO } from "../dtos/userInterestDto";
+import { IINTEREST_CONFIG } from "../constants/interest-config";
+import { updateUserInterestsAction } from "@/features/interests/actions/updateUserInterestsAction";
 
-import { UserInterestProfilePopulatedDTO } from "../dtos/userInterestProfileDto";
-import { InterestDTO } from "../dtos/interestDto";
+export default function InterestClient() {
+  const [selections, setSelections] = useState<InterestSelectionDTO[]>([]);
+  const [isPending, setIsPending] = useState(false);
 
-type InterestClientProps = {
-  interests: UserInterestProfilePopulatedDTO | null;
-};
-
-const isSameInterestIds = (prev: InterestDTO[], next: InterestDTO[]) => {
-  if (prev.length !== next.length) return false;
-
-  const prevIdSet = new Set(prev.map((interest) => interest._id));
-
-  return next.every((interest) => prevIdSet.has(interest._id));
-};
-
-const InterestClient = ({ interests }: InterestClientProps) => {
-  const [selectedInterests, setSelectedInterests] = useState<InterestDTO[]>(
-    interests?.interests ?? [],
-  );
-  const [errorCode, setErrorCode] = useState<InterestModalErrorCode | null>(
-    null,
+  // 선택된 총 개수 계산
+  const totalCount = selections.reduce(
+    (acc, curr) => acc + curr.interestIds.length,
+    0,
   );
 
-  const isChanged = useMemo(
-    () => !isSameInterestIds(interests?.interests || [], selectedInterests),
-    [interests, selectedInterests],
-  );
-
-  const handleToggleInterest = (interest: InterestDTO) => {
-    const isSelected = selectedInterests.some(
-      (item) => item._id === interest._id,
-    );
-
-    if (selectedInterests.length >= MAX_INTEREST_COUNT && !isSelected) {
-      setErrorCode("EXCEED");
+  const handleSave = async () => {
+    if (totalCount < IINTEREST_CONFIG.MIN_LIMIT) {
+      toast.error(`${IINTEREST_CONFIG.MIN_LIMIT}개 이상 선택해주세요.`);
       return;
     }
 
-    const nextSelectedInterests = isSelected
-      ? selectedInterests.filter((item) => item._id !== interest._id)
-      : [...selectedInterests, interest];
+    setIsPending(true);
+    // 서버 액션 호출
+    const result = await updateUserInterestsAction({ selections });
+    setIsPending(false);
 
-    setSelectedInterests(nextSelectedInterests);
-
-    if (nextSelectedInterests.length < MIN_INTEREST_COUNT) {
-      setErrorCode("INSUFFICIENT");
-      return;
+    if (result.success) {
+      toast.success("관심사가 저장되었습니다.");
+    } else {
+      toast.error(result.error || "저장에 실패했습니다.");
     }
-
-    setErrorCode(null);
   };
 
   return (
-    <main className="h-[calc(100vh-50px)] min-h-0 flex-1 overflow-y-auto">
-      <SettingsPageHeader
-        title="관심사 관리"
-        description="추천 피드를 개선하기 위해 관심 있는 주제를 수정해주세요."
-      />
+    <div className="mx-auto w-full p-6 py-8">
+      <div className="mb-8">
+        <h1 className="text-2xl font-bold">관심사 설정</h1>
+        <p className="text-muted-foreground">
+          관심사를 선택하신 후 맞춤형 콘텐츠를 받아보세요.
+        </p>
+      </div>
 
-      <section className="min-h-0 p-6">
-        <InterestSelector
-          categories={interests?.categories || []}
-          selectedInterests={selectedInterests}
-          onSelect={handleToggleInterest}
-        />
-      </section>
-      <InterestActionBar
-        selectedCount={selectedInterests.length}
-        errorCode={errorCode}
-        disabled={selectedInterests.length < MIN_INTEREST_COUNT || !isChanged}
-        selectedInterests={selectedInterests}
-        categories={interests?.categories || []}
-      />
-    </main>
+      {/* 이미 잘 구현된 InterestList를 그대로 사용 */}
+      <InterestList onSelectionChange={setSelections} />
+
+      <div className="mt-8 flex items-center justify-between border-t pt-6">
+        <div className="text-sm text-gray-500">
+          <span>현재 선택된 관심사: </span>
+          <span className="font-bold text-blue-500">{totalCount}</span> /{" "}
+          {IINTEREST_CONFIG.MAX_LIMIT}
+        </div>
+
+        <Button
+          onClick={handleSave}
+          disabled={isPending || totalCount < IINTEREST_CONFIG.MIN_LIMIT}
+        >
+          {isPending ? "저장 중..." : "변경 사항 저장"}
+        </Button>
+      </div>
+    </div>
   );
-};
-
-export default InterestClient;
+}
