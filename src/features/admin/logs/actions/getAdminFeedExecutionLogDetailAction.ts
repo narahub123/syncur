@@ -2,7 +2,7 @@
 
 import { connectMongo } from "@/shared/lib/db/mongoose";
 import { requireAdmin } from "@/features/admin/lib/requireAdmin";
-import { feedExecutionLogService } from "@/features/feed-execution-logs/service/FeedExecutionLogService.instance";
+import { adminFeedExecutionLogService } from "../services/AdminFeedExecutionLogService.instance";
 
 /**
  * Admin - FeedExecutionLog 상세 조회 Action
@@ -15,5 +15,5 @@ export async function getAdminFeedExecutionLogDetailAction(id: string) {
   await connectMongo();
   await requireAdmin();
 
-  return await feedExecutionLogService.getLogDetailById(id);
+  return await adminFeedExecutionLogService.getLogDetailById(id);
 }

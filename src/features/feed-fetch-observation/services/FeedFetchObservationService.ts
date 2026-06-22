@@ -39,4 +39,10 @@ export class FeedFetchObservationService {
     const docs = await this.repo.createMany(logs);
     return toFeedFetchObservationDTOs(docs);
   }
+
+  async findByExecutionId(executionId: string) {
+    const docs = await this.repo.findByExecutionId(executionId);
+
+    return toFeedFetchObservationDTOs(docs);
+  }
 }

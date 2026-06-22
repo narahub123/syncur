@@ -2,8 +2,98 @@ import { FeedExecutionLogWithFeedAndSiteLeanPagedResponse } from "@/features/fee
 import { AdminFeedExecutionLogsQuery } from "../types/search";
 import { FeedExecutionLogWithFeedAndSiteLean } from "@/features/feed-execution-logs/types/lean";
 import { FeedExecutionLogModel } from "@/features/feed-execution-logs/model/feed-execution-log";
+import { Types } from "mongoose";
+import { toObjectId } from "@/shared/utils/toObjectId";
 
 export default class AdminFeedExecutionLogRepository {
+  async findOneById(
+    id: string | Types.ObjectId,
+  ): Promise<FeedExecutionLogWithFeedAndSiteLean | null> {
+    const objectId = toObjectId(id);
+
+    /**
+     * 1. 기존 findAllPaginated의 핵심 조인 파이프라인 재사용
+     * - FeedExecutionLog -> Feed -> Site로 이어지는 관계성을 완벽히 유지
+     */
+    const basePipeline = [
+      {
+        $lookup: {
+          from: "feeds",
+          localField: "feedId",
+          foreignField: "_id",
+          as: "feed",
+        },
+      },
+      {
+        $unwind: {
+          path: "$feed",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $lookup: {
+          from: "sites",
+          localField: "feed.siteId",
+          foreignField: "_id",
+          as: "site",
+        },
+      },
+      {
+        $unwind: {
+          path: "$site",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+    ];
+
+    /**
+     * 2. 상세 페이지 단건 전용 최종 파이프라인 조립
+     */
+    const [result] =
+      await FeedExecutionLogModel.aggregate<FeedExecutionLogWithFeedAndSiteLean>(
+        [
+          // A. 시작점: 요청된 단건 로그 ID 필터링
+          {
+            $match: { _id: objectId },
+          },
+
+          // B. 공통 조인 레이어 주입
+          ...basePipeline,
+
+          // C. 기존 목록과 100% 동일한 FINAL PROJECT 규격 재사용 (데이터 싱크 보장)
+          {
+            $project: {
+              _id: 1,
+              executionId: 1,
+              status: 1,
+              reason: 1,
+              startedAt: 1,
+              finishedAt: 1,
+              durationMs: 1,
+              failedAtStage: 1,
+              error: 1,
+              createdAt: 1,
+              updatedAt: 1,
+              feed: {
+                _id: 1,
+                feedUrl: 1,
+                status: 1,
+                siteId: 1,
+              },
+              site: {
+                _id: 1,
+                url: 1,
+                name: 1,
+                favicon_url: 1,
+              },
+            },
+          },
+        ],
+      );
+
+    return result ?? null;
+  }
+
   async findAllPaginated(
     params: AdminFeedExecutionLogsQuery,
   ): Promise<FeedExecutionLogWithFeedAndSiteLeanPagedResponse> {

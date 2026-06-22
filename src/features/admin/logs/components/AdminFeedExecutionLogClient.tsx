@@ -24,6 +24,7 @@ import { EmptyState, ErrorState } from "../../components/AdminState";
 import { ROUTES } from "@/shared/constants/routes";
 import { FEED_EXECUTION_LOG_CONFIG } from "../constants/log-config";
 import { AdminBackButton } from "../../components/AdminBackButton";
+import { AdminFeedFetchObservations } from "./AdminFeedFetchObservations";
 
 const AdminFeedExcutionLogClient = () => {
   const params = useParams();
@@ -183,6 +184,8 @@ const AdminFeedExcutionLogClient = () => {
           </CardContent>
         </Card>
       </div>
+
+      <AdminFeedFetchObservations observations={data.observations} />
 
       {/* 4. 에러 로그 */}
       {/* 에러 데이터가 있을 때만 노출 */}

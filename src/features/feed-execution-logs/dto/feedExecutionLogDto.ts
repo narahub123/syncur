@@ -11,6 +11,7 @@ import {
   FeedExecutionStage,
   FeedExecutionStatus,
 } from "@/features/admin/logs/types/search";
+import { FeedFetchObservationDTO } from "@/features/feed-fetch-observation/dtos/feedFetchObservationDTO";
 
 export type FeedExecutionLogDto = {
   _id: string;
@@ -127,6 +128,11 @@ export type FeedExecutionLogWithFeedAndSiteDto = {
     faviconUrl: string | null;
   } | null;
 };
+
+export type FeedExecutionLogWithFeedAndSiteDtoAndObservations =
+  FeedExecutionLogWithFeedAndSiteDto & {
+    observations: FeedFetchObservationDTO[];
+  };
 
 export type FeedExecutionLogWithFeedAndSiteLeanPagedResponse = {
   items: FeedExecutionLogWithFeedAndSiteLean[];

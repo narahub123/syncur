@@ -42,4 +42,16 @@ export class FeedFetchObservationRepository {
 
     return docs.map((doc) => doc.toObject() as FeedFetchObservationLean);
   }
+
+  async findByExecutionId(
+    executionId: string,
+  ): Promise<FeedFetchObservationLean[]> {
+    const docs = await FeedFetchObservationModel.find({
+      executionId,
+    })
+      .sort({ attempt: 1 }) // retry 순서 보장
+      .lean();
+
+    return docs;
+  }
 }
