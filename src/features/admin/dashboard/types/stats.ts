@@ -1,6 +1,8 @@
 import { FeedExecutionLogStatsDto } from "@/features/feed-execution-logs/dto/feedExecutionLogStatsDto";
 import { FeedStatsDto } from "@/features/feeds/dto/feedStatsDto";
 import { SiteStatsDto } from "@/features/rss/site/dto/siteStatsDto";
+import { BugReportStatsDTO } from "@/features/support/bug-reports/dto/bugReportStatsDTO";
+import { InquiryStatsDTO } from "@/features/support/inquiries/dto/inquiryStatDTO";
 
 export interface SystemSectionData {
   sites: SiteStatsDto;
@@ -15,7 +17,8 @@ export interface UserSectionData {
 
 // ⚙️ CsSectionProps로 전달될 데이터 구조
 export interface CsSectionData {
-  cs?: undefined;
+  bugReports: BugReportStatsDTO;
+  inquiries: InquiryStatsDTO;
 }
 
 export interface AdminDashboardStats {

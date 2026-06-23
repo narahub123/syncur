@@ -8,6 +8,7 @@ import {
 } from "../constants/request-type";
 import { RequestAdminReplyLean, RequestMetadata } from "../types/lean";
 import { ImageInfoSchema } from "@/shared/lib/cloudinary/image-info.model";
+import { AdminDashboardStatsModel } from "@/features/admin/dashboard/model/AdminDashboardStats";
 
 /**
  * Request Document
@@ -183,6 +184,51 @@ RequestSchema.index({
   status: 1,
   createdAt: -1,
 });
+
+/**
+ * 💡 Request 상태 변경 시 대시보드 통계 동기화
+ */
+RequestSchema.post("save", async function (doc) {
+  await updateRequestStats(doc.constructor as mongoose.Model<RequestDocument>);
+});
+
+RequestSchema.post("findOneAndUpdate", async function () {
+  await updateRequestStats(this.model);
+});
+
+/**
+ * 대시보드 CS 통계 업데이트 로직
+ */
+async function updateRequestStats(model: mongoose.Model<RequestDocument>) {
+  try {
+    const stats = await model.aggregate([
+      {
+        $group: {
+          _id: { type: "$type", status: "$status" },
+          count: { $sum: 1 },
+        },
+      },
+    ]);
+
+    // stats 결과를 토대로 updateOne 수행
+    // 예: { type: 'BUG', status: 'PENDING' } -> cs.bugReports.pending 카운트 갱신
+    const updatePayload: Record<string, number> = {};
+
+    stats.forEach((item) => {
+      const type = item._id.type.toLowerCase(); // 'bug', 'inquiry'
+      const status = item._id.status.toLowerCase(); // 'pending', 'resolved', ...
+      updatePayload[`cs.${type}s.${status}`] = item.count;
+    });
+
+    await AdminDashboardStatsModel.updateOne(
+      { key: "dashboard_overview" },
+      { $set: updatePayload },
+      { upsert: true },
+    );
+  } catch (error) {
+    console.error("대시보드 CS 통계 동기화 실패:", error);
+  }
+}
 
 export const RequestModel =
   mongoose.models.Request ||

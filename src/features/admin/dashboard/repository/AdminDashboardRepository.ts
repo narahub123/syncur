@@ -1,14 +1,17 @@
-import { AdminDashboardStatsModel } from "../model/AdminDashboardStats";
-import { AdminDashboardStats } from "../types/stats";
+import { ADMIN_DASHBOARD_STATS_KEY } from "../components/stats";
+import {
+  AdminDashboardStatsDocument,
+  AdminDashboardStatsModel,
+} from "../model/AdminDashboardStats";
 
 export class AdminDashboardRepository {
   /**
    * 대시보드 오버뷰 통계 데이터를 단건 조회합니다.
    * 데이터가 없을 경우 방어 코드를 위해 lean 객체 형식으로 반환합니다.
    */
-  async findDashboardOverview(): Promise<AdminDashboardStats> {
+  async findDashboardOverview(): Promise<AdminDashboardStatsDocument> {
     return await AdminDashboardStatsModel.findOne({
-      key: "dashboard_overview",
+      key: ADMIN_DASHBOARD_STATS_KEY,
     }).lean();
   }
 
@@ -17,7 +20,7 @@ export class AdminDashboardRepository {
    */
   async incrementFields(incPayload: Record<string, number>): Promise<void> {
     await AdminDashboardStatsModel.updateOne(
-      { key: "dashboard_overview" },
+      { key: ADMIN_DASHBOARD_STATS_KEY },
       { $inc: incPayload },
       { upsert: true },
     );

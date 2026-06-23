@@ -1,7 +1,7 @@
 import { Column, COLUMN_ALIGN } from "@/features/admin/types/admin-table";
 import { Badge } from "@/shared/components/ui/badge";
 import { Avatar } from "@/shared/components/common/Avartar";
-import { INQUIRY_STATUS, InquirySort, InquiryStatus } from "../types/search";
+import { InquirySort, InquiryStatus } from "../types/search";
 import { AdminInquiryResponseDTO } from "../dto/inquiryDto";
 
 /**

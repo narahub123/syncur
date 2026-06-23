@@ -10,13 +10,14 @@ export const AdminDashboardClient = () => {
 
   if (!data) return null;
 
+  console.log(data);
   return (
     <div className="flex flex-1 flex-col gap-8 p-6">
       <SystemSection system={data.system} />
 
       <UserSection />
 
-      <CsSection />
+      <CsSection cs={data.cs} />
     </div>
   );
 };

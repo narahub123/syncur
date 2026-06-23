@@ -15,22 +15,36 @@ export class AdminDashboardService {
     return {
       system: {
         sites: {
-          total: rawStats?.system.sites?.total ?? 0,
-          canRss: rawStats?.system.sites?.canRss ?? 0,
-          noRss: rawStats?.system.sites?.noRss ?? 0,
+          total: rawStats?.sites?.total ?? 0,
+          canRss: rawStats?.sites?.canRss ?? 0,
+          noRss: rawStats?.sites?.noRss ?? 0,
         },
         feeds: {
-          total: rawStats?.system.feeds?.total ?? 0,
-          active: rawStats?.system.feeds?.active ?? 0,
-          inactive: rawStats?.system.feeds?.inactive ?? 0,
+          total: rawStats?.feeds?.total ?? 0,
+          active: rawStats?.feeds?.active ?? 0,
+          inactive: rawStats?.feeds?.inactive ?? 0,
         },
         feedExecutionLogs: {
-          total: rawStats?.system.feedExecutionLogs?.total ?? 0,
-          fails: rawStats?.system.feedExecutionLogs?.fails ?? 0,
+          total: rawStats?.feedExecutionLogs?.total ?? 0,
+          fails: rawStats?.feedExecutionLogs?.fails ?? 0,
         },
       },
       user: {},
-      cs: {},
+      cs: {
+        bugReports: rawStats.bugReports ?? {
+          total: 0,
+          completed: 0,
+          pending: 0,
+          checking: 0,
+          fixing: 0,
+        },
+        inquiries: rawStats.inquiries ?? {
+          total: 0,
+          pending: 0,
+          processing: 0,
+          completed: 0,
+        },
+      },
     };
   }
 }

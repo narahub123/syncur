@@ -1,6 +1,8 @@
 import { FeedExecutionLogStatsDto } from "@/features/feed-execution-logs/dto/feedExecutionLogStatsDto";
 import { FeedStatsDto } from "@/features/feeds/dto/feedStatsDto";
 import { SiteStatsDto } from "@/features/rss/site/dto/siteStatsDto";
+import { BugReportStatsDTO } from "@/features/support/bug-reports/dto/bugReportStatsDTO";
+import { InquiryStatsDTO } from "@/features/support/inquiries/dto/inquiryStatDTO";
 import { Schema, model, models, Document } from "mongoose";
 
 /**
@@ -17,6 +19,10 @@ export interface AdminDashboardStatsDocument extends Document {
   feeds: FeedStatsDto;
 
   feedExecutionLogs: FeedExecutionLogStatsDto;
+
+  bugReports: BugReportStatsDTO;
+
+  inquiries: InquiryStatsDTO;
 }
 
 const adminDashboardStatsSchema = new Schema<AdminDashboardStatsDocument>(
@@ -63,6 +69,21 @@ const adminDashboardStatsSchema = new Schema<AdminDashboardStatsDocument>(
         type: Number,
         default: 0,
       },
+    },
+
+    bugReports: {
+      total: { type: Number, default: 0 },
+      completed: { type: Number, default: 0 },
+      pending: { type: Number, default: 0 },
+      checking: { type: Number, default: 0 },
+      fixing: { type: Number, default: 0 },
+    },
+
+    inquiries: {
+      total: { type: Number, default: 0 },
+      pending: { type: Number, default: 0 },
+      processing: { type: Number, default: 0 },
+      completed: { type: Number, default: 0 },
     },
   },
   {
