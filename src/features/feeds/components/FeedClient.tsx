@@ -10,6 +10,7 @@ import { useInfiniteScroll } from "@/shared/hooks/useInfiniteScroll";
 import LoadMoreTrigger from "@/shared/components/common/LoadMoreTrigger";
 import UnreadFeedIndicator from "./UnreadFeedIndicator";
 import { InterestOnboardingDialog } from "@/features/interests/components/InterestOnboardingDialog";
+import { UrlInput } from "@/features/ingestion/components/UrlInput";
 
 type FeedClientProps = {
   isFirstLogin: boolean;
@@ -56,6 +57,8 @@ const FeedClient = ({ isFirstLogin }: FeedClientProps) => {
           <SiteSubscriptionForm />
         </section>
       )}
+
+      <UrlInput />
 
       {!isLoading && status === "HAS_DATA" && (
         <>
