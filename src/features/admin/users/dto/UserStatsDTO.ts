@@ -9,3 +9,11 @@ export type UserStatsDTO = {
   createdAt: string;
   updatedAt: string;
 };
+
+export type UserStatsBaseDTO = {
+  newUsersCount: number;
+  deletedUsersCount: number;
+  activeUsersCount: number;
+  totalUsersSnapshot: number;
+  isSnapshotInitialized: boolean;
+};

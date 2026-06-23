@@ -1,3 +1,4 @@
+import { AdminDashboardStatsModel } from "@/features/admin/dashboard/model/AdminDashboardStats";
 import { FeedStatus } from "@/shared/types/feed";
 import mongoose, { Schema, Document, Types } from "mongoose";
 
@@ -168,6 +169,59 @@ const FeedSchema = new Schema<FeedDocument>(
  */
 FeedSchema.index({ status: 1, lastFetchedAt: 1 });
 FeedSchema.index({ categories: 1 });
+
+// =========================================================================
+// 🛠️ AdminDashboardStats 동기화를 위한 Mongoose 미들웨어 (Hooks)
+// =========================================================================
+
+/**
+ * 1️⃣ 신규 Feed가 단건 저장(save)된 직후 대시보드 통계 증가
+ */
+FeedSchema.post("save", async function (doc) {
+  const isActive = doc.status === "active";
+
+  await AdminDashboardStatsModel.updateOne(
+    { key: "dashboard_overview" },
+    {
+      $inc: {
+        "feeds.total": 1,
+        "feeds.active": isActive ? 1 : 0,
+        "feeds.inactive": isActive ? 0 : 1,
+      },
+    },
+    { upsert: true },
+  );
+});
+
+/**
+ * 2️⃣ Feed의 상태가 활성 <-> 비활성으로 변경되거나 배치 업서트가 일어난 직후 처리 (findOneAndUpdate 대응)
+ * - 크롤러나 어드민 액션에 의해 특정 피드가 disabled로 전환될 때 전체 상태 밸런스를 동기화합니다.
+ */
+FeedSchema.post("findOneAndUpdate", async function () {
+  try {
+    // 현재 Feed 컬렉션의 실제 상태별 도큐먼트 개수 집계
+    const total = await this.model.countDocuments();
+    const active = await this.model.countDocuments({ status: "active" });
+    const inactive = total - active;
+
+    // 대시보드 통계판 최신화
+    await AdminDashboardStatsModel.updateOne(
+      { key: "dashboard_overview" },
+      {
+        $set: {
+          "feeds.total": total,
+          "feeds.active": active,
+          "feeds.inactive": inactive,
+        },
+      },
+      { upsert: true },
+    );
+  } catch (error) {
+    console.error("대시보드 피드 통계 동기화 실패 (findOneAndUpdate):", error);
+  }
+});
+
+// =========================================================================
 
 export const FeedModel =
   mongoose.models.Feed || mongoose.model<FeedDocument>("Feed", FeedSchema);

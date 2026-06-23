@@ -29,12 +29,12 @@ export class FeedService {
         errorCount: 0,
         categories: [],
       });
-    }
 
-    await adminFeedStatsService.updateStats({
-      total: 1,
-      active: 1,
-    });
+      await adminFeedStatsService.updateStats({
+        total: 1,
+        active: 1,
+      });
+    }
 
     return toFeed(feed as FeedLean);
   }

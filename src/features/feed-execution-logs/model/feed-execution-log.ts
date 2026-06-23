@@ -7,6 +7,7 @@ import {
   FeedExecutionStage,
   FeedExecutionStatus,
 } from "@/features/admin/logs/types/search";
+import { AdminDashboardStatsModel } from "@/features/admin/dashboard/model/AdminDashboardStats";
 import mongoose, { Schema, Types, Document } from "mongoose";
 
 /**
@@ -306,6 +307,32 @@ const FeedExecutionLogSchema = new Schema<FeedExecutionLogDocument>(
  */
 FeedExecutionLogSchema.index({ feedId: 1, startedAt: -1 });
 FeedExecutionLogSchema.index({ status: 1, startedAt: -1 });
+
+// =========================================================================
+// 🛠️ AdminDashboardStats 동기화를 위한 Mongoose 미들웨어 (Hooks)
+// =========================================================================
+
+/**
+ * 1️⃣ 수집 로그가 적재(save)된 직후 대시보드 통계 수치를 누적 증가
+ * - 성공/실패 여부를 판단하여 대시보드 스냅샷 객체 내부의 카운트를 실시간 조작합니다.
+ */
+FeedExecutionLogSchema.post("save", async function (doc) {
+  // 🎯 타입 에러 해결: 정의하신 상수 객체의 FAILED 값("failed")과 정확히 비교합니다.
+  const isFailed = doc.status === FEED_EXECUTION_STATUS.FAILED;
+
+  await AdminDashboardStatsModel.updateOne(
+    { key: "dashboard_overview" },
+    {
+      $inc: {
+        "feedExecutionLogs.total": 1,
+        "feedExecutionLogs.fails": isFailed ? 1 : 0,
+      },
+    },
+    { upsert: true },
+  );
+});
+
+// =========================================================================
 
 /**
  * Model export
