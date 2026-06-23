@@ -3,8 +3,15 @@
 import { Cpu, Globe, Rss } from "lucide-react";
 import { SystemSectionData } from "../types/stats";
 import { StatCard } from "./StatCard"; // 🎯 StatCard가 위치한 실제 경로로 맞춰주세요.
+import { StatCardSkeleton } from "./StatCardSkeleton";
 
-export const SystemSection = ({ system }: { system: SystemSectionData }) => {
+export const SystemSection = ({
+  system,
+  isLoading,
+}: {
+  system: SystemSectionData;
+  isLoading: boolean;
+}) => {
   const { sites, feeds, feedExecutionLogs } = system;
 
   // 1. 수집 엔진 로그 데이터 가공
@@ -18,6 +25,19 @@ export const SystemSection = ({ system }: { system: SystemSectionData }) => {
   const isSiteAlert = sites.noRss > 0;
   const isFeedAlert = feeds.inactive > 0;
   const isEngineAlert = hasFails || (logTotal > 0 && successRate < 90);
+
+  if (isLoading) {
+    return (
+      <div className="space-y-4">
+        <h2 className="text-lg font-bold">🎧 고객 지원 (CS) 현황</h2>
+        <div className="grid gap-4 md:grid-cols-2">
+          <StatCardSkeleton />
+          <StatCardSkeleton />
+          <StatCardSkeleton />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4">

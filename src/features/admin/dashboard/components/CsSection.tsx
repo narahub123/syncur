@@ -4,15 +4,17 @@ import { MessageSquare, Bug, CheckCircle2 } from "lucide-react";
 import { BugReportStatsDTO } from "@/features/support/bug-reports/dto/bugReportStatsDTO";
 import { InquiryStatsDTO } from "@/features/support/inquiries/dto/inquiryStatDTO";
 import { StatCard } from "./StatCard";
+import { StatCardSkeleton } from "./StatCardSkeleton";
 
 interface CsSectionProps {
   cs: {
     bugReports: BugReportStatsDTO;
     inquiries: InquiryStatsDTO;
   };
+  isLoading: boolean;
 }
 
-export const CsSection = ({ cs }: CsSectionProps) => {
+export const CsSection = ({ cs, isLoading }: CsSectionProps) => {
   const { bugReports, inquiries } = cs;
 
   // 1. 상태 감지 (DTO 필드 기준 - total 제외 항목들)
@@ -27,6 +29,21 @@ export const CsSection = ({ cs }: CsSectionProps) => {
   //   totalRequests > 0
   //     ? Math.round((completedRequests / totalRequests) * 100)
   //     : 0;
+
+  if (isLoading) {
+    return (
+      <div className="space-y-4">
+        <h2 className="text-lg font-bold">🎧 고객 지원 (CS) 현황</h2>
+        <div className="grid gap-4 md:grid-cols-2">
+          <StatCardSkeleton />
+          <StatCardSkeleton />
+          <StatCardSkeleton />
+        </div>
+      </div>
+    );
+  }
+
+  if (!cs) return null;
 
   return (
     <div className="space-y-4">
