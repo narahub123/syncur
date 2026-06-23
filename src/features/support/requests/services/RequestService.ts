@@ -1,7 +1,11 @@
 import { Types } from "mongoose";
 import { RequestRepository } from "../repository/RequestRepository";
 import { CreateRequestDto, RequestResponseDTO } from "../dtos";
-import { REQUEST_STATUS, RequestStatus } from "../constants/request-type";
+import {
+  REQUEST_STATUS,
+  REQUEST_TYPE,
+  RequestStatus,
+} from "../constants/request-type";
 import { toRequestDto, toRequestDtos } from "../mappers/toRequestDto";
 import {
   AdminRequestQuery,
@@ -14,8 +18,11 @@ import {
 } from "../mappers/toAdminRequestDtos";
 import { ImageInfo } from "@/shared/lib/cloudinary/image-info.model";
 import { UserRequestQuery } from "../types/search";
+import { BugReportStatsService } from "../../bug-reports/service/BugReportStatsService";
+import { BUG_REPORT_STATUS } from "@/features/admin/bug-reports/types/search";
 
 export class RequestService {
+  private readonly bugReportStatsService = new BugReportStatsService();
   constructor(private readonly requestRepository: RequestRepository) {}
 
   /**
@@ -38,6 +45,13 @@ export class RequestService {
           }
         : undefined,
     });
+
+    if (request.type === REQUEST_TYPE.BUG_REPORT) {
+      await this.bugReportStatsService.handleBugReportCreated(
+        BUG_REPORT_STATUS.PENDING,
+      );
+    }
+
     return toRequestDto(request);
   }
 

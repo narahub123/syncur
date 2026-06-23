@@ -1,8 +1,25 @@
 import { Column, COLUMN_ALIGN } from "@/features/admin/types/admin-table";
 import { Badge } from "@/shared/components/ui/badge";
-import { BUG_REPORT_STATUS, BugReportSort } from "../types/search";
+import { BugReportSort, BugReportStatus } from "../types/search";
 import { AdminBugReportResponseDTO } from "../dto/bugReportDto";
 import { Avatar } from "@/shared/components/common/Avartar";
+
+/**
+ * 🎨 프론트엔드 컴포넌트 내부 혹은 파일 상단에 선언할 Badge 매핑 데이터
+ * 각 상태에 맞는 배리언트(variant)와 출력할 라벨을 격리합니다.
+ */
+const BUG_BADGE_CONFIG: Record<
+  BugReportStatus,
+  {
+    label: string;
+    variant: "default" | "secondary" | "outline" | "destructive";
+  }
+> = {
+  PENDING: { label: "접수대기", variant: "destructive" },
+  CHECKING: { label: "확인중", variant: "secondary" }, // 혹은 프로젝트 테마에 맞춘 배리언트
+  FIXING: { label: "수정중", variant: "secondary" }, // 중요도나 경고 의미를 줄 때
+  COMPLETED: { label: "해결완료", variant: "default" },
+};
 
 export const adminBugReportTableColumns: Column<
   AdminBugReportResponseDTO,
@@ -12,15 +29,13 @@ export const adminBugReportTableColumns: Column<
     key: "status",
     header: "상태",
     align: COLUMN_ALIGN.CENTER,
-    render: (r: AdminBugReportResponseDTO) => (
-      <Badge
-        variant={
-          r.status === BUG_REPORT_STATUS.COMPLETED ? "secondary" : "outline"
-        }
-      >
-        {r.status === BUG_REPORT_STATUS.COMPLETED ? "해결완료" : "처리중"}
-      </Badge>
-    ),
+    render: (r: AdminBugReportResponseDTO) => {
+      const badgeConfig = BUG_BADGE_CONFIG[r.status] || {
+        label: "알수없음",
+        variant: "outline",
+      };
+      return <Badge variant={badgeConfig.variant}>{badgeConfig.label}</Badge>;
+    },
     sortable: true,
   },
 

@@ -3,6 +3,7 @@
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { BugReportQuery } from "../types/search";
 import { fetchBugReports } from "../api/fetchBugReports";
+import { bugReportKeys } from "../constants/bugReportKeys";
 
 type BugReportPaginationParams = BugReportQuery;
 
@@ -13,7 +14,7 @@ type BugReportPaginationParams = BugReportQuery;
  */
 export function useAdminBugReportsQuery(params: BugReportPaginationParams) {
   return useQuery({
-    queryKey: ["bugReports", params],
+    queryKey: bugReportKeys.list(params),
 
     queryFn: () => fetchBugReports(params),
 

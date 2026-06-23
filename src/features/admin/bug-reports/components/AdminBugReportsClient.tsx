@@ -34,6 +34,11 @@ import { useAdminBugReportsInfiniteQuery } from "../hooks/useAdminBugReportsInfi
 import { adminBugReportTableColumns } from "../constants/adminBugReportTableColumns";
 import { FilterToolbar } from "../../components/FilterToolbar";
 import { AdminBugReportResponseDTO } from "../dto/bugReportDto";
+import { AdminStatsCard } from "../../components/AdminStatsCard";
+import {
+  defaultBugReportStats,
+  getBugReportStatusList,
+} from "@/features/support/bug-reports/constants/stats";
 
 const AdminBugReportsClient = () => {
   const router = useRouter();
@@ -82,6 +87,7 @@ const AdminBugReportsClient = () => {
   const {
     isLoading,
     items: bugReports,
+    stats,
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
@@ -93,7 +99,13 @@ const AdminBugReportsClient = () => {
     useInfiniteHook: useAdminBugReportsInfiniteQuery,
   });
 
+  const bugReportStats = stats ?? defaultBugReportStats;
   const totalPages = pagination?.totalPages ?? 1;
+
+  const completedRate =
+    bugReportStats.total > 0
+      ? (bugReportStats.completed / bugReportStats.total) * 100
+      : 0;
 
   /**
    * =========================
@@ -118,9 +130,18 @@ const AdminBugReportsClient = () => {
     router.push(`${ROUTES.ADMIN_BUG_REPORTS}/${item._id}`);
   };
 
+  console.log("스탯", stats);
+
   return (
-    <div className="w-full p-6">
+    <div className="w-full space-y-6 p-6">
       <h1 className="mb-6 text-2xl font-bold">버그 신고 관리</h1>
+
+      <AdminStatsCard
+        title="버그신고 현황"
+        items={getBugReportStatusList(bugReportStats)}
+        progressValue={completedRate}
+        total={bugReportStats.total}
+      />
 
       <div className="flex flex-1 flex-col space-y-4">
         <AdminTableToolbar
