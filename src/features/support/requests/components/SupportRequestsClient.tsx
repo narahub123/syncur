@@ -109,12 +109,14 @@ const SupportRequestsClient = () => {
           onChange={setQuery}
           searchFieldOptions={USER_REQUEST_SEARCH_FIELD_OPTIONS}
           pageSizeOptions={USER_PAGE_SIZE_OPTIONS}
+          isLoading={isLoading}
         />
         <FilterToolbar
           filters={query.filters}
           onChange={handleFilterChange}
           config={USER_REQUEST_FILTER_CONFIG}
           initialValue={userRequestInitialFilterValue}
+          isLoading={isLoading}
         />
         <AdminTable
           columns={userRequestTableColumns}

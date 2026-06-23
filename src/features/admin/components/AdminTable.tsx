@@ -85,7 +85,9 @@ export function AdminTable<T extends { _id: string }, K extends string>({
           </TableHeader>
           <TableBody>
             {isFetching ? (
-              <LoadingRow colSpan={columns.length} />
+              Array.from({ length: 5 }).map((_, i) => (
+                <TableSkeletonRow key={i} colCount={columns.length} />
+              ))
             ) : data.length === 0 ? (
               <EmptyRow colSpan={columns.length} message={emptyMessage} />
             ) : (
@@ -115,9 +117,9 @@ export function AdminTable<T extends { _id: string }, K extends string>({
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:hidden">
         {isFetching ? (
-          <div className="col-span-full flex h-24 items-center justify-center">
-            <LoaderCircle className="h-4 w-4 animate-spin" />
-          </div>
+          Array.from({ length: 4 }).map((_, i) => (
+            <MobileSkeletonCard key={i} colCount={columns.length} />
+          ))
         ) : data.length === 0 ? (
           <div className="text-muted-foreground col-span-full flex h-24 items-center justify-center text-sm">
             {emptyMessage}
@@ -158,12 +160,25 @@ export function AdminTable<T extends { _id: string }, K extends string>({
   );
 }
 
-const LoadingRow = ({ colSpan }: { colSpan: number }) => (
+const TableSkeletonRow = ({ colCount }: { colCount: number }) => (
   <TableRow>
-    <TableCell colSpan={colSpan} className="h-24 text-center">
-      <LoaderCircle className="mx-auto h-4 w-4 animate-spin" />
-    </TableCell>
+    {Array.from({ length: colCount }).map((_, i) => (
+      <TableCell key={i}>
+        <div className="h-4 w-full animate-pulse rounded bg-gray-200" />
+      </TableCell>
+    ))}
   </TableRow>
+);
+
+const MobileSkeletonCard = ({ colCount }: { colCount: number }) => (
+  <div className="animate-pulse space-y-3 rounded-lg border bg-white p-4">
+    {Array.from({ length: colCount }).map((_, i) => (
+      <div key={i} className="flex items-center justify-between">
+        <div className="h-3 w-16 rounded bg-gray-200" />
+        <div className="h-3 w-24 rounded bg-gray-200" />
+      </div>
+    ))}
+  </div>
 );
 
 const EmptyRow = ({

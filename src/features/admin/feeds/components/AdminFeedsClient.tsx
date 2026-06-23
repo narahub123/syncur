@@ -69,6 +69,7 @@ const AdminFeedsClient = () => {
         items={getFeedStatusList(stats)}
         progressValue={activeRate}
         total={stats.total}
+        isLoading={isFetching}
       />
       {/* 🔹 검색 / 정렬 / 페이지 사이즈 컨트롤 */}
       <AdminTableToolbar
@@ -76,12 +77,14 @@ const AdminFeedsClient = () => {
         onChange={setQuery}
         searchFieldOptions={ADMIN_FEED_SEARCH_FIELD_OPTIONS}
         pageSizeOptions={ADMIN_FEED_PAGE_SIZE_OPTIONS}
+        isLoading={isFetching}
       />
       <FilterToolbar
         filters={query.filters}
         onChange={handleFilterChange}
         config={ADMIN_FEED_FILTER_CONFIG}
         initialValue={AdminFeedInitialFilterValue}
+        isLoading={isFetching}
       />
       {/* 🔹 테이블 유지 구조 * - 로딩 중에도 UI 유지 * - 데이터 변경 시 깜빡임 방지 */}{" "}
       <AdminTable

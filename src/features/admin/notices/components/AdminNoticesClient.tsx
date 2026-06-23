@@ -130,18 +130,21 @@ const AdminNoticesClient = () => {
           items={getNoticeStatusList(noticeStats)}
           progressValue={activeRate}
           total={noticeStats.totalCount}
+          isLoading={isLoading}
         />
         <AdminTableToolbar
           query={query}
           onChange={setQuery}
           searchFieldOptions={ADMIN_NOTICE_SEARCH_FIELD_OPTIONS}
           pageSizeOptions={ADMIN_NOTICE_PAGE_SIZE_OPTIONS}
+          isLoading={isLoading}
         />
         <FilterToolbar
           filters={query.filters}
           onChange={handleFilterChange}
           config={ADMIN_NOTICE_FILTER_CONFIG}
           initialValue={adminNoticeInitialFilterValue}
+          isLoading={isLoading}
         />
         <AdminTable
           columns={adminNoticeTableColumns}

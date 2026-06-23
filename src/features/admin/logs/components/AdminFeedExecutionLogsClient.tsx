@@ -104,18 +104,21 @@ const AdminFeedExecutionLogsClient = () => {
         items={getFeedExecutionLogStatusList(logStats)}
         progressValue={failRate}
         total={stats?.total || 0}
+        isLoading={isLoading}
       />
       <AdminTableToolbar
         query={query}
         onChange={setQuery}
         searchFieldOptions={ADMIN_FEED_EXECUTION_LOG_SEARCH_FIELD_OPTIONS}
         pageSizeOptions={ADMIN_FEED_EXECUTION_LOG_PAGE_SIZE_OPTIONS}
+        isLoading={isLoading}
       />
       <FilterToolbar
         filters={query.filters}
         onChange={handleFilterChange}
         config={ADMIN_FEED_EXECUTION_LOG_FILTER_CONFIG}
         initialValue={AdminFeedExecutionLogInitialFilterValue}
+        isLoading={isLoading}
       />
 
       <AdminTable

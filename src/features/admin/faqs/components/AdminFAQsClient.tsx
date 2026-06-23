@@ -132,6 +132,7 @@ const AdminFAQsClient = () => {
         items={getFaqStatusList(faqStats)}
         progressValue={activeRate}
         total={faqStats.totalCount}
+        isLoading={isLoading}
       />
 
       <div className="flex flex-1 flex-col space-y-2">
@@ -140,12 +141,14 @@ const AdminFAQsClient = () => {
           onChange={setQuery}
           searchFieldOptions={ADMIN_FAQ_SEARCH_FIELD_OPTIONS}
           pageSizeOptions={ADMIN_FAQ_PAGE_SIZE_OPTIONS}
+          isLoading={isLoading}
         />
         <FilterToolbar
           filters={query.filters}
           onChange={handleFilterChange}
           config={ADMIN_FAQ_FILTER_CONFIG}
           initialValue={adminFaqInitialFilterValue}
+          isLoading={isLoading}
         />
         <AdminTable
           columns={adminFaqTableColumns}

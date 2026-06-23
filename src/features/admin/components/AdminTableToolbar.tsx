@@ -18,6 +18,7 @@ interface AdminTableToolbarProps<Q, SF, PS> {
   onChange: (query: Q) => void;
   searchFieldOptions: { label: string; value: SF }[];
   pageSizeOptions: { label: string; value: PS }[];
+  isLoading: boolean;
 }
 
 export const AdminTableToolbar = <
@@ -27,7 +28,8 @@ export const AdminTableToolbar = <
 >(
   props: AdminTableToolbarProps<Q, SF, PS>,
 ) => {
-  const { query, onChange, searchFieldOptions, pageSizeOptions } = props;
+  const { query, onChange, searchFieldOptions, pageSizeOptions, isLoading } =
+    props;
 
   const [search, setSearch] = useState(query.search);
   const debouncedSearch = useDebounce(search, 300);
@@ -37,6 +39,8 @@ export const AdminTableToolbar = <
     if (debouncedSearch === query.search) return;
     onChange({ ...query, search: debouncedSearch, page: 1 });
   }, [debouncedSearch, onChange, query]);
+
+  if (isLoading) return <AdminTableToolbarSkeleton />;
 
   return (
     <div className="flex items-center justify-between px-2">
@@ -62,3 +66,21 @@ export const AdminTableToolbar = <
     </div>
   );
 };
+
+export function AdminTableToolbarSkeleton() {
+  return (
+    <div className="flex animate-pulse items-center justify-between px-2">
+      {/* 왼쪽: 필드 선택 및 검색 입력창 */}
+      <div className="flex items-center gap-2">
+        {/* AdminSearchFieldSelect 대응 */}
+        <div className="h-10 w-32 rounded-md bg-gray-200" />
+
+        {/* Input 대응 */}
+        <div className="h-10 w-64 rounded-md bg-gray-200" />
+      </div>
+
+      {/* 오른쪽: 페이지 사이즈 선택 */}
+      <div className="h-10 w-24 rounded-md bg-gray-200" />
+    </div>
+  );
+}

@@ -141,6 +141,7 @@ const AdminInquiriesClient = () => {
         items={getInquiryStatusList(inquiryStats)}
         progressValue={completedRate}
         total={inquiryStats.total}
+        isLoading={isLoading}
       />
 
       <div className="flex flex-1 flex-col space-y-4">
@@ -149,6 +150,7 @@ const AdminInquiriesClient = () => {
           onChange={setQuery}
           searchFieldOptions={INQUIRY_SEARCH_FIELD_OPTIONS}
           pageSizeOptions={INQUIRY_PAGE_SIZE_OPTIONS}
+          isLoading={isLoading}
         />
 
         <FilterToolbar
@@ -156,6 +158,7 @@ const AdminInquiriesClient = () => {
           onChange={handleFilterChange}
           config={INQUIRY_FILTER_CONFIG}
           initialValue={INQUIRY_INITIAL_FILTER_VALUE}
+          isLoading={isLoading}
         />
 
         <AdminTable

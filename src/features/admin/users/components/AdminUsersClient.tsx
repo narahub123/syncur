@@ -145,6 +145,7 @@ const AdminUsersClient = () => {
         items={getUserStatsStatusList(userStats)}
         progressValue={activeRate}
         total={userStats.totalUsersSnapshot}
+        isLoading={isLoading}
       />
       <div className="flex flex-1 flex-col space-y-4">
         <AdminTableToolbar
@@ -152,6 +153,7 @@ const AdminUsersClient = () => {
           onChange={setQuery}
           searchFieldOptions={ADMIN_USER_SEARCH_FIELD_OPTIONS}
           pageSizeOptions={ADMIN_USER_PAGE_SIZE_OPTIONS}
+          isLoading={isLoading}
         />
 
         <FilterToolbar
@@ -159,6 +161,7 @@ const AdminUsersClient = () => {
           onChange={handleFilterChange}
           config={ADMIN_USER_FILTER_CONFIG}
           initialValue={adminUserInitialFilterValue}
+          isLoading={isLoading}
         />
 
         <AdminTable

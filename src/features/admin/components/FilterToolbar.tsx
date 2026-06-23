@@ -14,6 +14,7 @@ interface Props<T extends Record<string, FilterDefinition>> {
   onChange: (key: keyof T, value: FilterValue) => void;
   initialValue?: Partial<Record<keyof T, FilterValue>>;
   onReset?: () => void;
+  isLoading: boolean;
 }
 
 export const FilterToolbar = <T extends Record<string, FilterDefinition>>({
@@ -22,6 +23,7 @@ export const FilterToolbar = <T extends Record<string, FilterDefinition>>({
   onChange,
   initialValue,
   onReset,
+  isLoading,
 }: Props<T>) => {
   const keys = Object.keys(config) as Array<keyof T>;
 
@@ -47,6 +49,8 @@ export const FilterToolbar = <T extends Record<string, FilterDefinition>>({
       }
     });
   };
+
+  if (isLoading) return <FilterToolbarSkeleton />;
 
   return (
     <div className="flex items-center gap-2 overflow-x-auto rounded-lg border p-3">
@@ -76,3 +80,24 @@ export const FilterToolbar = <T extends Record<string, FilterDefinition>>({
     </div>
   );
 };
+
+export function FilterToolbarSkeleton() {
+  // config의 키 개수를 정확히 알 수 없는 경우, 대략적인 필터 개수(예: 3~4개)를 가정합니다.
+  const skeletonItems = [1, 2, 3, 4];
+
+  return (
+    <div className="flex animate-pulse items-center gap-2 overflow-x-auto rounded-lg border p-3">
+      <div className="flex min-w-0 flex-1 flex-wrap items-center gap-2">
+        {skeletonItems.map((i) => (
+          <div key={i} className="shrink-0">
+            {/* FilterPopoverItem의 버튼 형태를 모방 */}
+            <div className="h-9 w-24 rounded-md bg-gray-200" />
+          </div>
+        ))}
+      </div>
+
+      {/* 초기화 버튼 공간 (isDirty 상태일 때를 대비해 미리 공간 확보) */}
+      <div className="ml-auto h-9 w-16 shrink-0 rounded-md bg-gray-100" />
+    </div>
+  );
+}

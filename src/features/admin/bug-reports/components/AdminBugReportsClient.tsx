@@ -139,6 +139,7 @@ const AdminBugReportsClient = () => {
         items={getBugReportStatusList(bugReportStats)}
         progressValue={completedRate}
         total={bugReportStats.total}
+        isLoading={isLoading}
       />
 
       <div className="flex flex-1 flex-col space-y-4">
@@ -147,6 +148,7 @@ const AdminBugReportsClient = () => {
           onChange={setQuery}
           searchFieldOptions={BUG_REPORT_SEARCH_FIELD_OPTIONS}
           pageSizeOptions={BUG_REPORT_PAGE_SIZE_OPTIONS}
+          isLoading={isLoading}
         />
 
         <FilterToolbar
@@ -154,6 +156,7 @@ const AdminBugReportsClient = () => {
           onChange={handleFilterChange}
           config={BUG_REPORT_FILTER_CONFIG}
           initialValue={bugReportInitialFilterValue}
+          isLoading={isLoading}
         />
 
         <AdminTable

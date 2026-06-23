@@ -108,12 +108,14 @@ const SupportNoticesClient = () => {
           onChange={setQuery}
           searchFieldOptions={USER_NOTICE_SEARCH_FIELD_OPTIONS}
           pageSizeOptions={USER_PAGE_SIZE_OPTIONS}
+          isLoading={isLoading}
         />
         <FilterToolbar
           filters={query.filters}
           onChange={handleFilterChange}
           config={USER_NOTICE_FILTER_CONFIG}
           initialValue={userNoticeInitialFilterValue}
+          isLoading={isLoading}
         />
         <AdminTable
           columns={userNoticeTableColumns}

@@ -64,12 +64,14 @@ export const AdminSitesClient = () => {
         items={getRssStatusList(stats)}
         progressValue={rssRate}
         total={stats.total}
+        isLoading={isLoading}
       />
       <AdminTableToolbar
         query={query}
         onChange={setQuery}
         searchFieldOptions={ADMIN_SITE_SEARCH_FIELD_OPTIONS}
         pageSizeOptions={ADMIN_SITE_PAGE_SIZE_OPTIONS}
+        isLoading={isLoading}
       />
       <FilterBar
         filters={query.filters}
