@@ -36,6 +36,11 @@ import {
 import { FilterValue } from "@/features/admin/constants/filters";
 import { AdminInquiryResponseDTO } from "../dto/inquiryDto";
 import LoadMoreTrigger from "@/shared/components/common/LoadMoreTrigger";
+import {
+  defaultInquiryStats,
+  getInquiryStatusList,
+} from "@/features/support/inquiries/constants/stats";
+import { AdminStatsCard } from "../../components/AdminStatsCard";
 
 const AdminInquiriesClient = () => {
   const router = useRouter();
@@ -84,6 +89,7 @@ const AdminInquiriesClient = () => {
   const {
     isLoading,
     items: inquiries,
+    stats,
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
@@ -95,7 +101,13 @@ const AdminInquiriesClient = () => {
     useInfiniteHook: useAdminInquiriesInfiniteQuery,
   });
 
+  const inquiryStats = stats ?? defaultInquiryStats;
   const totalPages = pagination?.totalPages ?? 1;
+
+  const completedRate =
+    inquiryStats.total > 0
+      ? (inquiryStats.completed / inquiryStats.total) * 100
+      : 0;
 
   /**
    * =========================
@@ -121,8 +133,15 @@ const AdminInquiriesClient = () => {
   };
 
   return (
-    <div className="w-full p-6">
+    <div className="w-full space-y-4 p-6">
       <h1 className="mb-6 text-2xl font-bold">1:1 문의 관리</h1>
+
+      <AdminStatsCard
+        title="1:1 문의 현황"
+        items={getInquiryStatusList(inquiryStats)}
+        progressValue={completedRate}
+        total={inquiryStats.total}
+      />
 
       <div className="flex flex-1 flex-col space-y-4">
         <AdminTableToolbar

@@ -130,8 +130,6 @@ const AdminBugReportsClient = () => {
     router.push(`${ROUTES.ADMIN_BUG_REPORTS}/${item._id}`);
   };
 
-  console.log("스탯", stats);
-
   return (
     <div className="w-full space-y-6 p-6">
       <h1 className="mb-6 text-2xl font-bold">버그 신고 관리</h1>

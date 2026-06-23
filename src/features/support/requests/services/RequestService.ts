@@ -20,9 +20,12 @@ import { ImageInfo } from "@/shared/lib/cloudinary/image-info.model";
 import { UserRequestQuery } from "../types/search";
 import { BugReportStatsService } from "../../bug-reports/service/BugReportStatsService";
 import { BUG_REPORT_STATUS } from "@/features/admin/bug-reports/types/search";
+import { InquiryStatsService } from "../../inquiries/service/InquiryStatsService";
+import { INQUIRY_STATUS } from "@/features/admin/inquiries/types/search";
 
 export class RequestService {
   private readonly bugReportStatsService = new BugReportStatsService();
+  private readonly inquiryStatsService = new InquiryStatsService();
   constructor(private readonly requestRepository: RequestRepository) {}
 
   /**
@@ -46,9 +49,17 @@ export class RequestService {
         : undefined,
     });
 
+    // 1. 버그 리포트인 경우 기존 통계 트리거
     if (request.type === REQUEST_TYPE.BUG_REPORT) {
       await this.bugReportStatsService.handleBugReportCreated(
         BUG_REPORT_STATUS.PENDING,
+      );
+    }
+
+    // 🎯 2. 일반 문의(INQUIRY)인 경우 신규 통계 트리거
+    if (request.type === REQUEST_TYPE.INQUIRY) {
+      await this.inquiryStatsService.handleInquiryCreated(
+        INQUIRY_STATUS.PENDING,
       );
     }
 

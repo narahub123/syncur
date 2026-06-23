@@ -9,6 +9,7 @@ import { Types } from "mongoose";
 import { toObjectId } from "@/shared/utils/toObjectId";
 import { ImageInfo } from "@/shared/lib/cloudinary/image-info.model";
 import { RequestLean } from "@/features/support/requests/types/lean";
+import { REQUEST_TYPE } from "@/features/support/requests/constants/request-type";
 
 export class InquiryRepository {
   constructor() {}
@@ -39,7 +40,9 @@ export class InquiryRepository {
      * MATCH STAGE
      * =========================
      */
-    const matchStage: Record<string, unknown> = {};
+    const matchStage: Record<string, unknown> = {
+      type: REQUEST_TYPE.INQUIRY,
+    };
 
     // status filter
     const statusFilter = filters?.status;
@@ -279,5 +282,14 @@ export class InquiryRepository {
       },
       { returnDocument: "after" },
     ).lean();
+  }
+
+  /**
+   * 단일 문의 건 상세 조회 (권한 검증용 혹은 어드민용)
+   * * @param id 조회하고자 하는 문의 건의 고유 ID
+   * @returns 검색된 제보 상세 Lean 객체 (존재하지 않을 경우 null)
+   */
+  async findById(id: Types.ObjectId | string): Promise<RequestLean | null> {
+    return RequestModel.findById(toObjectId(id)).lean();
   }
 }

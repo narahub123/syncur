@@ -3,6 +3,7 @@
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { InquiryQuery } from "../types/search";
 import { fetchInquiries } from "../api/fetchInquiries";
+import { inquiryKeys } from "../constants/inquiryKeys";
 
 type InquiryPaginationParams = InquiryQuery;
 
@@ -13,7 +14,7 @@ type InquiryPaginationParams = InquiryQuery;
  */
 export function useAdminInquiriesQuery(params: InquiryPaginationParams) {
   return useQuery({
-    queryKey: ["inquiries", params],
+    queryKey: inquiryKeys.list(params),
 
     queryFn: () => fetchInquiries(params),
 
