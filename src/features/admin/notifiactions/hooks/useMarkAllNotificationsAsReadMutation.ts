@@ -53,6 +53,11 @@ export function useMarkAllNotificationsAsReadMutation(
       queryClient.invalidateQueries({
         queryKey: ["admin-notifications"],
       });
+
+      queryClient.invalidateQueries({
+        queryKey: ["my-feed-items"], // 👈 실제 피드 목록을 담당하는 QueryKey
+        exact: false, // 하위 필터(페이지, 카테고리 등)가 붙어있어도 통째로 갱신하기 위함
+      });
     },
   });
 }
