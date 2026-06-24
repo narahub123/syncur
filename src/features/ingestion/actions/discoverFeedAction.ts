@@ -7,6 +7,7 @@ import { isDynamicSite } from "../lib/detectors/dynamic-detector";
 import { parseRss } from "../lib/parsers/rss-parser";
 import { rssDetector } from "../lib/detectors/rss-detector";
 import { SOURCE_TYPE } from "../lib/detectors/types";
+import { preprocess } from "../lib/preprocessors/html-preprocessor";
 
 /**
  * 피드 탐색 결과 인터페이스
@@ -57,6 +58,9 @@ export async function discoverFeedAction(
       };
     }
 
+    const result1 = preprocess(dom, targetUrl);
+
+    console.log("전처리결과", result1);
     // 3. 정적(SSR) 판별
     if (isStaticSite(dom)) {
       return {
