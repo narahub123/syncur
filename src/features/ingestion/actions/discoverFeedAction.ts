@@ -2,7 +2,10 @@
 
 import { normalizeUrl } from "@/features/ingestion/utils/url";
 import { JSDOM } from "jsdom";
-import { FEED_HEADERS } from "@/features/ingestion/constants/feed";
+import { fetchSiteDom } from "../lib/fetch-utils";
+import { checkRss } from "../lib/analyzers/rss-detector";
+import { isStaticSite } from "../lib/analyzers/static-detector";
+import { isDynamicSite } from "../lib/analyzers/dynamic-detector";
 
 /**
  * 피드 탐색 결과 인터페이스
@@ -26,61 +29,54 @@ export async function discoverFeedAction(
   try {
     const targetUrl = normalizeUrl(input);
 
-    // 1. 메인 페이지 HTML 가져오기
-    const response = await fetch(targetUrl, {
-      headers: FEED_HEADERS,
-      next: { revalidate: 3600 },
-    });
-
-    if (!response.ok) {
-      throw new Error(`사이트 연결 실패: ${response.statusText}`);
-    }
-
-    const html = await response.text();
-    const dom = new JSDOM(html);
-    const doc = dom.window.document;
-
-    // 2. [탐색 단계] HTML 내 link 태그 우선 탐색
-    // RSS, Atom, JSON Feed 규격을 모두 확인합니다.
-    const rssLink =
-      doc
-        .querySelector('link[type="application/rss+xml"]')
-        ?.getAttribute("href") ||
-      doc
-        .querySelector('link[type="application/atom+xml"]')
-        ?.getAttribute("href") ||
-      doc
-        .querySelector('link[type="application/feed+json"]')
-        ?.getAttribute("href");
-
-    if (rssLink) {
+    // 1. 공통: DOM 가져오기
+    const dom = await fetchSiteDom(targetUrl);
+    if (!dom) {
       return {
-        success: true,
+        success: false,
         url: targetUrl,
-        feedUrl: new URL(rssLink, targetUrl).href,
+        feedUrl: null,
+        message: "사이트에 연결할 수 없습니다.",
       };
     }
 
-    // 3. [휴리스틱 단계] 태그가 없을 경우, 표준 피드 경로 시도 (Fallback)
-    const fallbackPaths = ["/rss", "/feed", "/atom.xml", "/feed.json"];
-
-    for (const path of fallbackPaths) {
-      const candidateUrl = new URL(path, targetUrl).href;
-      const headRes = await fetch(candidateUrl, {
-        method: "HEAD",
-        headers: FEED_HEADERS,
-      });
-
-      if (headRes.ok) {
-        return { success: true, url: targetUrl, feedUrl: candidateUrl };
-      }
+    // 2. RSS 판별 (있으면 종료)
+    const rssUrl = await checkRss(dom, targetUrl);
+    if (rssUrl) {
+      return {
+        success: true,
+        url: targetUrl,
+        feedUrl: rssUrl,
+        message: "RSS 피드를 찾았습니다.",
+      };
     }
 
+    // 3. 정적(SSR) 판별
+    if (isStaticSite(dom)) {
+      return {
+        success: true,
+        url: targetUrl,
+        feedUrl: null,
+        message: "정적(SSR) 사이트입니다.",
+      };
+    }
+
+    // 4. 동적(SPA) 판별
+    if (isDynamicSite(dom)) {
+      return {
+        success: true,
+        url: targetUrl,
+        feedUrl: null,
+        message: "동적(SPA) 사이트입니다.",
+      };
+    }
+
+    // 5. 판별 불가
     return {
       success: true,
       url: targetUrl,
       feedUrl: null,
-      message: "피드를 찾을 수 없습니다.",
+      message: "알 수 없는 사이트 형식입니다.",
     };
   } catch (error) {
     console.error("Feed discovery error:", error);
@@ -88,8 +84,7 @@ export async function discoverFeedAction(
       success: false,
       url: input,
       feedUrl: null,
-      message:
-        "해당 사이트에서 피드를 찾을 수 없거나 연결이 원활하지 않습니다. 주소를 다시 확인해주세요.",
+      message: "분석 중 오류가 발생했습니다.",
     };
   }
 }
