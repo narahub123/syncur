@@ -6,6 +6,7 @@ import { fetchSiteDom } from "../lib/fetch-utils";
 import { checkRss } from "../lib/analyzers/rss-detector";
 import { isStaticSite } from "../lib/analyzers/static-detector";
 import { isDynamicSite } from "../lib/analyzers/dynamic-detector";
+import { parseRss } from "../lib/parsers/rss-parser";
 
 /**
  * 피드 탐색 결과 인터페이스
@@ -43,6 +44,10 @@ export async function discoverFeedAction(
     // 2. RSS 판별 (있으면 종료)
     const rssUrl = await checkRss(dom, targetUrl);
     if (rssUrl) {
+      const result = await parseRss(rssUrl);
+
+      // console.log("rss 수집 결과", result);
+
       return {
         success: true,
         url: targetUrl,
