@@ -1,12 +1,12 @@
 "use server";
 
 import { normalizeUrl } from "@/features/ingestion/utils/url";
-import { JSDOM } from "jsdom";
 import { fetchSiteDom } from "../lib/fetch-utils";
-import { checkRss } from "../lib/analyzers/rss-detector";
-import { isStaticSite } from "../lib/analyzers/static-detector";
-import { isDynamicSite } from "../lib/analyzers/dynamic-detector";
+import { isStaticSite } from "../lib/detectors/static-detector";
+import { isDynamicSite } from "../lib/detectors/dynamic-detector";
 import { parseRss } from "../lib/parsers/rss-parser";
+import { rssDetector } from "../lib/detectors/rss-detector";
+import { SOURCE_TYPE } from "../lib/detectors/types";
 
 /**
  * 피드 탐색 결과 인터페이스
@@ -32,6 +32,7 @@ export async function discoverFeedAction(
 
     // 1. 공통: DOM 가져오기
     const dom = await fetchSiteDom(targetUrl);
+
     if (!dom) {
       return {
         success: false,
@@ -42,16 +43,16 @@ export async function discoverFeedAction(
     }
 
     // 2. RSS 판별 (있으면 종료)
-    const rssUrl = await checkRss(dom, targetUrl);
-    if (rssUrl) {
-      const result = await parseRss(rssUrl);
+    const result = await rssDetector.detect(dom, targetUrl);
+    console.log(result);
 
-      // console.log("rss 수집 결과", result);
+    if (result?.type === SOURCE_TYPE.RSS) {
+      const res = await parseRss(result.rssUrl);
 
       return {
         success: true,
         url: targetUrl,
-        feedUrl: rssUrl,
+        feedUrl: result.rssUrl,
         message: "RSS 피드를 찾았습니다.",
       };
     }

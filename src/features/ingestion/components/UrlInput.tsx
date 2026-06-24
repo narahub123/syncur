@@ -32,6 +32,7 @@ export function UrlInput() {
     isEnabled,
   );
 
+  console.log("검색결과", data);
   return (
     <div className="flex w-full max-w-md flex-col gap-2">
       <div className="flex gap-2">
@@ -62,10 +63,8 @@ export function UrlInput() {
       )}
 
       {/* 피드 탐색 성공 시 결과 출력 */}
-      {data?.success && data.feedUrl && (
-        <p className="text-sm text-green-600">
-          피드를 찾았습니다: {data.feedUrl}
-        </p>
+      {data?.success && (
+        <p className="text-sm text-green-600">{data.message}</p>
       )}
 
       {/* 탐색은 성공했으나 피드를 찾지 못한 경우 메시지 출력 */}

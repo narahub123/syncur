@@ -9,7 +9,6 @@ import {
   TableRow,
 } from "@/shared/components/ui/table";
 import { cn } from "@/shared/utils/cn";
-import { LoaderCircle } from "lucide-react";
 
 import { SORT_ORDER, SortOrder } from "@/shared/types/pagination";
 import { Column, COLUMN_ALIGN, ColumnAlignType } from "../types/admin-table";

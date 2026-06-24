@@ -29,20 +29,18 @@ function sanitizeHtml(html?: string): string {
   });
 }
 
+const parser = new Parser({
+  headers: { ...FEED_HEADERS },
+});
+
 /**
  * RSS/Atom/JSON Feed URL로부터 피드 데이터를 파싱합니다.
  * @param {string} feedUrl - 발견된 피드의 절대 경로 URL
  * @returns {Promise<any>} 파싱된 피드 객체 (제목, 아이템 목록 등)
  */
 export async function parseRss(feedUrl: string) {
-  const parser = new Parser({
-    headers: { ...FEED_HEADERS },
-  });
-
   try {
     const feed = await parser.parseURL(feedUrl);
-
-    console.log(feed);
 
     // DB의 FeedItem 저장 구조에 맞게 아이템 리스트만 반환합니다.
     return feed.items.map((item: CustomItem) => {
