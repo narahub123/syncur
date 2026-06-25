@@ -64,7 +64,7 @@ export async function discoverFeedAction(
     const sitemapDetector = new SitemapDetector();
 
     // 2. 메서드 호출 (해당 사이트의 URL 입력)
-    const sitemapEntries = await sitemapDetector.detect("https://example.com");
+    const sitemapEntries = await sitemapDetector.detect(targetUrl);
 
     // 3. 결과 확인
     if (sitemapEntries.length > 0) {

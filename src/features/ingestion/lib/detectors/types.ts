@@ -1,4 +1,4 @@
-import { JSDOM } from "jsdom";
+import * as cheerio from "cheerio";
 
 // 1. 객체 상수 정의 (as const를 사용하여 리터럴 타입으로 고정)
 export const SOURCE_TYPE = {
@@ -28,7 +28,7 @@ export type DetectionResult =
     };
 
 export interface SourceDetector {
-  detect(dom: JSDOM, url: string): Promise<DetectionResult | null>;
+  detect(dom: cheerio.CheerioAPI, url: string): Promise<DetectionResult | null>;
 }
 
 export const HTML_SITE_TYPE = {
@@ -40,5 +40,5 @@ export const HTML_SITE_TYPE = {
 export type HtmlSiteType = (typeof HTML_SITE_TYPE)[keyof typeof HTML_SITE_TYPE];
 
 export interface HtmlSiteDetector {
-  detect(dom: JSDOM): HtmlSiteType;
+  detect(dom: cheerio.CheerioAPI): HtmlSiteType;
 }

@@ -1,4 +1,4 @@
-import { JSDOM } from "jsdom";
+import * as cheerio from "cheerio";
 import {
   CONTENT_SELECTORS,
   DYNAMIC_TEXT_LENGTH,
@@ -18,20 +18,17 @@ import { HtmlSiteDetector, HTML_SITE_TYPE, HtmlSiteType } from "./types";
  * 4. 그 외는 STATIC
  */
 export const htmlSiteDetector: HtmlSiteDetector = {
-  detect(dom: JSDOM): HtmlSiteType {
-    const document = dom.window.document;
+  detect(dom): HtmlSiteType {
+    const $ = dom;
 
-    const hasContent = !!document.querySelector(CONTENT_SELECTORS.join(","));
+    const hasContent = $(CONTENT_SELECTORS.join(",")).length > 0;
 
-    const hasSpaRoot = !!document.querySelector(SPA_ROOT_IDS.join(","));
+    const hasSpaRoot = $(SPA_ROOT_IDS.join(",")).length > 0;
 
-    const scriptCount = document.querySelectorAll("script").length;
+    const scriptCount = $("script").length;
 
     const text =
-      document.querySelector("main")?.textContent ??
-      document.querySelector("article")?.textContent ??
-      document.body.textContent ??
-      "";
+      $("main").text() || $("article").text() || $("body").text() || "";
 
     const textLength = text.trim().length;
 

@@ -1,10 +1,10 @@
-import { JSDOM } from "jsdom";
+import * as cheerio from "cheerio";
 import { FEED_HEADERS } from "@/features/ingestion/constants/feed";
 
 export interface FetchSiteResult {
   finalUrl: string;
   html: string;
-  dom: JSDOM;
+  dom: cheerio.CheerioAPI;
 }
 
 /**
@@ -12,7 +12,7 @@ export interface FetchSiteResult {
  *
  * @param {string} url - 분석할 사이트의 대상 URL
  * @returns {Promise<FetchSiteResult | null>}
- * 성공 시 최종 URL, HTML, JSDOM을 포함한 객체를 반환하며,
+ * 성공 시 최종 URL, HTML, Cheerio DOM 객체를 포함한 객체를 반환하며,
  * 연결 실패나 오류 발생 시 null을 반환합니다.
  */
 export async function fetchSite(url: string): Promise<FetchSiteResult | null> {
@@ -27,9 +27,17 @@ export async function fetchSite(url: string): Promise<FetchSiteResult | null> {
     }
 
     const html = await response.text();
-    return { dom: new JSDOM(html), html, finalUrl: response.url };
+
+    // Cheerio 로드 (JSDOM 대체)
+    const dom = cheerio.load(html);
+
+    return {
+      dom,
+      html,
+      finalUrl: response.url,
+    };
   } catch (error) {
-    console.error("DOM Fetch Error:", error);
+    console.error("HTML Fetch Error:", error);
     return null;
   }
 }
