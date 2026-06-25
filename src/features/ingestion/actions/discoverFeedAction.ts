@@ -7,7 +7,7 @@ import { isDynamicSite } from "../lib/detectors/dynamic-detector";
 import { parseRss } from "../lib/parsers/rss-parser";
 import { rssDetector } from "../lib/detectors/rss-detector";
 import { SOURCE_TYPE } from "../lib/detectors/types";
-import { preprocess } from "../lib/preprocessors/html-preprocessor";
+import { SitemapDetector } from "../lib/detectors/sitemap-detector";
 
 /**
  * 피드 탐색 결과 인터페이스
@@ -58,9 +58,20 @@ export async function discoverFeedAction(
       };
     }
 
-    const result1 = preprocess(dom, targetUrl);
+    // 3. sitemap 찾기
+    // 1. 인스턴스 생성
+    const sitemapDetector = new SitemapDetector();
 
-    console.log("전처리결과", result1);
+    // 2. 메서드 호출 (해당 사이트의 URL 입력)
+    const sitemapEntries = await sitemapDetector.detect("https://example.com");
+
+    // 3. 결과 확인
+    if (sitemapEntries.length > 0) {
+      console.log(`성공! ${sitemapEntries.length}개의 URL을 찾았습니다.`);
+      console.log(sitemapEntries.slice(0, 5)); // 상위 5개만 출력해보기
+    } else {
+      console.log("사이트맵을 찾지 못했거나 글이 없습니다.");
+    }
     // 3. 정적(SSR) 판별
     if (isStaticSite(dom)) {
       return {
