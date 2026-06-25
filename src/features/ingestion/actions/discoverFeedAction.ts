@@ -1,13 +1,12 @@
 "use server";
 
 import { normalizeUrl } from "@/features/ingestion/utils/url";
-import { fetchSiteDom } from "../lib/fetch-utils";
-import { isStaticSite } from "../lib/detectors/static-detector";
-import { isDynamicSite } from "../lib/detectors/dynamic-detector";
+import { fetchSite } from "../lib/fetch-utils";
 import { parseRss } from "../lib/parsers/rss-parser";
 import { rssDetector } from "../lib/detectors/rss-detector";
-import { SOURCE_TYPE } from "../lib/detectors/types";
+import { HTML_SITE_TYPE, SOURCE_TYPE } from "../lib/detectors/types";
 import { SitemapDetector } from "../lib/detectors/sitemap-detector";
+import { htmlSiteDetector } from "../lib/detectors/html-site-detector";
 
 /**
  * 피드 탐색 결과 인터페이스
@@ -32,9 +31,9 @@ export async function discoverFeedAction(
     const targetUrl = normalizeUrl(input);
 
     // 1. 공통: DOM 가져오기
-    const dom = await fetchSiteDom(targetUrl);
+    const res = await fetchSite(targetUrl);
 
-    if (!dom) {
+    if (!res) {
       return {
         success: false,
         url: targetUrl,
@@ -42,6 +41,8 @@ export async function discoverFeedAction(
         message: "사이트에 연결할 수 없습니다.",
       };
     }
+
+    const { finalUrl, dom, html } = res;
 
     // 2. RSS 판별 (있으면 종료)
     const result = await rssDetector.detect(dom, targetUrl);
@@ -72,24 +73,25 @@ export async function discoverFeedAction(
     } else {
       console.log("사이트맵을 찾지 못했거나 글이 없습니다.");
     }
-    // 3. 정적(SSR) 판별
-    if (isStaticSite(dom)) {
-      return {
-        success: true,
-        url: targetUrl,
-        feedUrl: null,
-        message: "정적(SSR) 사이트입니다.",
-      };
-    }
 
-    // 4. 동적(SPA) 판별
-    if (isDynamicSite(dom)) {
-      return {
-        success: true,
-        url: targetUrl,
-        feedUrl: null,
-        message: "동적(SPA) 사이트입니다.",
-      };
+    const htmlType = htmlSiteDetector.detect(dom);
+
+    switch (htmlType) {
+      case HTML_SITE_TYPE.STATIC:
+        return {
+          success: true,
+          url: targetUrl,
+          feedUrl: null,
+          message: "정적(SSR) 사이트입니다.",
+        };
+
+      case HTML_SITE_TYPE.DYNAMIC:
+        return {
+          success: true,
+          url: targetUrl,
+          feedUrl: null,
+          message: "동적(SPA) 사이트입니다.",
+        };
     }
 
     // 5. 판별 불가

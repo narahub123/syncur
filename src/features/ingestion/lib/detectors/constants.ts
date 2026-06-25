@@ -1,13 +1,20 @@
-export const CONTENT_SELECTORS = [
-  "article",
-  "main",
-  ".post-body",
-  ".entry-content",
-  ".post-content",
-  "#content",
-];
-export const SPA_ROOT_IDS = ["#root", "#__next", "#app", "#__nuxt"];
+export const CONTENT_SELECTORS = ["article", "main", "[role='main']"] as const;
+export const SPA_ROOT_IDS = [
+  "#__next",
+  "#root",
+  "#app",
+  "#svelte",
+  "#angular",
+] as const;
 
+export const STATIC_TEXT_LENGTH = 300;
+
+export const DYNAMIC_TEXT_LENGTH = 50;
+
+export const SCRIPT_HEAVY_COUNT = 10;
+
+
+// ----------------------------------------------------------------
 export const RSS_FALLBACK_PATHS = [
   "/rss",
   "/feed",

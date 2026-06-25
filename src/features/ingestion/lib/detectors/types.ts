@@ -30,3 +30,15 @@ export type DetectionResult =
 export interface SourceDetector {
   detect(dom: JSDOM, url: string): Promise<DetectionResult | null>;
 }
+
+export const HTML_SITE_TYPE = {
+  STATIC: "STATIC",
+  DYNAMIC: "DYNAMIC",
+  UNKNOWN: "UNKNOWN",
+} as const;
+
+export type HtmlSiteType = (typeof HTML_SITE_TYPE)[keyof typeof HTML_SITE_TYPE];
+
+export interface HtmlSiteDetector {
+  detect(dom: JSDOM): HtmlSiteType;
+}
