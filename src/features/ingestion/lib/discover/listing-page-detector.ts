@@ -1,5 +1,5 @@
 import * as cheerio from "cheerio";
-import type { AnyNode } from "domhandler";
+import type { AnyNode, Element } from "domhandler";
 
 // =====================
 // Types
@@ -220,39 +220,105 @@ async function scoreByContent(
     title =
       $("title").first().text().trim() || $("h1").first().text().trim() || null;
 
-    // ── 1. 반복 구조 탐지 ───────────────────────────────────
-    const containerSelectors = [
-      "ul",
-      "ol",
-      "table tbody",
-      "[class*='list']",
-      "[class*='board']",
-      "[class*='post']",
-      "[class*='item']",
-      "[class*='entry']",
+    // ── 1. 노이즈 영역 DOM에서 제거 ────────────────────────
+    const NOISE_REMOVE_SELECTORS = [
+      "nav",
+      "header",
+      "footer",
+      "[class*='nav']",
+      "[class*='menu']",
+      "[class*='banner']",
+      "[class*='ad']",
+      "[class*='cookie']",
+      "[class*='popup']",
     ];
+    NOISE_REMOVE_SELECTORS.forEach((sel) => $(sel).remove());
+
+    // ── 2. 반복 구조 탐지 (구조 기반) ──────────────────────
+    // 특정 태그/클래스에 의존하지 않고
+    // "같은 depth에 같은 태그가 N개 이상 반복되는 부모 요소"를 탐색
+
+    // 컨테이너 제외 셀렉터 — 이 안에 있는 컨테이너는 스킵
+    const EXCLUDE_CONTAINER_SELECTORS = [
+      "[class*='tag']",
+      "[class*='label']",
+      "[class*='social']",
+      "[class*='share']",
+      "[class*='breadcrumb']",
+      "[class*='tab']",
+      "[class*='dropdown']",
+    ];
+
+    const origin = new URL(url).origin;
+
+    interface ContainerCandidate {
+      el: AnyNode;
+      itemCount: number;
+      linkCount: number;
+    }
+
+    const candidates: ContainerCandidate[] = [];
+
+    // 모든 요소를 순회하면서 자식들이 반복 구조를 이루는지 확인
+    $("*").each((_, el) => {
+      // 제외 셀렉터에 해당하면 스킵
+      const isExcluded = EXCLUDE_CONTAINER_SELECTORS.some(
+        (excSel) => $(el).is(excSel) || $(el).closest(excSel).length > 0,
+      );
+      if (isExcluded) return;
+
+      const children = $(el).children();
+      if (children.length < 3) return;
+
+      // 자식 태그 분포 확인 — 가장 많이 반복되는 태그의 비율이 높으면 반복 구조
+      const tagCounts: Record<string, number> = {};
+      children.each((_, child) => {
+        const tag = (child as Element).tagName?.toLowerCase() ?? "unknown";
+        tagCounts[tag] = (tagCounts[tag] ?? 0) + 1;
+      });
+
+      const maxTagCount = Math.max(...Object.values(tagCounts));
+      const repeatRatio = maxTagCount / children.length;
+
+      // 자식의 70% 이상이 같은 태그면 반복 구조로 판단
+      if (repeatRatio < 0.7) return;
+
+      // 각 자식이 내부 상세 페이지로 향하는 링크를 가지는지 확인
+      const withDetailLinks = children.filter((_, child) => {
+        return $(child)
+          .find("a[href]")
+          .toArray()
+          .some((a) => {
+            const href = $(a).attr("href") ?? "";
+            try {
+              const resolved = new URL(href, url).toString();
+              return resolved.startsWith(origin) && resolved !== url;
+            } catch {
+              return false;
+            }
+          });
+      });
+
+      if (withDetailLinks.length >= 3) {
+        candidates.push({
+          el,
+          itemCount: withDetailLinks.length,
+          linkCount: withDetailLinks.length,
+        });
+      }
+    });
+
+    // 항목 수가 가장 많은 컨테이너 선택
+    candidates.sort((a, b) => b.itemCount - a.itemCount);
+    const best = candidates[0] ?? null;
 
     let listItems: cheerio.Cheerio<AnyNode> | null = null;
 
-    for (const sel of containerSelectors) {
-      let bestContainer: cheerio.Cheerio<AnyNode> | null = null;
-      let bestCount = 0;
-
-      $(sel).each((_, el) => {
-        const count = $(el).children().length;
-        if (count > bestCount) {
-          bestCount = count;
-          bestContainer = $(el);
-        }
-      });
-
-      if (!bestContainer || bestCount < 3) continue;
-
-      const origin = new URL(url).origin;
-      const withDetailLinks = (bestContainer as cheerio.Cheerio<AnyNode>)
+    if (best) {
+      listItems = $(best.el)
         .children()
-        .filter((_, el) => {
-          return $(el)
+        .filter((_, child) => {
+          return $(child)
             .find("a[href]")
             .toArray()
             .some((a) => {
@@ -265,18 +331,81 @@ async function scoreByContent(
               }
             });
         });
-
-      if (withDetailLinks.length >= 3) {
-        listItems = withDetailLinks;
-        score += 15;
-        reason.push(
-          `반복 구조 발견 (${sel}, ${withDetailLinks.length}개 항목)`,
-        );
-        break;
-      }
+      score += 15;
+      reason.push(`반복 구조 발견 (${best.itemCount}개 항목)`);
     }
 
     if (!listItems) return { score, reason, title, lastUpdated };
+
+    // ── 2.5단계 URL 계층 관계 분석 ──────────
+    if (listItems && listItems.length > 0) {
+      const currentPath = new URL(url).pathname.split("/").filter(Boolean);
+
+      // Set을 사용하여 동일한 링크가 여러 번 투표되는 것을 방지
+      const candidateLinks = new Set<string>();
+
+      listItems.each((_, el) => {
+        $(el)
+          .find("a[href]")
+          .each((_, a) => {
+            const href = $(a).attr("href");
+            if (!href) return;
+            try {
+              const fullUrl = new URL(href, url).toString();
+              if (fullUrl.startsWith(new URL(url).origin) && fullUrl !== url) {
+                candidateLinks.add(fullUrl);
+              }
+            } catch {}
+          });
+      });
+
+      if (candidateLinks.size > 0) {
+        let parentCount = 0;
+        let siblingCount = 0;
+
+        for (const link of candidateLinks) {
+          try {
+            const linkPath = new URL(link).pathname.split("/").filter(Boolean);
+
+            let commonDepth = 0;
+            const minLen = Math.min(currentPath.length, linkPath.length);
+            while (
+              commonDepth < minLen &&
+              currentPath[commonDepth] === linkPath[commonDepth]
+            ) {
+              commonDepth++;
+            }
+
+            if (commonDepth >= 1) {
+              if (linkPath.length > currentPath.length) parentCount++;
+              else if (linkPath.length === currentPath.length) siblingCount++;
+            }
+          } catch {}
+        }
+
+        // 절대 개수가 아닌 비율 기반 판정 (70% 기준)
+        const total = parentCount + siblingCount;
+        if (total >= 3) {
+          // 최소 샘플 확보
+          const parentRatio = parentCount / total;
+          const siblingRatio = siblingCount / total;
+
+          if (parentRatio >= 0.7) {
+            score += 20;
+            reason.push(
+              `Parent-Child 관계 승리 (${(parentRatio * 100).toFixed(0)}%)`,
+            );
+          } else if (siblingRatio >= 0.7) {
+            if (!url.includes("?page=") && !url.includes("?p=")) {
+              score -= 30;
+              reason.push(
+                `Sibling 관계 승리 (${(siblingRatio * 100).toFixed(0)}%): 상세 페이지 내 부가 목록 의심`,
+              );
+            }
+          }
+        }
+      }
+    }
 
     // ── 2. 항목별 날짜 다양성 + lastUpdated ─────────────────
     const datesPerItem: string[] = [];
@@ -416,7 +545,7 @@ export async function detectListingPages(
   // ── 5단계: 최종 정렬 및 필터 ────────────────────────────
   // scoreByContent에서 반복 구조(+15)가 확인된 것만 유의미하므로
   // 최소 점수를 15로 설정
-  const MIN_SCORE = 15;
+  const MIN_SCORE = 20;
   const final = probeTargets
     .filter((c) => c.score >= MIN_SCORE)
     .sort((a, b) => b.score - a.score)

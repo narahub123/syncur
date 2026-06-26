@@ -1,5 +1,5 @@
 import * as cheerio from "cheerio";
-import type { AnyNode } from "domhandler";
+import type { AnyNode, Element } from "domhandler";
 import { AUTHOR_SELECTORS, DATE_PATTERN } from "../constants";
 
 /**
@@ -23,7 +23,6 @@ export async function scoreByContent(
   let lastUpdated: string | null = null;
 
   try {
-    // 페이지 데이터를 가져오기 위한 HTTP 요청 (6초 타임아웃 적용)
     const res = await fetch(url, {
       headers,
       signal: AbortSignal.timeout(6000),
@@ -33,47 +32,97 @@ export async function scoreByContent(
     const html = await res.text();
     const $ = cheerio.load(html);
 
-    // ── 0. 페이지 title 추출 ────────────────────────────────
-    // 페이지 식별을 위해 <title> 태그나 첫 번째 <h1> 헤딩에서 제목 추출
+    // ── 0. 페이지 title 추출: 메타 태그 또는 h1 태그 활용 ────────────────
     title =
       $("title").first().text().trim() || $("h1").first().text().trim() || null;
 
-    // ── 1. 반복 구조 탐지 ───────────────────────────────────
-    // 게시물 목록은 주로 ul, ol, table 등 동일한 요소가 반복되는 구조를 가짐
-    const containerSelectors = [
-      "ul",
-      "ol",
-      "table tbody",
-      "[class*='list']",
-      "[class*='board']",
-      "[class*='post']",
-      "[class*='item']",
-      "[class*='entry']",
+    // ── 1. 노이즈 영역 제거: 탐색 방해 요소(내비게이션, 광고 등)를 DOM에서 삭제 ──
+    const NOISE_REMOVE_SELECTORS = [
+      "nav",
+      "header",
+      "footer",
+      "[class*='nav']",
+      "[class*='menu']",
+      "[class*='banner']",
+      "[class*='ad']",
+      "[class*='cookie']",
+      "[class*='popup']",
+    ];
+    NOISE_REMOVE_SELECTORS.forEach((sel) => $(sel).remove());
+
+    // ── 2. 구조 기반 반복 구조 탐지 ──────────────────────────────────────────
+    // CSS 셀렉터 대신 DOM의 자식 태그 비율과 구조적 반복성을 직접 분석
+    const EXCLUDE_CONTAINER_SELECTORS = [
+      "[class*='tag']",
+      "[class*='label']",
+      "[class*='social']",
+      "[class*='share']",
+      "[class*='breadcrumb']",
+      "[class*='tab']",
+      "[class*='dropdown']",
     ];
 
-    let listItems: cheerio.Cheerio<AnyNode> | null = null;
+    const origin = new URL(url).origin;
 
-    for (const sel of containerSelectors) {
-      let bestContainer: cheerio.Cheerio<AnyNode> | null = null;
-      let bestCount = 0;
+    interface ContainerCandidate {
+      el: AnyNode;
+      itemCount: number;
+    }
 
-      // 지정된 선택자 중 자식 요소가 가장 많은 컨테이너 탐색
-      $(sel).each((_, el) => {
-        const count = $(el).children().length;
-        if (count > bestCount) {
-          bestCount = count;
-          bestContainer = $(el);
-        }
+    const candidates: ContainerCandidate[] = [];
+
+    // 페이지 내 모든 노드를 순회하며 잠재적인 목록 컨테이너 탐색
+    $("*").each((_, el) => {
+      const isExcluded = EXCLUDE_CONTAINER_SELECTORS.some(
+        (excSel) => $(el).is(excSel) || $(el).closest(excSel).length > 0,
+      );
+      if (isExcluded) return;
+
+      const children = $(el).children();
+      if (children.length < 3) return; // 항목이 3개 미만이면 목록으로 보지 않음
+
+      // 자식 태그들의 타입을 분석하여 반복 구조 여부(70% 이상 동질성) 판단
+      const tagCounts: Record<string, number> = {};
+      children.each((_, child) => {
+        const tag = (child as Element).tagName?.toLowerCase() ?? "unknown";
+        tagCounts[tag] = (tagCounts[tag] ?? 0) + 1;
       });
 
-      if (!bestContainer || bestCount < 3) continue;
+      const maxTagCount = Math.max(...Object.values(tagCounts));
+      const repeatRatio = maxTagCount / children.length;
+      if (repeatRatio < 0.7) return;
 
-      // 컨테이너 내부 항목들이 상세 페이지로 연결되는 링크를 포함하는지 확인
-      const origin = new URL(url).origin;
-      const withDetailLinks = (bestContainer as cheerio.Cheerio<AnyNode>)
+      // 자식 요소들이 실제 도메인 내의 상세 페이지 링크를 포함하는지 검증
+      const withDetailLinks = children.filter((_, child) => {
+        return $(child)
+          .find("a[href]")
+          .toArray()
+          .some((a) => {
+            const href = $(a).attr("href") ?? "";
+            try {
+              const resolved = new URL(href, url).toString();
+              return resolved.startsWith(origin) && resolved !== url;
+            } catch {
+              return false;
+            }
+          });
+      });
+
+      if (withDetailLinks.length >= 3) {
+        candidates.push({ el, itemCount: withDetailLinks.length });
+      }
+    });
+
+    // 가장 많은 항목을 가진 컨테이너를 최종 후보로 선택
+    candidates.sort((a, b) => b.itemCount - a.itemCount);
+    const best = candidates[0] ?? null;
+    let listItems: cheerio.Cheerio<AnyNode> | null = null;
+
+    if (best) {
+      listItems = $(best.el)
         .children()
-        .filter((_, el) => {
-          return $(el)
+        .filter((_, child) => {
+          return $(child)
             .find("a[href]")
             .toArray()
             .some((a) => {
@@ -86,23 +135,80 @@ export async function scoreByContent(
               }
             });
         });
+      score += 15;
+      reason.push(`반복 구조 발견 (${best.itemCount}개 항목)`);
+    }
 
-      // 상세 링크를 가진 항목이 3개 이상이면 목록 컨테이너로 인정
-      if (withDetailLinks.length >= 3) {
-        listItems = withDetailLinks;
-        score += 15;
-        reason.push(
-          `반복 구조 발견 (${sel}, ${withDetailLinks.length}개 항목)`,
-        );
-        break;
+    if (!listItems) return { score, reason, title, lastUpdated };
+
+    // ── 2.5단계: 다수결 투표 기반의 계층 관계 분석 ──────────────────────────
+    // 현재 페이지 경로와 목록 내 링크들의 경로를 비교하여 부모/자식 관계 판정
+    const currentPath = new URL(url).pathname.split("/").filter(Boolean);
+    const candidateLinks = new Set<string>(); // 중복 투표 방지를 위해 Set 사용
+
+    listItems.each((_, el) => {
+      $(el)
+        .find("a[href]")
+        .each((_, a) => {
+          const href = $(a).attr("href");
+          if (!href) return;
+          try {
+            const fullUrl = new URL(href, url).toString();
+            if (fullUrl.startsWith(origin) && fullUrl !== url) {
+              candidateLinks.add(fullUrl);
+            }
+          } catch {}
+        });
+    });
+
+    if (candidateLinks.size > 0) {
+      let parentCount = 0;
+      let siblingCount = 0;
+
+      for (const link of candidateLinks) {
+        try {
+          const linkPath = new URL(link).pathname.split("/").filter(Boolean);
+          // 공통 경로(Prefix)를 찾아 의미 있는 관계인지 확인
+          let commonDepth = 0;
+          const minLen = Math.min(currentPath.length, linkPath.length);
+          while (
+            commonDepth < minLen &&
+            currentPath[commonDepth] === linkPath[commonDepth]
+          ) {
+            commonDepth++;
+          }
+
+          if (commonDepth >= 1) {
+            if (linkPath.length > currentPath.length) parentCount++;
+            else if (linkPath.length === currentPath.length) siblingCount++;
+          }
+        } catch {}
+      }
+
+      // 70% 이상의 비율로 승리한 관계를 최종 판정 (최소 3개 이상의 샘플 필요)
+      const total = parentCount + siblingCount;
+      if (total >= 3) {
+        const parentRatio = parentCount / total;
+        const siblingRatio = siblingCount / total;
+
+        if (parentRatio >= 0.7) {
+          score += 20;
+          reason.push(
+            `Parent-Child 관계 승리 (${(parentRatio * 100).toFixed(0)}%)`,
+          );
+        } else if (siblingRatio >= 0.7) {
+          if (!url.includes("?page=") && !url.includes("?p=")) {
+            score -= 30;
+            reason.push(
+              `Sibling 관계 승리 (${(siblingRatio * 100).toFixed(0)}%): 상세 페이지 내 부가 목록 의심`,
+            );
+          }
+        }
       }
     }
 
-    // 반복 구조가 확인되지 않으면 목록 페이지가 아닐 가능성이 높으므로 종료
-    if (!listItems) return { score, reason, title, lastUpdated };
-
-    // ── 2. 항목별 날짜 다양성 + lastUpdated ─────────────────
-    // 목록 항목 내 날짜 패턴을 추출하여 게시물의 최신성을 확인
+    // ── 3. 추가 신뢰도 점수 산정 (날짜, 작성자, 페이지네이션) ─────────────────
+    // 날짜 다양성 체크
     const datesPerItem: string[] = [];
     listItems.each((_, el) => {
       const matches = $(el).text().match(DATE_PATTERN);
@@ -114,21 +220,18 @@ export async function scoreByContent(
       if (uniqueDates.size >= 2) {
         score += 20;
         reason.push(`다양한 날짜 발견 (${uniqueDates.size}종류)`);
-        // 가장 최근 날짜 — 문자열 정렬로 max 추출 (yyyy-mm-dd 정규화)
         lastUpdated =
           datesPerItem
             .map((d) => d.replace(/[./]/g, "-"))
             .sort()
             .at(-1) ?? null;
       } else {
-        // 날짜가 모두 동일하면 정적 페이지일 확률이 높아 감점
         score -= 5;
         reason.push("날짜 모두 동일 (정적 데이터 의심)");
       }
     }
 
-    // ── 3. 작성자 정보 반복 ─────────────────────────────────
-    // 항목마다 작성자 관련 선택자가 존재하는지 확인하여 게시판 신뢰도 파악
+    // 작성자 정보 반복 체크
     let authorHitCount = 0;
     for (const sel of AUTHOR_SELECTORS) {
       listItems.each((_, el) => {
@@ -141,20 +244,18 @@ export async function scoreByContent(
       reason.push(`작성자 정보 반복 (${authorHitCount}개 항목)`);
     }
 
-    // ── 4. 페이지네이션 ─────────────────────────────────────
-    // 페이지 이동 버튼 존재 여부를 통해 목록이 다수 페이지로 나뉘어 있음을 확인
+    // 페이지네이션 존재 여부 체크
     const hasPagination =
       $("[class*='pag']").length > 0 ||
       $("a[href*='page=']").length > 0 ||
       $("a[href*='p=']").length > 0 ||
       $(".next, .prev, [rel='next'], [rel='prev']").length > 0;
-
     if (hasPagination) {
       score += 15;
       reason.push("페이지네이션 존재");
     }
   } catch {
-    // 네트워크 오류 등으로 인한 fetch 실패 시 빈 결과를 반환하여 처리
+    /* fetch 실패 등 예외는 무시 */
   }
 
   return { score, reason, title, lastUpdated };

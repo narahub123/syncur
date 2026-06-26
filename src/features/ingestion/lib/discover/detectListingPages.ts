@@ -90,6 +90,5 @@ export async function detectListingPages(
     .sort((a, b) => b.score - a.score)
     .slice(0, 15);
 
-  console.log("결과", final);
   return { candidates: final, fromCache: false };
 }

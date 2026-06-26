@@ -7,8 +7,10 @@ import { rssDetector } from "../lib/detectors/rss-detector";
 import { HTML_SITE_TYPE, SOURCE_TYPE } from "../lib/detectors/types";
 import { SitemapDetector } from "../lib/detectors/sitemap-detector";
 import { htmlSiteDetector } from "../lib/detectors/html-site-detector";
-import { detectListingPages } from "../lib/discover/listing-page-detector";
+
+
 import { FEED_HEADERS } from "../constants/feed";
+import { detectListingPages } from "../lib/discover/detectListingPages";
 
 /**
  * 피드 탐색 결과 인터페이스
