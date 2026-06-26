@@ -16,21 +16,24 @@ export async function scoreByContent(
   reason: string[];
   title: string | null;
   lastUpdated: string | null;
+  dom: cheerio.CheerioAPI | null;
 }> {
   const reason: string[] = [];
   let score = 0;
   let title: string | null = null;
   let lastUpdated: string | null = null;
+  let dom: cheerio.CheerioAPI | null = null;
 
   try {
     const res = await fetch(url, {
       headers,
       signal: AbortSignal.timeout(6000),
     });
-    if (!res.ok) return { score, reason, title, lastUpdated };
+    if (!res.ok) return { score, reason, title, lastUpdated, dom };
 
     const html = await res.text();
     const $ = cheerio.load(html);
+    dom = $;
 
     // ── 0. 페이지 title 추출: 메타 태그 또는 h1 태그 활용 ────────────────
     title =
@@ -139,7 +142,7 @@ export async function scoreByContent(
       reason.push(`반복 구조 발견 (${best.itemCount}개 항목)`);
     }
 
-    if (!listItems) return { score, reason, title, lastUpdated };
+    if (!listItems) return { score, reason, title, lastUpdated, dom };
 
     // ── 2.5단계: 다수결 투표 기반의 계층 관계 분석 ──────────────────────────
     // 현재 페이지 경로와 목록 내 링크들의 경로를 비교하여 부모/자식 관계 판정
@@ -258,5 +261,5 @@ export async function scoreByContent(
     /* fetch 실패 등 예외는 무시 */
   }
 
-  return { score, reason, title, lastUpdated };
+  return { score, reason, title, lastUpdated, dom };
 }

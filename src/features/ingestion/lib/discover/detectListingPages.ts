@@ -4,6 +4,7 @@ import { scoreByUrl } from "./analyzer/scoreByUrl";
 import { NOISE_SELECTORS } from "./constants";
 import { getBaseUrl, isSameDomain, resolveUrl } from "./utils";
 import { ListingDetectionResult, ListingPageCandidate } from "./types";
+import { extractParserConfig } from "./extractParserConfig";
 
 /**
  * 사이트 홈 페이지를 분석하여 목록 페이지 후보를 감지합니다.
@@ -59,6 +60,7 @@ export async function detectListingPages(
         lastUpdated: null,
         score,
         reason,
+        parserConfig: null,
       });
     }
   }
@@ -70,7 +72,7 @@ export async function detectListingPages(
   const probeTargets = scored.slice(0, maxProbe);
   await Promise.all(
     probeTargets.map(async (c) => {
-      const { score, reason, title, lastUpdated } = await scoreByContent(
+      const { score, reason, title, lastUpdated, dom } = await scoreByContent(
         c.url,
         headers,
       );
@@ -78,17 +80,24 @@ export async function detectListingPages(
       c.reason.push(...reason);
       if (title) c.title = title;
       c.lastUpdated = lastUpdated;
+
+      // ── 5단계: MIN_SCORE 통과 시 ListingPageConfig 추출 ────────
+      if (c.score >= 20 && dom) {
+        c.parserConfig = extractParserConfig(c.url, dom);
+        console.log("parserConfig", c.parserConfig);
+      }
     }),
   );
 
   // ── 5단계: 최종 정렬 및 필터 ────────────────────────────
   // scoreByContent에서 반복 구조(+15)가 확인된 것만 유의미하므로
   // 최소 점수를 15로 설정
-  const MIN_SCORE = 15;
+  const MIN_SCORE = 20;
   const final = probeTargets
     .filter((c) => c.score >= MIN_SCORE)
     .sort((a, b) => b.score - a.score)
     .slice(0, 15);
 
+  console.log("결과", final);
   return { candidates: final, fromCache: false };
 }
