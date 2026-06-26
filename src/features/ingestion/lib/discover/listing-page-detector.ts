@@ -8,6 +8,7 @@ import type { AnyNode } from "domhandler";
 export interface ListingPageCandidate {
   url: string;
   title: string;
+  lastUpdated: string | null;
   score: number;
   reason: string[];
 }
@@ -194,19 +195,30 @@ function scoreByUrl(
 async function scoreByContent(
   url: string,
   headers: Record<string, string>,
-): Promise<{ score: number; reason: string[] }> {
+): Promise<{
+  score: number;
+  reason: string[];
+  title: string | null;
+  lastUpdated: string | null;
+}> {
   const reason: string[] = [];
   let score = 0;
+  let title: string | null = null;
+  let lastUpdated: string | null = null;
 
   try {
     const res = await fetch(url, {
       headers,
       signal: AbortSignal.timeout(6000),
     });
-    if (!res.ok) return { score, reason };
+    if (!res.ok) return { score, reason, title, lastUpdated };
 
     const html = await res.text();
     const $ = cheerio.load(html);
+
+    // ── 0. 페이지 title 추출 ────────────────────────────────
+    title =
+      $("title").first().text().trim() || $("h1").first().text().trim() || null;
 
     // ── 1. 반복 구조 탐지 ───────────────────────────────────
     const containerSelectors = [
@@ -223,7 +235,6 @@ async function scoreByContent(
     let listItems: cheerio.Cheerio<AnyNode> | null = null;
 
     for (const sel of containerSelectors) {
-      // 해당 셀렉터로 가장 많은 자식을 가진 컨테이너 선택
       let bestContainer: cheerio.Cheerio<AnyNode> | null = null;
       let bestCount = 0;
 
@@ -265,10 +276,9 @@ async function scoreByContent(
       }
     }
 
-    // 반복 구조 없으면 조기 반환
-    if (!listItems) return { score, reason };
+    if (!listItems) return { score, reason, title, lastUpdated };
 
-    // ── 2. 항목별 날짜 다양성 ───────────────────────────────
+    // ── 2. 항목별 날짜 다양성 + lastUpdated ─────────────────
     const datesPerItem: string[] = [];
     listItems.each((_, el) => {
       const matches = $(el).text().match(DATE_PATTERN);
@@ -280,6 +290,12 @@ async function scoreByContent(
       if (uniqueDates.size >= 2) {
         score += 20;
         reason.push(`다양한 날짜 발견 (${uniqueDates.size}종류)`);
+        // 가장 최근 날짜 — 문자열 정렬로 max 추출 (yyyy-mm-dd 정규화)
+        lastUpdated =
+          datesPerItem
+            .map((d) => d.replace(/[./]/g, "-"))
+            .sort()
+            .at(-1) ?? null;
       } else {
         score -= 5;
         reason.push("날짜 모두 동일 (정적 데이터 의심)");
@@ -314,7 +330,7 @@ async function scoreByContent(
     // fetch 실패 무시
   }
 
-  return { score, reason };
+  return { score, reason, title, lastUpdated };
 }
 
 // =====================
@@ -369,7 +385,13 @@ export async function detectListingPages(
   for (const [url, text] of linkMap.entries()) {
     const { score, reason } = scoreByUrl(url, text);
     if (score > 0) {
-      scored.push({ url, title: text || url, score, reason });
+      scored.push({
+        url,
+        title: text || url,
+        lastUpdated: null,
+        score,
+        reason,
+      });
     }
   }
 
@@ -380,9 +402,14 @@ export async function detectListingPages(
   const probeTargets = scored.slice(0, maxProbe);
   await Promise.all(
     probeTargets.map(async (c) => {
-      const { score, reason } = await scoreByContent(c.url, headers);
+      const { score, reason, title, lastUpdated } = await scoreByContent(
+        c.url,
+        headers,
+      );
       c.score += score;
       c.reason.push(...reason);
+      if (title) c.title = title;
+      c.lastUpdated = lastUpdated;
     }),
   );
 
