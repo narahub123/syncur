@@ -7,6 +7,8 @@ import { rssDetector } from "../lib/detectors/rss-detector";
 import { HTML_SITE_TYPE, SOURCE_TYPE } from "../lib/detectors/types";
 import { SitemapDetector } from "../lib/detectors/sitemap-detector";
 import { htmlSiteDetector } from "../lib/detectors/html-site-detector";
+import { detectListingPages } from "../lib/discover/listing-page-detector";
+import { FEED_HEADERS } from "../constants/feed";
 
 /**
  * 피드 탐색 결과 인터페이스
@@ -56,6 +58,25 @@ export async function discoverFeedAction(
         url: targetUrl,
         feedUrl: result.rssUrl,
         message: "RSS 피드를 찾았습니다.",
+      };
+    }
+
+    // ── 2. RSS 없음 → 목록 페이지 탐지 ─────────────────────
+    const { candidates } = await detectListingPages(
+      targetUrl,
+      dom,
+      FEED_HEADERS, // fetchSite에서 쓰는 헤더와 동일하게
+      5, // 실제 fetch로 검증할 후보 수
+    );
+
+    if (candidates.length > 0) {
+      return {
+        success: true,
+        url: targetUrl,
+        // type: "listing",
+        feedUrl: null,
+        // listingCandidates: candidates,
+        message: `${candidates.length}개의 구독 가능한 목록 페이지를 찾았습니다.`,
       };
     }
 
