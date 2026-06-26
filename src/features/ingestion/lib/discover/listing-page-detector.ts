@@ -1,6 +1,6 @@
 import * as cheerio from "cheerio";
 import type { AnyNode, Element } from "domhandler";
-import { extractParserConfig } from "./extractParserConfig";
+import { extractListingPageConfig } from "./parser/extractListingPageConfig";
 import { ListingPageConfig } from "./types";
 
 // =====================
@@ -449,7 +449,7 @@ export async function detectListingPages(
 
       // ── 5단계: MIN_SCORE 통과 시 ListingPageConfig 추출 ────────
       if (c.score >= 20 && dom) {
-        c.parserConfig = extractParserConfig(c.url, dom);
+        c.parserConfig = extractListingPageConfig(c.url, dom);
       }
     }),
   );

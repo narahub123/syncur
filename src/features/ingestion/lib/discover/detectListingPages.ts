@@ -4,7 +4,9 @@ import { scoreByUrl } from "./analyzer/scoreByUrl";
 import { NOISE_SELECTORS } from "./constants";
 import { getBaseUrl, isSameDomain, resolveUrl } from "./utils";
 import { ListingDetectionResult, ListingPageCandidate } from "./types";
-import { extractParserConfig } from "./extractParserConfig";
+import { extractListingPageConfig } from "./parser/extractListingPageConfig";
+import { extractDetailPageConfig } from "./parser/extractDetailPageConfig";
+import { testDetailPageConfig } from "@/scripts/testDetailPageConfig";
 
 /**
  * 사이트 홈 페이지를 분석하여 목록 페이지 후보를 감지합니다.
@@ -60,7 +62,8 @@ export async function detectListingPages(
         lastUpdated: null,
         score,
         reason,
-        parserConfig: null,
+        listingPageConfig: null,
+        detailPageConfig: null,
       });
     }
   }
@@ -83,15 +86,48 @@ export async function detectListingPages(
 
       // ── 5단계: MIN_SCORE 통과 시 ListingPageConfig 추출 ────────
       if (c.score >= 20 && dom) {
-        c.parserConfig = extractParserConfig(c.url, dom);
-        console.log("parserConfig", c.parserConfig);
+        const result = extractListingPageConfig(c.url, dom);
+        if (result) {
+          const { firstItemUrl, ...listingConfig } = result;
+          c.listingPageConfig = listingConfig;
+
+          // ── 6단계: 상세 페이지 config 추출 ──────────────────
+          if (firstItemUrl) {
+            try {
+              const detailRes = await fetch(firstItemUrl, {
+                headers,
+                signal: AbortSignal.timeout(6000),
+              });
+              if (detailRes.ok) {
+                const detailHtml = await detailRes.text();
+                const detailDom = cheerio.load(detailHtml);
+                c.detailPageConfig = extractDetailPageConfig(
+                  firstItemUrl,
+                  detailDom,
+                );
+
+                // 추출 결과 확인
+                if (c.detailPageConfig) {
+                  const result = await testDetailPageConfig(
+                    firstItemUrl,
+                    c.detailPageConfig,
+                    headers,
+                  );
+                  console.log("detailPageConfig 추출 결과", result);
+                }
+              }
+            } catch {
+              // fetch 실패 무시
+            }
+          }
+        }
       }
     }),
   );
 
   // ── 5단계: 최종 정렬 및 필터 ────────────────────────────
-  // scoreByContent에서 반복 구조(+15)가 확인된 것만 유의미하므로
-  // 최소 점수를 15로 설정
+  // scoreByContent에서 반복 구조(20)가 확인된 것만 유의미하므로
+  // 최소 점수를 20로 설정
   const MIN_SCORE = 20;
   const final = probeTargets
     .filter((c) => c.score >= MIN_SCORE)

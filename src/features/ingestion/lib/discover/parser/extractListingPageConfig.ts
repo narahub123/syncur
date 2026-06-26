@@ -1,6 +1,6 @@
 import * as cheerio from "cheerio";
 import { AnyNode, Element } from "domhandler";
-import { FieldExtractor, ListingPageConfig } from "./types";
+import { FieldExtractor, ListingPageConfig } from "../types";
 
 // =====================
 // 상수
@@ -147,12 +147,12 @@ function findLinkAndTitleExtractor(
  *
  * @param url - 목록 페이지 URL
  * @param dom - scoreByContent에서 반환한 Cheerio DOM
- * @returns ListingPageConfig | null — 추출 실패 시 null
+ * @returns (ListingPageConfig & { firstItemUrl: string | null }) | null — 추출 실패 시 null
  */
-export function extractParserConfig(
+export function extractListingPageConfig(
   url: string,
   dom: cheerio.CheerioAPI,
-): ListingPageConfig | null {
+): (ListingPageConfig & { firstItemUrl: string | null }) | null {
   const $ = dom;
 
   // ── 1. 노이즈 영역 제거 ─────────────────────────────────
@@ -257,6 +257,16 @@ export function extractParserConfig(
     }
   }
 
+  const firstItemUrl = (() => {
+    const href = $(firstItem).find("a[href]").first().attr("href") ?? null;
+    if (!href) return null;
+    try {
+      return new URL(href, url).toString();
+    } catch {
+      return null;
+    }
+  })();
+
   return {
     itemSelector,
     fields: {
@@ -267,5 +277,6 @@ export function extractParserConfig(
     pagination: {
       nextPageSelector,
     },
+    firstItemUrl,
   };
 }

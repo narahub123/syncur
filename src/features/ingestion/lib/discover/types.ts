@@ -6,7 +6,8 @@ export interface ListingPageCandidate {
   score: number;
   reason: string[];
 
-  parserConfig: ListingPageConfig | null;
+  listingPageConfig: ListingPageConfig | null;
+  detailPageConfig: DetailPageConfig | null;
 }
 
 /** 분석 결과 정보를 담는 인터페이스 */
@@ -39,5 +40,9 @@ export interface ListingPageConfig {
 }
 
 export interface DetailPageConfig {
-  later?: undefined;
+  title: FieldExtractor;
+  description: FieldExtractor | null;
+  author: FieldExtractor | null;
+  publishedAt: FieldExtractor | null;
+  categories: FieldExtractor | null;
 }
