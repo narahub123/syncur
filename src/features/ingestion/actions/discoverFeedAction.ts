@@ -8,9 +8,13 @@ import { HTML_SITE_TYPE, SOURCE_TYPE } from "../lib/detectors/types";
 import { SitemapDetector } from "../lib/detectors/sitemap-detector";
 import { htmlSiteDetector } from "../lib/detectors/html-site-detector";
 
-
 import { FEED_HEADERS } from "../constants/feed";
 import { detectListingPages } from "../lib/discover/detectListingPages";
+import { createTraceId } from "../logger/trace-id";
+import { createLogger } from "../logger/logger";
+import { Logger } from "../logger/types";
+import { withLogging } from "../logger/with-logging";
+import { STAGE } from "../logger/stages";
 
 /**
  * 피드 탐색 결과 인터페이스
@@ -32,10 +36,17 @@ export async function discoverFeedAction(
   input: string,
 ): Promise<DiscoveryResult> {
   try {
+    const traceId = createTraceId();
+    const logger: Logger = createLogger({ traceId });
+
     const targetUrl = normalizeUrl(input);
 
     // 1. 공통: DOM 가져오기
-    const res = await fetchSite(targetUrl);
+    const res = await withLogging(
+      fetchSite,
+      logger,
+      STAGE.FETCH_SITE,
+    )(targetUrl);
 
     if (!res) {
       return {
