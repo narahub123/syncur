@@ -44,7 +44,7 @@ export class SitemapDetector {
    * @param {string} baseUrl - 사이트맵을 탐색할 대상 도메인 또는 기준 URL
    * @returns {Promise<string[]>} 발견된 사이트맵 내의 URL 배열 (찾지 못할 경우 빈 배열 반환)
    */
-  async detect(baseUrl: string, logger: Logger): Promise<string[]> {
+  detect = async (baseUrl: string, logger: Logger): Promise<string[]> => {
     // 1. 사이트맵 URL 찾기 (robots.txt 포함)
     const sitemapUrl = await this.findSitemapUrl(baseUrl, logger);
     logger.info("Sitemap URL 탐색 완료", {
@@ -83,7 +83,7 @@ export class SitemapDetector {
     });
 
     return result;
-  }
+  };
 
   /**
    * robots.txt 또는 표준 경로를 통해 사이트맵 URL을 검색합니다.
@@ -91,10 +91,10 @@ export class SitemapDetector {
    * @returns {Promise<string | null>} 발견된 사이트맵 URL 또는 null
    * @private
    */
-  private async findSitemapUrl(
+  private findSitemapUrl = async (
     baseUrl: string,
     logger: Logger,
-  ): Promise<string | null> {
+  ): Promise<string | null> => {
     const domain = new URL(baseUrl).origin;
 
     logger.debug("robots.txt 탐색 시작", {
@@ -143,7 +143,7 @@ export class SitemapDetector {
     });
 
     return null;
-  }
+  };
 
   /**
    * 지정된 URL에서 사이트맵 XML 콘텐츠를 가져옵니다.
@@ -151,10 +151,10 @@ export class SitemapDetector {
    * @returns {Promise<string | null>} XML 문자열 데이터 또는 실패 시 null
    * @private
    */
-  private async fetchSitemapContent(
+  private fetchSitemapContent = async (
     url: string,
     logger: Logger,
-  ): Promise<string | null> {
+  ): Promise<string | null> => {
     logger.debug("Sitemap fetch 시작", {
       url,
     });
@@ -166,12 +166,12 @@ export class SitemapDetector {
       });
       return res.data;
     } catch (e) {
-      logger.info("Sitemap fetch 성공", {
+      logger.warn("Sitemap fetch 실패", {
         url,
       });
       return null;
     }
-  }
+  };
 
   /**
    * XML 문자열을 파싱하여 사이트맵 내의 <loc> 태그에 담긴 URL들을 추출합니다.
@@ -180,7 +180,7 @@ export class SitemapDetector {
    * @returns {string[]} 추출된 URL 주소 목록
    * @private
    */
-  private parseUrls(xmlData: string, logger: Logger): string[] {
+  private parseUrls = (xmlData: string, logger: Logger): string[] => {
     logger.debug("Sitemap XML 파싱 시작");
 
     // XML 파서 결과를 SitemapParsedData 타입으로 단언하여 사용합니다.
@@ -215,5 +215,5 @@ export class SitemapDetector {
       .filter(
         (loc): loc is string => typeof loc === "string" && loc.length > 0,
       );
-  }
+  };
 }

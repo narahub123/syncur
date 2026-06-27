@@ -26,6 +26,7 @@ export async function detectListingPages(
   logger: Logger,
 ): Promise<ListingDetectionResult> {
   const base = getBaseUrl(homeUrl);
+  const homeHost = new URL(homeUrl).host;
   const $home = dom;
 
   // ── 1단계: 노이즈 링크 수집 ─────────────────────────────
@@ -33,8 +34,16 @@ export async function detectListingPages(
   NOISE_SELECTORS.forEach((sel) => {
     $home(sel).each((_, el) => {
       const href = $home(el).attr("href");
-      const resolved = resolveUrl(href ?? "", base);
-      if (resolved) noiseSet.add(resolved);
+      let resolved = resolveUrl(href ?? "", base);
+      if (!resolved) return;
+
+      const resolvedUrl = new URL(resolved);
+      if (resolvedUrl.host !== homeHost) {
+        resolvedUrl.host = homeHost;
+        resolved = resolvedUrl.toString();
+      }
+
+      noiseSet.add(resolved);
     });
   });
 
@@ -43,15 +52,23 @@ export async function detectListingPages(
   });
 
   // ── 2단계: 내부 링크 전체 수집 ──────────────────────────
-  const linkMap = new Map<string, string>(); // url → anchorText
+  const linkMap = new Map<string, string>();
   $home("a[href]").each((_, el) => {
     const href = $home(el).attr("href") ?? "";
-    const resolved = resolveUrl(href, homeUrl);
+    let resolved = resolveUrl(href, homeUrl);
     if (!resolved) return;
     if (!isSameDomain(resolved, homeUrl)) return;
     if (resolved === homeUrl || resolved === base || resolved === base + "/")
       return;
     if (noiseSet.has(resolved)) return;
+
+    // host 불일치 교정 — 리다이렉트로 인해 host가 달라진 경우
+    const resolvedUrl = new URL(resolved);
+    if (resolvedUrl.host !== homeHost) {
+      resolvedUrl.host = homeHost;
+      resolved = resolvedUrl.toString();
+    }
+
     if (!linkMap.has(resolved)) {
       linkMap.set(resolved, $home(el).text().trim());
     }

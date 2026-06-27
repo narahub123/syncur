@@ -21,6 +21,9 @@ export const htmlSiteDetector: HtmlSiteDetector = {
   detect(dom, logger): HtmlSiteType {
     const $ = dom;
 
+    // script, style 태그 내용 제거 후 텍스트 추출
+    $("script, style, noscript").remove();
+
     const hasContent = $(CONTENT_SELECTORS.join(",")).length > 0;
 
     const hasSpaRoot = $(SPA_ROOT_IDS.join(",")).length > 0;
@@ -37,6 +40,9 @@ export const htmlSiteDetector: HtmlSiteDetector = {
       hasSpaRoot,
       scriptCount,
       textLength,
+      spaRootFound: SPA_ROOT_IDS.filter((id) => $(id).length > 0), // 어떤 id가 매칭됐는지
+      bodyLength: $("body").html()?.length, // body HTML 길이
+      rootText: $("#root").text().trim().slice(0, 200), // #root 안 텍스트
     });
     /**
      * 1. 의미 있는 본문이 이미 존재한다.

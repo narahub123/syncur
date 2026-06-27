@@ -1,7 +1,7 @@
 "use server";
 
 import { normalizeUrl } from "@/features/ingestion/utils/url";
-import { fetchSite } from "../lib/fetch-utils";
+import { fetchDynamicSite, fetchSite } from "../lib/fetch-utils";
 import { parseRss } from "../lib/parsers/rss-parser";
 import { rssDetector } from "../lib/detectors/rss-detector";
 import { HTML_SITE_TYPE, SOURCE_TYPE } from "../lib/detectors/types";
@@ -81,30 +81,6 @@ export async function discoverFeedAction(
       };
     }
 
-    // ── 2. RSS 없음 → 목록 페이지 탐지 ─────────────────────
-    const { candidates } = await withLogging(
-      detectListingPages,
-      logger,
-      INGESTION_STAGE.LISTING_DETECT,
-    )(
-      targetUrl,
-      dom,
-      FEED_HEADERS, // fetchSite에서 쓰는 헤더와 동일하게
-      5, // 실제 fetch로 검증할 후보 수
-      logger,
-    );
-
-    if (candidates.length > 0) {
-      return {
-        success: true,
-        url: targetUrl,
-        // type: "listing",
-        feedUrl: null,
-        // listingCandidates: candidates,
-        message: `${candidates.length}개의 구독 가능한 목록 페이지를 찾았습니다.`,
-      };
-    }
-
     // 3. sitemap 찾기
     // 1. 인스턴스 생성
     const sitemapDetector = new SitemapDetector();
@@ -129,6 +105,44 @@ export async function discoverFeedAction(
       logger,
       INGESTION_STAGE.HTML_SITE_DETECT,
     )(dom, logger);
+
+    // ── 2. RSS 없음 → 목록 페이지 탐지 ─────────────────────
+
+    let fetchResult = res;
+
+    if (htmlType === HTML_SITE_TYPE.DYNAMIC) {
+      fetchResult =
+        (await withLogging(
+          fetchDynamicSite,
+          logger,
+          INGESTION_STAGE.FETCH_DYNAMIC_SITE,
+        )(targetUrl, logger)) ?? res;
+    }
+
+    const baseUrl = fetchResult.finalUrl;
+
+    const { candidates } = await withLogging(
+      detectListingPages,
+      logger,
+      INGESTION_STAGE.LISTING_DETECT,
+    )(
+      baseUrl,
+      fetchResult.dom,
+      FEED_HEADERS, // fetchSite에서 쓰는 헤더와 동일하게
+      5, // 실제 fetch로 검증할 후보 수
+      logger,
+    );
+
+    if (candidates.length > 0) {
+      return {
+        success: true,
+        url: targetUrl,
+        // type: "listing",
+        feedUrl: null,
+        // listingCandidates: candidates,
+        message: `${candidates.length}개의 구독 가능한 목록 페이지를 찾았습니다.`,
+      };
+    }
 
     switch (htmlType) {
       case HTML_SITE_TYPE.STATIC:

@@ -26,6 +26,8 @@ export const INGESTION_STAGE = {
    */
   FETCH_SITE: "FETCH_SITE",
 
+  FETCH_DYNAMIC_SITE: "FETCH_DYNAMIC_SITE",
+
   /**
    * HTML 수신 완료 상태
    * - fetch 결과 확보 시점
@@ -88,6 +90,7 @@ export const INGESTION_STAGE_LABEL = {
   URL_NORMALIZE: "URL 정규화",
   DISCOVER: "탐색",
   FETCH_SITE: "페이지 요청",
+  FETCH_DYNAMIC_SITE: "동적 페이지 요청",
   HTML_FETCHED: "HTML 수신",
   LISTING_DETECT: "목록 페이지 판별",
   PARSER_SELECT: "파서 선택",
