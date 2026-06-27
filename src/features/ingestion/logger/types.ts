@@ -1,4 +1,4 @@
-import { STAGE } from "./stages";
+import { INGESTION_STAGE } from "./stages";
 
 /**
  * 로그 레벨 정의
@@ -7,11 +7,12 @@ import { STAGE } from "./stages";
 export type LogLevel = "DEBUG" | "INFO" | "WARN" | "ERROR" | "FATAL";
 
 /**
- * ingestion 단계 정의 (STAGE 기반)
+ * ingestion 단계 정의 (INGESTION_STAGE 기반)
  * - ingestion pipeline의 각 실행 단계를 표현한다.
  * - 모든 로그는 반드시 이 stage 중 하나와 연결된다.
  */
-export type IngestionStage = (typeof STAGE)[keyof typeof STAGE];
+export type IngestionStage =
+  (typeof INGESTION_STAGE)[keyof typeof INGESTION_STAGE];
 
 /**
  * 로그에 추가로 포함되는 컨텍스트 데이터

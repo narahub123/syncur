@@ -1,4 +1,6 @@
-export const STAGE = {
+import { IngestionStage } from "./types";
+
+export const INGESTION_STAGE = {
   /**
    * ingestion 시작 지점
    */
@@ -16,6 +18,8 @@ export const STAGE = {
    */
   DISCOVER: "DISCOVER",
 
+  RSS_DISCOVER: "RSS_DISCOVER",
+
   /**
    * HTML fetch 수행 단계
    * - 실제 HTTP 요청 발생
@@ -27,6 +31,9 @@ export const STAGE = {
    * - fetch 결과 확보 시점
    */
   HTML_FETCHED: "HTML_FETCHED",
+
+  SITEMAP_DETECT: "SITEMAP_DETECT",
+  HTML_SITE_DETECT: "HTML_SITE_DETECT",
 
   /**
    * 리스트 페이지 여부 판단 단계
@@ -50,7 +57,7 @@ export const STAGE = {
    * URL 추출 단계
    * - 콘텐츠 내부 링크 추출
    */
-  URL_EXTRACT: "URL_EXTRACT",
+  NORMALIZE_URL: "NORMALIZE_URL",
 
   /**
    * 필터링 단계
@@ -75,3 +82,22 @@ export const STAGE = {
    */
   ERROR: "ERROR",
 } as const;
+
+export const INGESTION_STAGE_LABEL = {
+  START: "시작",
+  URL_NORMALIZE: "URL 정규화",
+  DISCOVER: "탐색",
+  FETCH_SITE: "페이지 요청",
+  HTML_FETCHED: "HTML 수신",
+  LISTING_DETECT: "목록 페이지 판별",
+  PARSER_SELECT: "파서 선택",
+  PARSE: "파싱",
+  NORMALIZE_URL: "URL 추출",
+  FILTER: "필터링",
+  FINALIZE: "결과 정리",
+  END: "종료",
+  ERROR: "오류",
+  RSS_DISCOVER: "RSS 탐색",
+  SITEMAP_DETECT: "사이트맵 존재 판별",
+  HTML_SITE_DETECT: "HTML SITE 판별",
+} satisfies Record<IngestionStage, string>;

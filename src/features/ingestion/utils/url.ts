@@ -1,6 +1,7 @@
 import normalizeUrlPackage from "normalize-url";
 import validator from "validator";
 import { z } from "zod";
+import { Logger } from "../logger/types";
 
 /**
  * URL 검증을 위한 Zod 스키마 정의
@@ -12,19 +13,28 @@ const urlSchema = z.string().trim().min(1, "주소를 입력해 주세요.");
 /**
  * 사용자 입력 URL을 검증 후 표준 형식으로 정규화합니다.
  * @param {string} input - 사용자가 입력한 원본 URL 문자열.
+ * @param logger - ingestion logger
  * @returns {string} 정규화가 완료된 표준 URL 문자열.
  * @throws {Error} URL 형식이 유효하지 않거나 프로토콜(http/https)이 없을 경우 에러를 던집니다.
  */
-export function normalizeUrl(input: string): string {
+export function normalizeUrl(input: string, logger: Logger): string {
   // 1. [사전 처리] 프로토콜이 없는 경우 자동으로 붙여줍니다.
   let urlToValidate = input;
   if (!/^https?:\/\//i.test(urlToValidate)) {
+    logger.debug("프로토콜 자동 추가", {
+      original: input,
+    });
+
     urlToValidate = `https://${urlToValidate}`;
   }
 
   // 2. [검증 단계] 이제 프로토콜이 강제된 상태에서 검증합니다.
   const validation = urlSchema.safeParse(urlToValidate);
   if (!validation.success) {
+    logger.warn("URL 형식 검증 실패", {
+      input,
+    });
+
     throw new Error("올바른 주소 형식이 아닙니다.");
   }
 
@@ -42,6 +52,11 @@ export function normalizeUrl(input: string): string {
     removeTrailingSlash: true,
   });
 
+  logger.debug("URL 정규화 완료", {
+    before: validation.data,
+    after: normalized,
+  });
+
   // 4. [최종 유효성 확인] validator로 문법적 정확성 최종 체크
   if (
     !validator.isURL(normalized, {
@@ -53,6 +68,10 @@ export function normalizeUrl(input: string): string {
       require_protocol: true,
     })
   ) {
+    logger.warn("최종 URL 유효성 검증 실패", {
+      normalized,
+    });
+
     // 유효하지 않은 URL일 경우 에러를 발생시켜 잘못된 데이터가 파이프라인에 진입하는 것을 방지합니다.
     throw new Error(`지원하지 않거나 올바르지 않은 URL 형식입니다`);
   }

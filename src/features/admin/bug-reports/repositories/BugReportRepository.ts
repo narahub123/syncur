@@ -37,7 +37,7 @@ export class BugReportRepository {
 
     /**
      * =========================
-     * 2. MATCH STAGE (filters + search)
+     * 2. MATCH INGESTION_STAGE (filters + search)
      * =========================
      */
     const matchStage: Record<string, unknown> = {

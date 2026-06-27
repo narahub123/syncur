@@ -1,5 +1,7 @@
 import * as cheerio from "cheerio";
 import { FEED_HEADERS } from "@/features/ingestion/constants/feed";
+import { Logger } from "../logger/types";
+import { normalizeError } from "../logger/normalizeError";
 
 export interface FetchSiteResult {
   finalUrl: string;
@@ -15,7 +17,10 @@ export interface FetchSiteResult {
  * 성공 시 최종 URL, HTML, Cheerio DOM 객체를 포함한 객체를 반환하며,
  * 연결 실패나 오류 발생 시 null을 반환합니다.
  */
-export async function fetchSite(url: string): Promise<FetchSiteResult | null> {
+export async function fetchSite(
+  url: string,
+  logger: Logger,
+): Promise<FetchSiteResult | null> {
   try {
     const response = await fetch(url, {
       headers: FEED_HEADERS,
@@ -23,6 +28,10 @@ export async function fetchSite(url: string): Promise<FetchSiteResult | null> {
     });
 
     if (!response.ok) {
+      logger.warn("fetch 요청 실패", {
+        url,
+        status: response.status,
+      });
       return null;
     }
 
@@ -31,12 +40,22 @@ export async function fetchSite(url: string): Promise<FetchSiteResult | null> {
     // Cheerio 로드 (JSDOM 대체)
     const dom = cheerio.load(html);
 
+    if (response.url !== url) {
+      logger.debug("리다이렉트", {
+        before: url,
+        after: response.url,
+      });
+    }
+
     return {
       dom,
       html,
       finalUrl: response.url,
     };
   } catch (error) {
+    logger.error("fetch 요청 오류", {
+      error: normalizeError(error),
+    });
     console.error("HTML Fetch Error:", error);
     return null;
   }

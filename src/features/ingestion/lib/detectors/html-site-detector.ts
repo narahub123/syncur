@@ -18,7 +18,7 @@ import { HtmlSiteDetector, HTML_SITE_TYPE, HtmlSiteType } from "./types";
  * 4. 그 외는 STATIC
  */
 export const htmlSiteDetector: HtmlSiteDetector = {
-  detect(dom): HtmlSiteType {
+  detect(dom, logger): HtmlSiteType {
     const $ = dom;
 
     const hasContent = $(CONTENT_SELECTORS.join(",")).length > 0;
@@ -32,12 +32,21 @@ export const htmlSiteDetector: HtmlSiteDetector = {
 
     const textLength = text.trim().length;
 
+    logger.debug("HTML 판별 시작", {
+      hasContent,
+      hasSpaRoot,
+      scriptCount,
+      textLength,
+    });
     /**
      * 1. 의미 있는 본문이 이미 존재한다.
      *
      * Next.js SSR + Hydration도 여기서 STATIC 처리된다.
      */
     if (hasContent && textLength >= STATIC_TEXT_LENGTH) {
+      logger.info("STATIC 판정", {
+        reason: "content + 충분한 텍스트",
+      });
       return HTML_SITE_TYPE.STATIC;
     }
 
@@ -46,6 +55,9 @@ export const htmlSiteDetector: HtmlSiteDetector = {
      * 본문이 거의 없다.
      */
     if (hasSpaRoot && textLength <= DYNAMIC_TEXT_LENGTH) {
+      logger.info("DYNAMIC 판정", {
+        reason: "SPA root + 부족한 텍스트",
+      });
       return HTML_SITE_TYPE.DYNAMIC;
     }
 
@@ -58,12 +70,18 @@ export const htmlSiteDetector: HtmlSiteDetector = {
       scriptCount >= SCRIPT_HEAVY_COUNT &&
       textLength <= DYNAMIC_TEXT_LENGTH
     ) {
+      logger.info("DYNAMIC 판정", {
+        reason: "script-heavy + low text",
+      });
       return HTML_SITE_TYPE.DYNAMIC;
     }
 
     /**
      * 4. 기본값
      */
+    logger.debug("STATIC fallback 판정", {
+      reason: "기본 규칙",
+    });
     return HTML_SITE_TYPE.STATIC;
   },
 };

@@ -14,7 +14,7 @@ import { createTraceId } from "../logger/trace-id";
 import { createLogger } from "../logger/logger";
 import { Logger } from "../logger/types";
 import { withLogging } from "../logger/with-logging";
-import { STAGE } from "../logger/stages";
+import { INGESTION_STAGE } from "../logger/stages";
 
 /**
  * 피드 탐색 결과 인터페이스
@@ -39,14 +39,18 @@ export async function discoverFeedAction(
     const traceId = createTraceId();
     const logger: Logger = createLogger({ traceId });
 
-    const targetUrl = normalizeUrl(input);
+    const targetUrl = await withLogging(
+      normalizeUrl,
+      logger,
+      INGESTION_STAGE.NORMALIZE_URL,
+    )(input, logger);
 
     // 1. 공통: DOM 가져오기
     const res = await withLogging(
       fetchSite,
       logger,
-      STAGE.FETCH_SITE,
-    )(targetUrl);
+      INGESTION_STAGE.FETCH_SITE,
+    )(targetUrl, logger);
 
     if (!res) {
       return {
@@ -60,8 +64,11 @@ export async function discoverFeedAction(
     const { finalUrl, dom, html } = res;
 
     // 2. RSS 판별 (있으면 종료)
-    const result = await rssDetector.detect(dom, targetUrl);
-    console.log(result);
+    const result = await withLogging(
+      rssDetector.detect,
+      logger,
+      INGESTION_STAGE.RSS_DISCOVER,
+    )(dom, targetUrl, logger);
 
     if (result?.type === SOURCE_TYPE.RSS) {
       const res = await parseRss(result.rssUrl);
@@ -75,11 +82,16 @@ export async function discoverFeedAction(
     }
 
     // ── 2. RSS 없음 → 목록 페이지 탐지 ─────────────────────
-    const { candidates } = await detectListingPages(
+    const { candidates } = await withLogging(
+      detectListingPages,
+      logger,
+      INGESTION_STAGE.LISTING_DETECT,
+    )(
       targetUrl,
       dom,
       FEED_HEADERS, // fetchSite에서 쓰는 헤더와 동일하게
       5, // 실제 fetch로 검증할 후보 수
+      logger,
     );
 
     if (candidates.length > 0) {
@@ -98,7 +110,11 @@ export async function discoverFeedAction(
     const sitemapDetector = new SitemapDetector();
 
     // 2. 메서드 호출 (해당 사이트의 URL 입력)
-    const sitemapEntries = await sitemapDetector.detect(targetUrl);
+    const sitemapEntries = await withLogging(
+      sitemapDetector.detect,
+      logger,
+      INGESTION_STAGE.SITEMAP_DETECT,
+    )(targetUrl, logger);
 
     // 3. 결과 확인
     if (sitemapEntries.length > 0) {
@@ -108,7 +124,11 @@ export async function discoverFeedAction(
       console.log("사이트맵을 찾지 못했거나 글이 없습니다.");
     }
 
-    const htmlType = htmlSiteDetector.detect(dom);
+    const htmlType = await withLogging(
+      htmlSiteDetector.detect,
+      logger,
+      INGESTION_STAGE.HTML_SITE_DETECT,
+    )(dom, logger);
 
     switch (htmlType) {
       case HTML_SITE_TYPE.STATIC:

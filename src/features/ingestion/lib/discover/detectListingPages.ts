@@ -4,9 +4,11 @@ import { scoreByUrl } from "./analyzer/scoreByUrl";
 import { NOISE_SELECTORS } from "./constants";
 import { getBaseUrl, isSameDomain, resolveUrl } from "./utils";
 import { ListingDetectionResult, ListingPageCandidate } from "./types";
-import { extractListingPageConfig } from "./parser/extractListingPageConfig";
-import { extractDetailPageConfig } from "./parser/extractDetailPageConfig";
+import { extractListingPageConfig } from "./parser/extractListingPageConfig/extractListingPageConfig";
 import { testDetailPageConfig } from "@/scripts/testDetailPageConfig";
+import { Logger } from "../../logger/types";
+import { normalizeError } from "../../logger/normalizeError";
+import { extractDetailPageConfig } from "./parser/extractDetailPageConfig/extractDetailPageConfig";
 
 /**
  * 사이트 홈 페이지를 분석하여 목록 페이지 후보를 감지합니다.
@@ -21,6 +23,7 @@ export async function detectListingPages(
   dom: cheerio.CheerioAPI,
   headers: Record<string, string> = {},
   maxProbe = 10,
+  logger: Logger,
 ): Promise<ListingDetectionResult> {
   const base = getBaseUrl(homeUrl);
   const $home = dom;
@@ -33,6 +36,10 @@ export async function detectListingPages(
       const resolved = resolveUrl(href ?? "", base);
       if (resolved) noiseSet.add(resolved);
     });
+  });
+
+  logger.debug("노이즈 수집", {
+    count: noiseSet.size,
   });
 
   // ── 2단계: 내부 링크 전체 수집 ──────────────────────────
@@ -48,6 +55,10 @@ export async function detectListingPages(
     if (!linkMap.has(resolved)) {
       linkMap.set(resolved, $home(el).text().trim());
     }
+  });
+
+  logger.debug("내부 링크 수집", {
+    count: linkMap.size,
   });
 
   // ── 3단계: URL 패턴으로 1차 점수 ────────────────────────
@@ -68,6 +79,10 @@ export async function detectListingPages(
     }
   }
 
+  logger.debug("후보 선별", {
+    count: scored.length,
+  });
+
   scored.sort((a, b) => b.score - a.score);
 
   // ── 4단계: 상위 후보 fetch 검증 ─────────────────────────
@@ -78,6 +93,7 @@ export async function detectListingPages(
       const { score, reason, title, lastUpdated, dom } = await scoreByContent(
         c.url,
         headers,
+        logger,
       );
       c.score += score;
       c.reason.push(...reason);
@@ -86,10 +102,16 @@ export async function detectListingPages(
 
       // ── 5단계: MIN_SCORE 통과 시 ListingPageConfig 추출 ────────
       if (c.score >= 20 && dom) {
-        const result = extractListingPageConfig(c.url, dom);
+        const result = extractListingPageConfig(c.url, dom, logger);
         if (result) {
           const { firstItemUrl, ...listingConfig } = result;
           c.listingPageConfig = listingConfig;
+
+          if (c.listingPageConfig) {
+            logger.info("목록 설정 추출", {
+              url: c.url,
+            });
+          }
 
           // ── 6단계: 상세 페이지 config 추출 ──────────────────
           if (firstItemUrl) {
@@ -106,24 +128,42 @@ export async function detectListingPages(
                   detailDom,
                 );
 
+                logger.info("상세 설정 추출", {
+                  url: firstItemUrl,
+                });
+
                 // 추출 결과 확인
+                // TODO: 개발 완료 후 제거
+                // extractDetailPageConfig의 정확도 검증을 위한 임시 코드입니다.
+                // 운영 환경에서는 testDetailPageConfig를 호출하지 않습니다.
                 if (c.detailPageConfig) {
                   const result = await testDetailPageConfig(
                     firstItemUrl,
                     c.detailPageConfig,
                     headers,
                   );
-                  console.log("detailPageConfig 추출 결과", result);
+
+                  logger.debug("상세 설정 검증", {
+                    result,
+                  });
                 }
               }
-            } catch {
+            } catch (error: unknown) {
               // fetch 실패 무시
+              logger.warn("상세 요청 실패", {
+                url: firstItemUrl,
+                error: normalizeError(error),
+              });
             }
           }
         }
       }
     }),
   );
+
+  logger.debug("후보 검증", {
+    count: probeTargets.length,
+  });
 
   // ── 5단계: 최종 정렬 및 필터 ────────────────────────────
   // scoreByContent에서 반복 구조(20)가 확인된 것만 유의미하므로
@@ -134,6 +174,9 @@ export async function detectListingPages(
     .sort((a, b) => b.score - a.score)
     .slice(0, 15);
 
-  console.log("결과", final);
+  logger.info("목록 탐지 완료", {
+    count: final.length,
+  });
+
   return { candidates: final, fromCache: false };
 }
