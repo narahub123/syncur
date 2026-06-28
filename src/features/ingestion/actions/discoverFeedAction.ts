@@ -16,6 +16,12 @@ import { INGESTION_STAGE } from "../logger/stages";
 import { extractSiteInfo } from "../lib/extractors/extractSiteInfo";
 import { siteService } from "@/features/rss/site/service/SiteService.instance";
 import { feedService } from "@/features/feeds/service/FeedService.instance";
+import { extractRssItems } from "../lib/extractors/extractRssItems";
+import { FeedItemInput } from "@/features/feed-sample/types";
+import { extractCrawlerItems } from "../lib/extractors/extractCrawlerItems";
+import { feedSampleService } from "@/features/feed-sample/service/FeedSampleService.instance";
+import { normalizeToRssInput } from "../utils/normalizeToRssInput";
+import { extractCrawlerItemsDynamic } from "../lib/extractors/extractCrawlerItemsDynamic";
 
 /**
  * 피드 탐색 결과 인터페이스
@@ -31,19 +37,32 @@ export async function discoverFeedAction(
   input: string,
 ): Promise<DiscoveryResult> {
   try {
+    // =========================
+    // [TRACE / LOGGING INIT]
+    // =========================
     const traceId = createTraceId();
     const logger: Logger = createLogger({ traceId });
 
+    // =========================
+    // [1. URL 정규화]
+    // =========================
     const targetUrl = await withLogging(
       normalizeUrl,
       logger,
       INGESTION_STAGE.NORMALIZE_URL,
     )(input, logger);
 
-    // ── 1. 이미 저장된 사이트인지 확인 ─────────────────────
+    // =========================
+    // [2. 기존 사이트 조회]
+    // =========================
     const existingSite = await siteService.findByUrl(targetUrl);
 
+    logger.info("기존 사이트 조회", { exists: !!existingSite });
+
     if (existingSite) {
+      // =========================
+      // [2-1. 기존 feed 상태 기반 빠른 반환]
+      // =========================
       switch (existingSite.feedStatus) {
         case "rss": {
           const feed = await feedService.findRssFeedBySiteId(existingSite._id);
@@ -54,6 +73,7 @@ export async function discoverFeedAction(
             message: "RSS 피드를 찾았습니다.",
           };
         }
+
         case "crawlable": {
           const feeds = await feedService.findCrawlFeedsBySiteId(
             existingSite._id,
@@ -65,6 +85,7 @@ export async function discoverFeedAction(
             message: `${feeds.length}개의 구독 가능한 목록 페이지를 찾았습니다.`,
           };
         }
+
         case "unavailable":
           return {
             success: true,
@@ -72,14 +93,17 @@ export async function discoverFeedAction(
             feedUrl: null,
             message: "구독 가능한 페이지를 찾지 못했습니다.",
           };
+
         case "pending":
-          // 이전에 탐색이 중단된 경우 — 탐색 재시도
+          // 이전 탐색 실패 → 재탐색 진행
           logger.info("pending 상태 사이트 재탐색", { url: targetUrl });
           break;
       }
     }
 
-    // ── 2. 사이트 HTML 가져오기 ──────────────────────────────
+    // =========================
+    // [3. 사이트 HTML fetch]
+    // =========================
     const res = await withLogging(
       fetchSite,
       logger,
@@ -97,11 +121,15 @@ export async function discoverFeedAction(
 
     const { finalUrl, dom, html } = res;
 
-    // ── 3. 사이트 기본 정보 추출 + Site 저장 (pending) ──────
+    // =========================
+    // [4. Site 기본 정보 추출 + pending 저장]
+    // =========================
     const siteInfo = extractSiteInfo(html, finalUrl);
     const site = await siteService.createPending(finalUrl, siteInfo);
 
-    // ── 4. RSS 판별 ──────────────────────────────────────────
+    // =========================
+    // [5. RSS 탐지]
+    // =========================
     const rssResult = await withLogging(
       rssDetector.detect,
       logger,
@@ -109,14 +137,58 @@ export async function discoverFeedAction(
     )(dom, finalUrl, logger);
 
     if (rssResult?.type === SOURCE_TYPE.RSS) {
-      await parseRss(rssResult.rssUrl);
+      // =========================
+      // [1. RSS URL 발견됨]
+      // =========================
+      // 사이트에서 RSS 링크를 직접 탐지한 경우
+      // 이후 HTML 크롤링 대신 RSS 파싱으로 즉시 전환
 
-      // Site feedStatus 업데이트 + Feed 저장
+      const rssFeed = await withLogging(
+        parseRss,
+        logger,
+        INGESTION_STAGE.PARSE,
+      )(rssResult.rssUrl, logger);
+
+      // =========================
+      // [2. RSS 원본 데이터 → 내부 표준 구조 변환]
+      // =========================
+      // parseRss 결과는 외부 RSS 구조(xml 기반 파싱 결과)라서
+      // 프로젝트 내부에서 사용하는 FeedItemInput 구조와 다를 수 있음
+      //
+      // → 그래서 "표준화(normalization)" 단계 필요
+
+      const normalizedFeed = normalizeToRssInput(rssFeed);
+
+      // =========================
+      // [3. FeedItemInput 형태로 최종 변환]
+      // =========================
+      // RSS 표준 → 내부 크롤러/샘플 시스템에서 사용하는 형태로 변환
+      // (title, link, publishedAt 등 구조 통일)
+
+      const items = extractRssItems(normalizedFeed, 5, logger);
+
+      // =========================
+      // [4. RSS 샘플 저장]
+      // =========================
+      // RSS는 이미 구조화된 데이터라 crawler보다 안정적
+      // → feed sample로 즉시 저장
+
+      await feedSampleService.createRssSamples(site._id, items);
+
+      // =========================
+      // [5. Site + Feed 상태 업데이트]
+      // =========================
+      // RSS 발견 시 상태를 "rss"로 고정
+      // + RSS feed URL 저장
+
       await Promise.all([
         siteService.updateFeedStatus(site._id, "rss"),
         feedService.createRssFeed(site._id, rssResult.rssUrl),
       ]);
 
+      // =========================
+      // [6. 즉시 종료 (RSS 우선 처리)]
+      // =========================
       return {
         success: true,
         url: targetUrl,
@@ -125,14 +197,18 @@ export async function discoverFeedAction(
       };
     }
 
-    // ── 5. HTML 타입 판별 ────────────────────────────────────
+    // =========================
+    // [6. HTML 타입 판별]
+    // =========================
     const htmlType = await withLogging(
       htmlSiteDetector.detect,
       logger,
       INGESTION_STAGE.HTML_SITE_DETECT,
     )(dom, logger);
 
-    // ── 6. 동적 사이트면 Puppeteer로 재fetch ────────────────
+    // =========================
+    // [7. 동적 사이트 재fetch (Puppeteer)]
+    // =========================
     let fetchResult = res;
 
     if (htmlType === HTML_SITE_TYPE.DYNAMIC) {
@@ -146,28 +222,94 @@ export async function discoverFeedAction(
 
     const baseUrl = fetchResult.finalUrl;
 
-    // ── 7. 목록 페이지 탐지 ─────────────────────────────────
+    // =========================
+    // [8. 목록 페이지 탐지]
+    // =========================
     const { candidates } = await withLogging(
       detectListingPages,
       logger,
       INGESTION_STAGE.LISTING_DETECT,
     )(baseUrl, fetchResult.dom, FEED_HEADERS, 5, logger);
 
+    // =========================
+    // [9. 후보 처리 (crawl feed 생성)]
+    // =========================
     if (candidates.length > 0) {
-      // Site feedStatus 업데이트 + Feed 저장 (목록 페이지 수만큼)
       await siteService.updateFeedStatus(site._id, "crawlable");
-      await Promise.all(
-        candidates
-          .filter((c) => c.listingPageConfig !== null)
-          .map((c) =>
-            feedService.createCrawlFeed(
-              site._id,
-              c.url,
-              c.listingPageConfig!,
-              c.detailPageConfig,
-            ),
-          ),
-      );
+
+      const puppeteer =
+        htmlType === HTML_SITE_TYPE.DYNAMIC ? await import("puppeteer") : null;
+
+      for (const c of candidates) {
+        if (!c.listingPageConfig) continue;
+
+        let items: FeedItemInput[] = [];
+
+        // STATIC 추출
+        if (htmlType === HTML_SITE_TYPE.STATIC) {
+          items = extractCrawlerItems(
+            fetchResult.html,
+            c.listingPageConfig,
+            baseUrl,
+            5,
+          );
+
+          logger.info("crawler items 생성", {
+            url: c.url,
+            count: items.length,
+          });
+        }
+
+        // DYNAMIC 추출
+        if (htmlType === HTML_SITE_TYPE.DYNAMIC && puppeteer) {
+          const browser = await puppeteer.launch({
+            headless: true,
+            args: [
+              "--no-sandbox",
+              "--disable-setuid-sandbox",
+              "--disable-dev-shm-usage",
+            ],
+          });
+
+          const page = await browser.newPage();
+
+          try {
+            await page.goto(c.url, {
+              waitUntil: "domcontentloaded",
+              timeout: 15000,
+            });
+
+            items = await extractCrawlerItemsDynamic(
+              page,
+              c.listingPageConfig,
+              5,
+            );
+
+            logger.info("dynamic items 생성", {
+              url: c.url,
+              count: items.length,
+            });
+          } finally {
+            await page.close();
+            await browser.close();
+          }
+        }
+
+        // empty skip
+        if (items.length === 0) continue;
+
+        const feed = await feedService.createCrawlFeed(
+          site._id,
+          c.url,
+          c.listingPageConfig,
+          c.detailPageConfig,
+        );
+
+        const feedId = feed?.id;
+        if (!feedId) continue;
+
+        await feedSampleService.createCrawlerSamples(feedId, items);
+      }
 
       return {
         success: true,
@@ -177,7 +319,9 @@ export async function discoverFeedAction(
       };
     }
 
-    // ── 8. 둘 다 실패 ────────────────────────────────────────
+    // =========================
+    // [10. 실패 처리]
+    // =========================
     await siteService.updateFeedStatus(site._id, "unavailable");
 
     return {
@@ -188,6 +332,7 @@ export async function discoverFeedAction(
     };
   } catch (error) {
     console.error("Feed discovery error:", error);
+
     return {
       success: false,
       url: input,

@@ -2,6 +2,7 @@ import Parser from "rss-parser";
 import { FEED_HEADERS } from "../../constants/feed";
 import * as crypto from "crypto";
 import { convert } from "html-to-text";
+import { Logger } from "../../logger/types";
 
 // rss-parser에서 제공하는 Item 인터페이스 사용
 interface CustomItem extends Parser.Item {
@@ -38,38 +39,43 @@ const parser = new Parser({
  * @param {string} feedUrl - 발견된 피드의 절대 경로 URL
  * @returns {Promise<any>} 파싱된 피드 객체 (제목, 아이템 목록 등)
  */
-export async function parseRss(feedUrl: string) {
-  try {
-    const feed = await parser.parseURL(feedUrl);
+export async function parseRss(feedUrl: string, logger: Logger) {
+  const feed = await parser.parseURL(feedUrl);
 
-    // DB의 FeedItem 저장 구조에 맞게 아이템 리스트만 반환합니다.
-    return feed.items.map((item: CustomItem) => {
-      // 1. contentSnippet 우선, 없으면 content 사용
-      const rawDescription = item.contentSnippet || item.content || "";
+  logger.debug("RSS 응답 수신", {
+    itemCount: feed.items?.length ?? 0,
+  });
 
-      // 2. html-to-text를 사용해 태그 제거
-      const cleanDescription = sanitizeHtml(rawDescription);
+  logger.debug("RSS 아이템 변환 시작");
+  // DB의 FeedItem 저장 구조에 맞게 아이템 리스트만 반환합니다.
+  return feed.items.map((item: CustomItem) => {
+    // 1. contentSnippet 우선, 없으면 content 사용
+    const rawDescription = item.contentSnippet || item.content || "";
 
-      // 날짜가 없으면 현재 시간(new Date())을 할당
-      const publishedAt = item.isoDate
-        ? new Date(item.isoDate)
-        : item.pubDate
-          ? new Date(item.pubDate)
-          : new Date();
+    // 2. html-to-text를 사용해 태그 제거
+    const cleanDescription = sanitizeHtml(rawDescription);
 
-      return {
-        guid: item.guid || null,
-        link: item.link || "",
-        title: item.title || "제목 없음",
-        description: cleanDescription,
-        author: (item.creator as string) || (item.author as string) || null,
-        publishedAt: publishedAt,
-        categories: item.categories || [],
-        hash: generateHash(item),
-      };
+    // 날짜가 없으면 현재 시간(new Date())을 할당
+    const publishedAt = item.isoDate
+      ? new Date(item.isoDate)
+      : item.pubDate
+        ? new Date(item.pubDate)
+        : new Date();
+
+    logger.debug("RSS 아이템 변환", {
+      guid: item.guid,
+      link: item.link,
     });
-  } catch (error) {
-    console.error("RSS Parsing Error:", error);
-    throw new Error(`Failed to parse RSS feed at ${feedUrl}`);
-  }
+
+    return {
+      guid: item.guid || null,
+      link: item.link || "",
+      title: item.title || "제목 없음",
+      description: cleanDescription,
+      author: (item.creator as string) || (item.author as string) || null,
+      publishedAt: publishedAt,
+      categories: item.categories || [],
+      hash: generateHash(item),
+    };
+  });
 }

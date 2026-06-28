@@ -76,8 +76,8 @@ export async function fetchDynamicSite(
   let browser = null;
 
   try {
-    // 로컬 환경 기준 — 배포 시 puppeteer-core + @sparticuz/chromium으로 교체
     const puppeteer = await import("puppeteer");
+
     browser = await puppeteer.launch({
       headless: true,
       args: [
@@ -89,15 +89,15 @@ export async function fetchDynamicSite(
 
     const page = await browser.newPage();
 
-    // fetchSite와 동일한 User-Agent 사용
     await page.setExtraHTTPHeaders({
       "Accept-Language": "ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7",
     });
+
     await page.setUserAgent(
       "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
     );
 
-    // 이미지/폰트/미디어는 불필요 — 차단해서 속도 향상
+    // 리소스 차단 (유지)
     await page.setRequestInterception(true);
     page.on("request", (req) => {
       const type = req.resourceType();
@@ -109,16 +109,26 @@ export async function fetchDynamicSite(
     });
 
     const response = await page.goto(url, {
-      waitUntil: "networkidle2", // 네트워크 요청이 안정화될 때까지 대기
-      timeout: 15000,
+      waitUntil: "domcontentloaded", // ⭐ 변경 (핵심)
+      timeout: 20000,
     });
 
     if (!response || !response.ok()) {
-      logger.warn("Puppeteer fetch 요청 실패", {
+      logger.warn("Puppeteer fetch 실패", {
         url,
         status: response?.status(),
       });
       return null;
+    }
+
+    // ⭐ 핵심: DOM 안정화 대기 (동적 렌더 대응)
+    await new Promise((r) => setTimeout(r, 2000));
+
+    // ⭐ 최소 리스트 기반 안정화 (있으면 바로 통과)
+    try {
+      await page.waitForSelector("a", { timeout: 3000 });
+    } catch {
+      // 링크 없는 사이트도 있으므로 무시
     }
 
     const finalUrl = page.url();
