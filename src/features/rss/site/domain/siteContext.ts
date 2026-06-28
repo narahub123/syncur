@@ -1,6 +1,7 @@
 import { SiteContextDTO } from "../dto/siteDto";
-import { Feed } from "@/shared/types/feed";
 import { SiteLean } from "../types/leans";
+import { SITE_FEED_STATUS } from "../constants/site";
+import { FeedDto } from "@/features/feeds/dto/feedDto";
 
 /**
  * Context 생성 입력 데이터
@@ -12,7 +13,7 @@ import { SiteLean } from "../types/leans";
 export type SiteContextInput = {
   site: SiteLean;
   subscriptionExists: boolean;
-  feed: Feed | null;
+  feed: FeedDto | null;
 };
 
 /**
@@ -35,7 +36,7 @@ export function buildSiteContext(input: SiteContextInput): SiteContextDTO {
    * - feed_url 존재 여부로 판단
    * - site의 capability (사이트 자체 능력)
    */
-  const rssAvailable = site.feed_url != null;
+  const feedStatus = site.feedStatus;
 
   /**
    * 현재 사용자의 구독 여부
@@ -51,7 +52,10 @@ export function buildSiteContext(input: SiteContextInput): SiteContextDTO {
    *
    * 👉 UI 버튼 활성/비활성 결정에 사용
    */
-  const canSubscribe = rssAvailable && !isSubscribed;
+  const canSubscribe =
+    (feedStatus === SITE_FEED_STATUS.RSS ||
+      feedStatus === SITE_FEED_STATUS.CRAWLABLE) &&
+    !isSubscribed;
 
   /**
    * 프론트로 전달되는 최종 DTO
@@ -64,7 +68,7 @@ export function buildSiteContext(input: SiteContextInput): SiteContextDTO {
     name: site.name,
     favicon_url: site.favicon_url,
 
-    rssAvailable,
+    feedStatus,
     isSubscribed,
     canSubscribe,
   };

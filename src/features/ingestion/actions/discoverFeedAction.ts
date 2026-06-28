@@ -5,9 +5,7 @@ import { fetchDynamicSite, fetchSite } from "../lib/fetch-utils";
 import { parseRss } from "../lib/parsers/rss-parser";
 import { rssDetector } from "../lib/detectors/rss-detector";
 import { HTML_SITE_TYPE, SOURCE_TYPE } from "../lib/detectors/types";
-import { SitemapDetector } from "../lib/detectors/sitemap-detector";
 import { htmlSiteDetector } from "../lib/detectors/html-site-detector";
-
 import { FEED_HEADERS } from "../constants/feed";
 import { detectListingPages } from "../lib/discover/detectListingPages";
 import { createTraceId } from "../logger/trace-id";
@@ -15,6 +13,9 @@ import { createLogger } from "../logger/logger";
 import { Logger } from "../logger/types";
 import { withLogging } from "../logger/with-logging";
 import { INGESTION_STAGE } from "../logger/stages";
+import { extractSiteInfo } from "../lib/extractors/extractSiteInfo";
+import { siteService } from "@/features/rss/site/service/SiteService.instance";
+import { feedService } from "@/features/feeds/service/FeedService.instance";
 
 /**
  * 피드 탐색 결과 인터페이스
@@ -26,12 +27,6 @@ export interface DiscoveryResult {
   message?: string;
 }
 
-/**
- * 주어진 사이트 URL에서 RSS, Atom, JSON Feed를 탐색합니다.
- * HTML 내 링크 태그를 우선 확인하고, 실패 시 휴리스틱(표준 경로)을 시도합니다.
- * * @param {string} input - 사용자가 입력한 사이트 도메인 또는 URL
- * @returns {Promise<DiscoveryResult>} 탐색 성공 여부와 피드 URL 정보를 포함한 객체
- */
 export async function discoverFeedAction(
   input: string,
 ): Promise<DiscoveryResult> {
@@ -45,7 +40,46 @@ export async function discoverFeedAction(
       INGESTION_STAGE.NORMALIZE_URL,
     )(input, logger);
 
-    // 1. 공통: DOM 가져오기
+    // ── 1. 이미 저장된 사이트인지 확인 ─────────────────────
+    const existingSite = await siteService.findByUrl(targetUrl);
+
+    if (existingSite) {
+      switch (existingSite.feedStatus) {
+        case "rss": {
+          const feed = await feedService.findRssFeedBySiteId(existingSite._id);
+          return {
+            success: true,
+            url: targetUrl,
+            feedUrl: feed?.feedUrl ?? null,
+            message: "RSS 피드를 찾았습니다.",
+          };
+        }
+        case "crawlable": {
+          const feeds = await feedService.findCrawlFeedsBySiteId(
+            existingSite._id,
+          );
+          return {
+            success: true,
+            url: targetUrl,
+            feedUrl: null,
+            message: `${feeds.length}개의 구독 가능한 목록 페이지를 찾았습니다.`,
+          };
+        }
+        case "unavailable":
+          return {
+            success: true,
+            url: targetUrl,
+            feedUrl: null,
+            message: "구독 가능한 페이지를 찾지 못했습니다.",
+          };
+        case "pending":
+          // 이전에 탐색이 중단된 경우 — 탐색 재시도
+          logger.info("pending 상태 사이트 재탐색", { url: targetUrl });
+          break;
+      }
+    }
+
+    // ── 2. 사이트 HTML 가져오기 ──────────────────────────────
     const res = await withLogging(
       fetchSite,
       logger,
@@ -63,51 +97,42 @@ export async function discoverFeedAction(
 
     const { finalUrl, dom, html } = res;
 
-    // 2. RSS 판별 (있으면 종료)
-    const result = await withLogging(
+    // ── 3. 사이트 기본 정보 추출 + Site 저장 (pending) ──────
+    const siteInfo = extractSiteInfo(html, finalUrl);
+    const site = await siteService.createPending(finalUrl, siteInfo);
+
+    // ── 4. RSS 판별 ──────────────────────────────────────────
+    const rssResult = await withLogging(
       rssDetector.detect,
       logger,
       INGESTION_STAGE.RSS_DISCOVER,
-    )(dom, targetUrl, logger);
+    )(dom, finalUrl, logger);
 
-    if (result?.type === SOURCE_TYPE.RSS) {
-      const res = await parseRss(result.rssUrl);
+    if (rssResult?.type === SOURCE_TYPE.RSS) {
+      await parseRss(rssResult.rssUrl);
+
+      // Site feedStatus 업데이트 + Feed 저장
+      await Promise.all([
+        siteService.updateFeedStatus(site._id, "rss"),
+        feedService.createRssFeed(site._id, rssResult.rssUrl),
+      ]);
 
       return {
         success: true,
         url: targetUrl,
-        feedUrl: result.rssUrl,
+        feedUrl: rssResult.rssUrl,
         message: "RSS 피드를 찾았습니다.",
       };
     }
 
-    // 3. sitemap 찾기
-    // 1. 인스턴스 생성
-    const sitemapDetector = new SitemapDetector();
-
-    // 2. 메서드 호출 (해당 사이트의 URL 입력)
-    const sitemapEntries = await withLogging(
-      sitemapDetector.detect,
-      logger,
-      INGESTION_STAGE.SITEMAP_DETECT,
-    )(targetUrl, logger);
-
-    // 3. 결과 확인
-    if (sitemapEntries.length > 0) {
-      console.log(`성공! ${sitemapEntries.length}개의 URL을 찾았습니다.`);
-      console.log(sitemapEntries.slice(0, 5)); // 상위 5개만 출력해보기
-    } else {
-      console.log("사이트맵을 찾지 못했거나 글이 없습니다.");
-    }
-
+    // ── 5. HTML 타입 판별 ────────────────────────────────────
     const htmlType = await withLogging(
       htmlSiteDetector.detect,
       logger,
       INGESTION_STAGE.HTML_SITE_DETECT,
     )(dom, logger);
 
-    // ── 2. RSS 없음 → 목록 페이지 탐지 ─────────────────────
-
+    // ── 6. 동적 사이트면 Puppeteer로 재fetch ────────────────
     let fetchResult = res;
 
     if (htmlType === HTML_SITE_TYPE.DYNAMIC) {
@@ -121,53 +146,45 @@ export async function discoverFeedAction(
 
     const baseUrl = fetchResult.finalUrl;
 
+    // ── 7. 목록 페이지 탐지 ─────────────────────────────────
     const { candidates } = await withLogging(
       detectListingPages,
       logger,
       INGESTION_STAGE.LISTING_DETECT,
-    )(
-      baseUrl,
-      fetchResult.dom,
-      FEED_HEADERS, // fetchSite에서 쓰는 헤더와 동일하게
-      5, // 실제 fetch로 검증할 후보 수
-      logger,
-    );
+    )(baseUrl, fetchResult.dom, FEED_HEADERS, 5, logger);
 
     if (candidates.length > 0) {
+      // Site feedStatus 업데이트 + Feed 저장 (목록 페이지 수만큼)
+      await siteService.updateFeedStatus(site._id, "crawlable");
+      await Promise.all(
+        candidates
+          .filter((c) => c.listingPageConfig !== null)
+          .map((c) =>
+            feedService.createCrawlFeed(
+              site._id,
+              c.url,
+              c.listingPageConfig!,
+              c.detailPageConfig,
+            ),
+          ),
+      );
+
       return {
         success: true,
         url: targetUrl,
-        // type: "listing",
         feedUrl: null,
-        // listingCandidates: candidates,
         message: `${candidates.length}개의 구독 가능한 목록 페이지를 찾았습니다.`,
       };
     }
 
-    switch (htmlType) {
-      case HTML_SITE_TYPE.STATIC:
-        return {
-          success: true,
-          url: targetUrl,
-          feedUrl: null,
-          message: "정적(SSR) 사이트입니다.",
-        };
+    // ── 8. 둘 다 실패 ────────────────────────────────────────
+    await siteService.updateFeedStatus(site._id, "unavailable");
 
-      case HTML_SITE_TYPE.DYNAMIC:
-        return {
-          success: true,
-          url: targetUrl,
-          feedUrl: null,
-          message: "동적(SPA) 사이트입니다.",
-        };
-    }
-
-    // 5. 판별 불가
     return {
       success: true,
       url: targetUrl,
       feedUrl: null,
-      message: "알 수 없는 사이트 형식입니다.",
+      message: "구독 가능한 페이지를 찾지 못했습니다.",
     };
   } catch (error) {
     console.error("Feed discovery error:", error);

@@ -15,7 +15,7 @@ export const toSiteDto = (doc: SiteLean): SiteDto => {
     name: doc.name,
 
     favicon_url: doc.favicon_url,
-    feed_url: doc.feed_url,
+    feedStatus: doc.feedStatus,
 
     createdAt: doc.createdAt.toISOString(),
     updatedAt: doc.updatedAt.toISOString(),

@@ -1,3 +1,4 @@
+import { SITE_FEED_STATUS } from "../site/constants/site";
 import { CreateSiteDto } from "../site/dto/siteDto";
 
 export type FeedDiscoveryResult =
@@ -16,7 +17,7 @@ export async function discoverRSS(url: string): Promise<FeedDiscoveryResult> {
 
   const data = await res.json();
 
-  if (data.data.feed_url) {
+  if (data.data.feedStatus !== SITE_FEED_STATUS.UNAVAILABLE) {
     return {
       type: "found",
       site: data.data,

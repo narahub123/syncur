@@ -22,7 +22,7 @@ export const SystemSection = ({
   const hasFails = logFails > 0;
 
   // 2. 부정적 상태 감지 변수 (1개 이상 문제가 생기면 true)
-  const isSiteAlert = sites.noRss > 0;
+  const isSiteAlert = sites.unavailable > 0;
   const isFeedAlert = feeds.inactive > 0;
   const isEngineAlert = hasFails || (logTotal > 0 && successRate < 90);
 
@@ -58,7 +58,6 @@ export const SystemSection = ({
               ? "bg-rose-100 text-rose-600 dark:bg-rose-950/50 dark:text-rose-400"
               : "bg-emerald-100 text-emerald-600 dark:bg-emerald-950/50 dark:text-emerald-400"
           }
-          /* 🎯 문제가 발생하면 카드 전체에 테두리 경`고선 가미 */
           className={
             isSiteAlert
               ? "border-rose-300 bg-rose-50/5 dark:border-rose-900/40"
@@ -66,14 +65,18 @@ export const SystemSection = ({
           }
           segments={[
             {
-              label: "RSS 가능",
-              value: sites.canRss,
+              label: "RSS",
+              value: sites.rss,
               color: "#10b981", // emerald-500
             },
             {
-              label: "RSS 불가",
-              value: sites.noRss,
-              /* 🎯 평소엔 차분한 슬레이트 색, 불가 사이트 생기면 경고 레드로 변경 */
+              label: "크롤링 가능",
+              value: sites.crawlable,
+              color: "#3b82f6", // blue-500
+            },
+            {
+              label: "수집 불가",
+              value: sites.unavailable,
               color: isSiteAlert ? "#f43f5e" : "#94a3b8",
             },
           ]}

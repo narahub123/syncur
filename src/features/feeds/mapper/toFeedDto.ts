@@ -7,7 +7,24 @@ export function toFeedDto(feed: FeedLean): FeedDto {
 
     siteId: feed.siteId.toString(),
 
+    uniqueKey: feed.uniqueKey,
+
+    sourceType: feed.sourceType,
+
     feedUrl: feed.feedUrl,
+
+    listingPageUrl: feed.listingPageUrl,
+
+    listingPageConfig: feed.listingPageConfig,
+
+    detailPageConfig: feed.detailPageConfig,
+
+    crawlerState: {
+      lastSeenUrl: feed.crawlerState.lastSeenUrl,
+      lastCrawledAt: feed.crawlerState.lastCrawledAt
+        ? feed.crawlerState.lastCrawledAt.toISOString()
+        : null,
+    },
 
     status: feed.status,
 
@@ -27,4 +44,8 @@ export function toFeedDto(feed: FeedLean): FeedDto {
 
     updatedAt: feed.updatedAt.toISOString(),
   };
+}
+
+export function toFeedDtos(feeds: FeedLean[]): FeedDto[] {
+  return feeds.map(toFeedDto);
 }

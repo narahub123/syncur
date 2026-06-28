@@ -1,5 +1,3 @@
-import { randomUUID } from "crypto";
-
 /**
  * ingestion 요청을 식별하기 위한 traceId를 생성한다.
  *

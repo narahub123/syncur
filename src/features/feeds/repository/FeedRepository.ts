@@ -13,6 +13,10 @@ import {
   AdminFeedSort,
 } from "@/features/admin/feeds/types/search";
 import { FeedLean } from "../types/leans";
+import {
+  DetailPageConfig,
+  ListingPageConfig,
+} from "@/features/ingestion/lib/discover/types";
 
 /**
  * FeedRepository
@@ -30,21 +34,19 @@ import { FeedLean } from "../types/leans";
  */
 export class FeedRepository {
   /**
-   * siteId 기준으로 Feed 조회
+   * siteId 기준으로 Feed 목록 조회
    *
    * @param siteId - Site ObjectId
    *
-   * @returns 해당 Site에 연결된 Feed (1:1 구조)
+   * @returns 해당 Site에 연결된 Feed 목록
    *
    * 특징:
-   * - Site당 Feed는 1개만 존재하도록 설계됨
-   * - 없으면 null 반환
+   * - RSS: Site당 Feed 1개
+   * - Crawl: Site당 Feed 여러 개 (목록 페이지 수만큼)
+   * - 없으면 빈 배열 반환
    */
-
-  async findBySiteId(
-    siteId: string | Types.ObjectId,
-  ): Promise<FeedLean | null> {
-    return await FeedModel.findOne({ siteId: toObjectId(siteId) })
+  async findBySiteId(siteId: string | Types.ObjectId): Promise<FeedLean[]> {
+    return await FeedModel.find({ siteId: toObjectId(siteId) })
       .lean()
       .exec();
   }
@@ -67,14 +69,24 @@ export class FeedRepository {
    */
   async create(data: {
     siteId: string | Types.ObjectId;
-    feedUrl: string;
-    status?: "active" | "error" | "disabled";
+    uniqueKey: string;
+    sourceType: "rss" | "crawl";
+    feedUrl: string | null;
+    listingPageUrl?: string | null;
+    listingPageConfig?: ListingPageConfig | null;
+    detailPageConfig?: DetailPageConfig | null;
+    status?: "active" | "disabled";
     errorCount?: number;
     categories?: string[];
   }): Promise<FeedLean | null> {
     const doc = await FeedModel.create({
       siteId: toObjectId(data.siteId),
+      uniqueKey: data.uniqueKey,
+      sourceType: data.sourceType,
       feedUrl: data.feedUrl,
+      listingPageUrl: data.listingPageUrl ?? null,
+      listingPageConfig: data.listingPageConfig ?? null,
+      detailPageConfig: data.detailPageConfig ?? null,
       status: data.status ?? "active",
       errorCount: data.errorCount ?? 0,
       categories: data.categories ?? [],
@@ -184,7 +196,10 @@ export class FeedRepository {
         {
           $project: {
             _id: 1,
+            uniqueKey: 1,
+            sourceType: 1,
             feedUrl: 1,
+            listingPageUrl: 1,
             status: 1,
             lastFetchedAt: 1,
             etag: 1,
@@ -192,6 +207,7 @@ export class FeedRepository {
             errorCount: 1,
             categories: 1,
             subscriberCount: 1,
+            crawlerState: 1,
             createdAt: 1,
             updatedAt: 1,
             siteId: {
@@ -199,7 +215,7 @@ export class FeedRepository {
               name: "$site.name",
               url: "$site.url",
               favicon_url: "$site.favicon_url",
-              feed_url: "$site.feed_url",
+              feedStatus: "$site.feedStatus",
             },
           },
         },

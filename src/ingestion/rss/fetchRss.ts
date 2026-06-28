@@ -82,7 +82,7 @@ export async function fetchRSS(
          * RSS feed 실제 요청 수행
          */
         const res = await executeRSSRequest({
-          url: feed.feedUrl,
+          url: feed.feedUrl!,
           timeout: RSS_CONFIG.RSS_FETCH_TIMEOUT,
           signal: controller.signal,
           headers: {
@@ -102,7 +102,7 @@ export async function fetchRSS(
          */
         collector.add({
           attempt,
-          feedUrl: feed.feedUrl,
+          feedUrl: feed.feedUrl!,
           startTime: start,
           endTime: end,
           durationMs: end - start,
@@ -138,7 +138,7 @@ export async function fetchRSS(
 
         collector.add({
           attempt,
-          feedUrl: feed.feedUrl,
+          feedUrl: feed.feedUrl!,
           startTime: start,
           endTime: end,
           durationMs: end - start,

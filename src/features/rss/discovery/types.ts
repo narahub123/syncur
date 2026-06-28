@@ -1,3 +1,5 @@
+import { SiteFeedStatus } from "../site/types";
+
 export type SiteDiscoveryResult = {
   /**
    * 정규화된 원본 페이지 URL
@@ -16,7 +18,11 @@ export type SiteDiscoveryResult = {
   favicon_url: string | null;
 
   /**
-   * 발견된 RSS/Atom Feed URL (없으면 null)
+   * 피드 수집 가능 상태
+   *
+   * - rss: RSS/Atom 기반 수집 가능
+   * - crawlable: 목록 페이지 기반 크롤링 가능
+   * - unavailable: 수집 불가
    */
-  feed_url: string | null;
+  feedStatus: SiteFeedStatus;
 };

@@ -9,6 +9,7 @@ import { getSiteCache, setSiteCache } from "../cache/siteCache";
 import { SiteDiscoveryResult } from "./types";
 import { normalizeSiteUrl } from "@/shared/utils/url";
 import { decodeHtmlEntities } from "@/shared/utils/decodeHtmlEntities";
+import { SITE_FEED_STATUS } from "../site/constants/site";
 
 /**
  * RSS / Atom feed discovery pipeline
@@ -17,7 +18,6 @@ import { decodeHtmlEntities } from "@/shared/utils/decodeHtmlEntities";
  * - 사이트 HTML 분석
  * - RSS 후보 수집
  * - validation + scoring
- * - 최종 feed_url 결정
  */
 export async function discoverSite(
   inputUrl: string,
@@ -134,13 +134,12 @@ export async function discoverSite(
   /**
    * 8. FINAL FALLBACK
    * - RSS 없음도 정상 케이스
-   * - Site는 생성되지만 feed_url = null
    */
   const fallback: SiteDiscoveryResult = {
     url: normalizedUrl,
     name: extractSiteName(html, normalizedUrl),
     favicon_url: extractFavicon(html, normalizedUrl),
-    feed_url: null,
+    feedStatus: SITE_FEED_STATUS.UNAVAILABLE,
   };
 
   await setSiteCache(normalizedUrl, fallback);
@@ -242,7 +241,7 @@ function buildResult(
     url: siteUrl,
     name: extractSiteName(html, siteUrl),
     favicon_url: extractFavicon(html, siteUrl),
-    feed_url: feedUrl,
+    feedStatus: SITE_FEED_STATUS.RSS,
   };
 }
 

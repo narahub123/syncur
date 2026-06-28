@@ -1,3 +1,5 @@
+import { SiteFeedStatus } from "../types";
+
 /**
  * Site 검색 결과 DTO
  *
@@ -23,41 +25,76 @@ export type SiteSearchDto = {
   url: string;
   name: string;
   favicon_url: string | null;
-  feed_url: string | null;
+  feedStatus: SiteFeedStatus;
 };
 
+/**
+ * FeedItem 내부에서 Site 정보를 표현하는 DTO
+ *
+ * @description
+ * FeedItem과 함께 내려가는 Site 최소 정보 구조
+ */
 export type FeedItemSiteDto = {
   siteId: string;
   url: string;
   name: string;
   favicon_url: string | null;
-  feed_url: string | null;
+  feedStatus: SiteFeedStatus;
 };
 
+/**
+ * Site 생성 요청 DTO
+ *
+ * @description
+ * 클라이언트 → 서버로 전달되는 Site 생성 입력 데이터
+ */
 export type CreateSiteDto = {
   url: string;
   name: string;
   favicon_url: string | null;
-  feed_url: string | null;
+  feedStatus: SiteFeedStatus;
 };
 
+/**
+ * Site + Subscription Context DTO
+ *
+ * @description
+ * UI에서 사이트 구독 상태와 가능 여부를 함께 표현하기 위한 복합 DTO
+ */
 export type SiteContextDTO = {
   siteId: string;
+
+  /**
+   * 연결된 Feed ID (없을 수도 있음)
+   */
   feedId: string | undefined;
+
   url: string;
   name: string;
   favicon_url: string | null;
 
-  rssAvailable: boolean;
+  /**
+   * RSS / crawl 가능 여부 (UI 판단 기준)
+   */
+  feedStatus: SiteFeedStatus;
+
+  /**
+   * 현재 사용자의 구독 여부
+   */
   isSubscribed: boolean;
+
+  /**
+   * 구독 가능 여부
+   */
   canSubscribe: boolean;
 };
 
 /**
  * Site Client DTO
  *
- * - Client Component로 전달 가능한 순수 객체
- * - ObjectId / Date 모두 string으로 변환
+ * @description
+ * Client Component에서 직접 사용하는 Site 데이터 구조
+ * 모든 값은 직렬화된 string 기반
  */
 export type SiteDto = {
   _id: string;
@@ -66,7 +103,8 @@ export type SiteDto = {
   name: string;
 
   favicon_url: string | null;
-  feed_url: string | null;
+
+  feedStatus: SiteFeedStatus;
 
   createdAt: string;
   updatedAt: string;

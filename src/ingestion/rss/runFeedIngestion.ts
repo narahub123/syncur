@@ -58,7 +58,7 @@ export async function runFeedIngestion(feed: FeedLean) {
         reason: FEED_EXECUTION_REASON.FETCH_NOT_MODIFIED,
         finishedAt: new Date(),
         fetch: {
-          url: feed.feedUrl,
+          url: feed.feedUrl!,
           cache: {
             hit: true,
           },
@@ -104,7 +104,7 @@ export async function runFeedIngestion(feed: FeedLean) {
       finishedAt: new Date(),
 
       fetch: {
-        url: feed.feedUrl,
+        url: feed.feedUrl!,
         etag,
         lastModified,
         cache: {

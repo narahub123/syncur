@@ -51,7 +51,7 @@ export function mapFeedItemToDto(params: {
         url: site.url,
         favicon_url: site.favicon_url,
         name: site.name,
-        feed_url: site.feed_url,
+        feedStatus: site.feedStatus,
       },
       feedId: feed._id.toString(),
       publishedAt:

@@ -1,4 +1,3 @@
-import * as cheerio from "cheerio";
 import {
   CONTENT_SELECTORS,
   DYNAMIC_TEXT_LENGTH,

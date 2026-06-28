@@ -6,13 +6,29 @@ import {
 } from "@/shared/types/pagination";
 import { Types } from "mongoose";
 import { FeedLean } from "../types/leans";
+import { SiteFeedStatus } from "@/features/rss/site/types";
 
 export type FeedDto = {
   id: string;
 
   siteId: string;
 
-  feedUrl: string;
+  uniqueKey: string;
+
+  sourceType: "rss" | "crawl";
+
+  feedUrl: string | null;
+
+  listingPageUrl: string | null;
+
+  listingPageConfig: unknown | null;
+
+  detailPageConfig: unknown | null;
+
+  crawlerState: {
+    lastSeenUrl: string | null;
+    lastCrawledAt: string | null;
+  };
 
   status: FeedStatus;
 
@@ -135,10 +151,25 @@ export type FeedWithSiteLean = {
     name: string;
     url: string;
     favicon_url: string | null;
-    feed_url: string | null;
+    feedStatus: SiteFeedStatus;
   };
 
-  feedUrl: string;
+  uniqueKey: string;
+
+  sourceType: "rss" | "crawl";
+
+  feedUrl: string | null;
+
+  listingPageUrl: string | null;
+
+  listingPageConfig: unknown | null;
+
+  detailPageConfig: unknown | null;
+
+  crawlerState: {
+    lastSeenUrl: string | null;
+    lastCrawledAt: Date | null;
+  };
 
   status: FeedStatus;
 
@@ -177,10 +208,25 @@ export type FeedWithSiteDto = {
     name: string;
     url: string;
     favicon_url: string | null;
-    feed_url: string | null;
+    feedStatus: SiteFeedStatus;
   };
 
-  feedUrl: string;
+  uniqueKey: string;
+
+  sourceType: "rss" | "crawl";
+
+  feedUrl: string | null;
+
+  listingPageUrl: string | null;
+
+  listingPageConfig: unknown | null;
+
+  detailPageConfig: unknown | null;
+
+  crawlerState: {
+    lastSeenUrl: string | null;
+    lastCrawledAt: string | null;
+  };
 
   status: FeedStatus;
 
@@ -197,6 +243,7 @@ export type FeedWithSiteDto = {
   subscriberCount: number;
 
   createdAt: string;
+
   updatedAt: string;
 };
 

@@ -26,19 +26,3 @@ export type FeedItem = {
 };
 
 export type FeedStatus = (typeof FEED_STATUS)[keyof typeof FEED_STATUS];
-
-export type Feed = {
-  id: string;
-  siteId: string;
-  feedUrl: string;
-
-  status: FeedStatus;
-
-  errorCount: number;
-
-  categories: string[];
-
-  lastFetchedAt?: string;
-  etag: string | null;
-  lastModified: string | null;
-};

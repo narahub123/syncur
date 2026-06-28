@@ -32,3 +32,18 @@ export const SITE_SEARCH_LIMIT = 50;
  * SITE_SEARCH_RESULT_LIMIT은 UI 반환 범위이다.
  */
 export const SITE_SEARCH_RESULT_LIMIT = 10;
+
+/**
+ * Site의 피드 수집 가능 상태를 나타내는 상수
+ *
+ * - PENDING: RSS / 크롤링 탐색이 아직 완료되지 않은 초기 상태
+ * - RSS: RSS/Atom 피드를 통해 즉시 수집 가능한 상태
+ * - CRAWLABLE: RSS는 없지만 목록 페이지 크롤링을 통해 수집 가능한 상태
+ * - UNAVAILABLE: RSS도 없고 크롤링 기반 목록 페이지도 없어 수집이 불가능한 상태
+ */
+export const SITE_FEED_STATUS = {
+  PENDING: "pending",
+  RSS: "rss",
+  CRAWLABLE: "crawlable",
+  UNAVAILABLE: "unavailable",
+} as const;

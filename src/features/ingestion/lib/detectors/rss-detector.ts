@@ -6,60 +6,46 @@ import {
   RSS_LINK_SELECTORS,
 } from "./constants";
 import { normalizeError } from "../../logger/normalizeError";
+import { validateFeeds } from "./validateFeeds";
+import { detectCmsFeed } from "../strategies/detectCmsFeed";
+import { extractMetaFeed } from "../strategies/extractMetaFeed";
 
 /**
- * 주어진 Cheerio 객체와 베이스 URL을 사용하여 RSS/Atom/JSON Feed URL을 탐색합니다.
- * 탐색은 두 단계로 진행됩니다:
- * 1. HTML 내의 link 태그를 파싱하여 피드 주소를 직접 추출합니다.
- * 2. 태그가 없을 경우, 표준 피드 경로(Fallback)에 HEAD 요청을 보내 활성 여부를 확인합니다.
+ * RSS/Atom/JSON Feed URL 탐색
  *
- * @param {cheerio.CheerioAPI} dom - 분석할 사이트의 Cheerio 객체
- * @param {string} baseUrl - 절대 경로 변환을 위한 기준 URL
- * @returns {Promise<string | null>} 발견된 피드의 절대 URL을 반환하며, 찾지 못할 경우 null을 반환합니다.
+ * 탐색 전략 (우선순위 순):
+ * 1. HTML link 태그 기반 추출
+ * 2. 표준 경로 fallback (/rss, /feed ...)
+ * 3. CMS 휴리스틱 (WordPress, Medium, Ghost 등)
+ * 4. 메타데이터 fallback (JSON-LD 등)
  */
 export const rssDetector: SourceDetector = {
   async detect(dom, url, logger): Promise<DetectionResult | null> {
-    // HTML의 link 태그를 순회하며 RSS Feed URL이 선언되어 있는지 확인합니다.
+    // ── 1. HTML link 태그 기반 추출 ─────────────────────────
     for (const selector of RSS_LINK_SELECTORS) {
-      logger.debug("RSS link 탐색", {
-        selector,
-      });
+      logger.debug("RSS link 탐색", { selector });
 
       const href = dom(selector).attr("href");
 
-      // RSS Feed URL을 발견한 경우 절대 URL로 변환하여 즉시 반환합니다.
       if (href) {
         const rssUrl = new URL(href, url).href;
-
-        logger.info("RSS 발견", {
-          selector,
-          href,
-          rssUrl,
-        });
-
-        return {
-          type: SOURCE_TYPE.RSS,
-          rssUrl,
-        };
+        logger.info("RSS 발견", { selector, href, rssUrl });
+        return { type: SOURCE_TYPE.RSS, rssUrl };
       }
     }
 
-    // 2. 휴리스틱(Fallback) 단계: 표준 경로 탐색
+    // ── 2. 표준 경로 fallback ────────────────────────────────
+    logger.info("RSS fallback 탐색 시작", {
+      baseUrl: url,
+      paths: RSS_FALLBACK_PATHS,
+    });
+
     for (const path of RSS_FALLBACK_PATHS) {
-      logger.info("RSS fallback 탐색 시작", {
-        baseUrl: url,
-        paths: RSS_FALLBACK_PATHS,
-      });
       const candidateUrl = new URL(path, url).href;
 
-      // 표준 RSS 경로를 대상으로 Feed 존재 여부를 탐색합니다.
-      logger.debug("RSS 경로 탐색", {
-        path,
-        candidateUrl,
-      });
+      logger.debug("RSS 경로 탐색", { path, candidateUrl });
 
       try {
-        // HEAD 요청으로 해당 경로가 접근 가능한지 우선 확인합니다.
         const headRes = await fetch(candidateUrl, {
           method: "HEAD",
           headers: FEED_HEADERS,
@@ -71,62 +57,68 @@ export const rssDetector: SourceDetector = {
           status: headRes.status,
         });
 
-        // 접근이 불가능한 경우 다음 후보 경로를 탐색합니다.
         if (!headRes.ok) continue;
 
-        // 실제 응답을 받아 Content-Type을 확인합니다.
-        const getRes = await fetch(candidateUrl, {
-          headers: FEED_HEADERS,
-        });
+        const getRes = await fetch(candidateUrl, { headers: FEED_HEADERS });
 
-        logger.debug("RSS GET 응답", {
-          candidateUrl,
-          ok: getRes.ok,
-        });
+        logger.debug("RSS GET 응답", { candidateUrl, ok: getRes.ok });
 
-        // 응답을 가져오지 못한 경우 다음 후보 경로를 탐색합니다.
         if (!getRes.ok) continue;
 
-        // 응답 헤더에서 Content-Type을 확인합니다.
         const contentType = getRes.headers.get("content-type") ?? "";
-
-        // RSS/Atom/JSON Feed 형식인지 검사합니다.
         const isFeed = RSS_CONTENT_TYPES.some((type) =>
           contentType.includes(type),
         );
 
-        // Feed 형식이 아닌 경우 다음 후보 경로를 탐색합니다.
         if (!isFeed) {
           logger.debug("RSS 아님", {
             candidateUrl,
             contentType,
             expected: RSS_CONTENT_TYPES,
           });
-
           continue;
         }
 
-        // Feed 형식이 확인된 경우 RSS Feed를 발견한 것으로 판단합니다.
-        logger.info("RSS 발견", {
-          rssUrl: candidateUrl,
-        });
-
-        return {
-          type: SOURCE_TYPE.RSS,
-          rssUrl: candidateUrl,
-        };
+        logger.info("RSS 발견", { rssUrl: candidateUrl });
+        return { type: SOURCE_TYPE.RSS, rssUrl: candidateUrl };
       } catch (error) {
-        // RSS 탐색 중 네트워크 또는 요청 오류가 발생한 경우 다음 후보를 계속 탐색합니다.
         logger.warn("RSS 요청 실패", {
           candidateUrl,
           error: normalizeError(error),
         });
-
         continue;
       }
     }
 
-    // HTML과 표준 경로 모두에서 RSS Feed를 찾지 못한 경우 null을 반환합니다.
+    // ── 3. CMS 휴리스틱 ─────────────────────────────────────
+    // HTML 문자열이 필요하므로 dom.html()로 추출
+    const html = dom.html() ?? "";
+
+    logger.debug("CMS 휴리스틱 탐색 시작");
+    const cmsFeeds = detectCmsFeed(url, html);
+
+    if (cmsFeeds.length > 0) {
+      const result = await validateFeeds(cmsFeeds, logger);
+      if (result) {
+        logger.info("CMS 휴리스틱으로 RSS 발견", { rssUrl: result });
+        return { type: SOURCE_TYPE.RSS, rssUrl: result };
+      }
+    }
+
+    // ── 4. 메타데이터 fallback ───────────────────────────────
+    logger.debug("메타데이터 fallback 탐색 시작");
+    const metaFeeds = extractMetaFeed(html);
+
+    if (metaFeeds.length > 0) {
+      const result = await validateFeeds(metaFeeds, logger);
+      if (result) {
+        logger.info("메타데이터로 RSS 발견", { rssUrl: result });
+        return { type: SOURCE_TYPE.RSS, rssUrl: result };
+      }
+    }
+
+    // 모든 전략 실패
+    logger.info("RSS 없음");
     return null;
   },
 };

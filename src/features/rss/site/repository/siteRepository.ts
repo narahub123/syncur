@@ -1,10 +1,11 @@
 import { SITE_SEARCH_LIMIT } from "../constants/site";
 import { SiteModel } from "../model/Site";
-import { CreateSiteDto } from "../dto/siteDto";
 import { escapeRegExp } from "@/shared/utils/regex";
 import { SiteDiscoveryResult } from "../../discovery";
 import { Types } from "mongoose";
 import { SiteLean } from "../types/leans";
+import { SiteFeedStatus } from "../types";
+import { toObjectId } from "@/shared/utils/toObjectId";
 
 /**
  * Site Repository
@@ -39,12 +40,15 @@ export class SiteRepository {
     return SiteModel.findOne({ url }).lean();
   }
 
-  /**
-   * Site 생성
-   */
-  async create(data: CreateSiteDto): Promise<SiteLean> {
-    const doc = await SiteModel.create(data);
-    return doc.toObject();
+  async updateFeedStatus(
+    siteId: string | Types.ObjectId,
+    feedStatus: SiteFeedStatus,
+  ): Promise<SiteLean | null> {
+    return await SiteModel.findByIdAndUpdate(
+      toObjectId(siteId),
+      { $set: { feedStatus } },
+      { returnDocument: "after" },
+    ).lean();
   }
 
   /**
@@ -66,43 +70,25 @@ export class SiteRepository {
    * @param discovered - RSS discovery 결과
    */
   async upsert(discovered: SiteDiscoveryResult): Promise<SiteLean> {
-    const { url, name, favicon_url, feed_url } = discovered;
+    const { url, name, favicon_url, feedStatus } = discovered;
 
-    /**
-     * 핵심 기준:
-     * - url (normalizedUrl) 기준으로 unique 처리
-     */
     return await SiteModel.findOneAndUpdate(
-      { url }, // match condition
+      { url },
 
-      /**
-       * update payload
-       * - discovery 결과를 그대로 반영
-       */
       {
         $set: {
           url,
           name,
           favicon_url,
-          feed_url,
+          feedStatus,
         },
       },
 
-      /**
-       * options
-       *
-       * upsert: true
-       * - 없으면 생성
-       * - 있으면 업데이트
-       *
-       * returnDocument: "after"
-       * - 업데이트된 최신 document 반환
-       */
       {
         upsert: true,
         returnDocument: "after",
       },
-    );
+    ).lean();
   }
 
   /**

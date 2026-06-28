@@ -16,21 +16,44 @@ export function toFeedWithSiteDto(feed: FeedWithSiteLean): FeedWithSiteDto {
       name: feed.siteId.name,
       url: feed.siteId.url,
       favicon_url: feed.siteId.favicon_url,
-      feed_url: feed.siteId.feed_url,
+      feedStatus: feed.siteId.feedStatus,
     },
 
+    uniqueKey: feed.uniqueKey,
+
+    sourceType: feed.sourceType,
+
     feedUrl: feed.feedUrl,
+
+    listingPageUrl: feed.listingPageUrl,
+
+    listingPageConfig: feed.listingPageConfig,
+
+    detailPageConfig: feed.detailPageConfig,
+
+    crawlerState: {
+      lastSeenUrl: feed.crawlerState.lastSeenUrl,
+      lastCrawledAt: feed.crawlerState.lastCrawledAt
+        ? feed.crawlerState.lastCrawledAt.toISOString()
+        : null,
+    },
+
     status: feed.status,
 
     lastFetchedAt: feed.lastFetchedAt ? feed.lastFetchedAt.toISOString() : null,
 
     etag: feed.etag,
+
     lastModified: feed.lastModified,
+
     errorCount: feed.errorCount,
+
     categories: feed.categories,
+
     subscriberCount: feed.subscriberCount,
 
     createdAt: feed.createdAt.toISOString(),
+
     updatedAt: feed.updatedAt.toISOString(),
   };
 }

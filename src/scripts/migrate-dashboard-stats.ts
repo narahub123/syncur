@@ -24,24 +24,28 @@ async function migrate() {
 
   console.log("📊 데이터 집계 시작...");
 
-  // 1. 기존 도메인 통계 조회
+  // 1. Site stats (3-state)
   const siteStats = await SiteStatsModel.findOne({ key: SITE_STATS_KEY });
-  const siteTotal = siteStats?.total ?? 0;
-  const siteCanRss = siteStats?.canRss ?? 0;
-  const siteNoRss = siteStats?.noRss ?? siteTotal - siteCanRss;
 
+  const siteTotal = siteStats?.total ?? 0;
+  const siteRss = siteStats?.rss ?? 0;
+  const siteCrawlable = siteStats?.crawlable ?? 0;
+  const siteUnavailable = siteStats?.unavailable ?? 0;
+
+  // 2. Feed stats
   const feedStats = await FeedStatsModel.findOne({ key: FEED_STATS_KEY });
   const feedTotal = feedStats?.total ?? 0;
   const feedActive = feedStats?.active ?? 0;
   const feedInactive = feedStats?.inactive ?? feedTotal - feedActive;
 
+  // 3. Log stats
   const logStats = await FeedExecutionLogStatsModel.findOne({
     key: FEED_EXECUTION_LOG_STATS_KEY,
   });
   const logTotal = logStats?.total ?? 0;
   const logFails = logStats?.fails ?? 0;
 
-  // 2. Request(CS) 통계 집계
+  // 4. CS stats
   const csStats = await RequestModel.aggregate([
     {
       $group: {
@@ -58,7 +62,13 @@ async function migrate() {
     checking: 0,
     fixing: 0,
   };
-  const inquiries = { total: 0, pending: 0, processing: 0, completed: 0 };
+
+  const inquiries = {
+    total: 0,
+    pending: 0,
+    processing: 0,
+    completed: 0,
+  };
 
   csStats.forEach(({ _id, count }) => {
     const { type, status } = _id;
@@ -81,18 +91,30 @@ async function migrate() {
   console.log("📈 집계 완료. 데이터 요약:");
   console.log({ bugReports, inquiries });
 
-  // 3. 통합 오버뷰 업데이트
+  // 5. dashboard update
   console.log("💾 dashboard_overview 도큐먼트 갱신 중...");
   await AdminDashboardStatsModel.updateOne(
     { key: "dashboard_overview" },
     {
       $set: {
         key: "dashboard_overview",
-        sites: { total: siteTotal, canRss: siteCanRss, noRss: siteNoRss },
-        feeds: { total: feedTotal, active: feedActive, inactive: feedInactive },
-        feedExecutionLogs: { total: logTotal, fails: logFails },
-        bugReports: bugReports,
-        inquiries: inquiries,
+        sites: {
+          total: siteTotal,
+          rss: siteRss,
+          crawlable: siteCrawlable,
+          unavailable: siteUnavailable,
+        },
+        feeds: {
+          total: feedTotal,
+          active: feedActive,
+          inactive: feedInactive,
+        },
+        feedExecutionLogs: {
+          total: logTotal,
+          fails: logFails,
+        },
+        bugReports,
+        inquiries,
       },
     },
     { upsert: true },

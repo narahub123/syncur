@@ -1,11 +1,12 @@
 import { Types } from "mongoose";
+import { SiteFeedStatus } from ".";
 
 /**
  * Site Lean Type
  *
  * mongoose .lean() 결과 전용 타입
  * - Document 메서드 없음
- * - timestamps snake_case 반영됨
+ * - timestamps 포함
  */
 export type SiteLean = {
   _id: Types.ObjectId;
@@ -26,12 +27,16 @@ export type SiteLean = {
   favicon_url: string | null;
 
   /**
-   * RSS/Atom Feed URL (nullable)
+   * 피드 수집 가능 상태
+   *
+   * - rss: RSS/Atom 기반 수집 가능
+   * - crawlable: 크롤링 기반 수집 가능
+   * - unavailable: 수집 불가
    */
-  feed_url: string | null;
+  feedStatus: SiteFeedStatus;
 
   /**
-   * timestamps (schema에서 snake_case로 설정됨)
+   * timestamps
    */
   createdAt: Date;
   updatedAt: Date;

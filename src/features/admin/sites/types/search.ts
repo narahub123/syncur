@@ -35,7 +35,7 @@ export const ADMIN_SITE_SORT_FIELDS = {
 // 상수로부터 타입 추출
 export type AdminSiteSearchField =
   (typeof ADMIN_SITE_SEARCH_FIELDS)[keyof typeof ADMIN_SITE_SEARCH_FIELDS];
-  
+
 export type AdminSiteSort =
   (typeof ADMIN_SITE_SORT_FIELDS)[keyof typeof ADMIN_SITE_SORT_FIELDS];
 
@@ -54,17 +54,19 @@ export type AdminSitePageSize =
   (typeof ADMIN_SITE_PAGE_SIZE_OPTIONS)[number]["value"];
 
 export const AdminSiteInitialFilterValue = {
-  hasFeed: "all",
+  feedStatus: "all",
 };
 
 export const ADMIN_SITE_FILTER_CONFIG = {
-  hasFeed: {
-    label: "RSS",
+  feedStatus: {
+    label: "수집 상태",
     type: "select",
     options: [
       { label: "전체", value: "all" },
-      { label: "지원", value: "true" },
-      { label: "미지원", value: "false" },
+      { label: "RSS", value: "rss" },
+      { label: "크롤링 가능", value: "crawlable" },
+      { label: "미지원", value: "unavailable" },
+      { label: "탐색 중", value: "pending" },
     ],
   },
   createdAt: { label: "등록 기간", type: "date-range" },

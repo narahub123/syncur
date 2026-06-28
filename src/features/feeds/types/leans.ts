@@ -11,7 +11,22 @@ export type FeedLean = {
 
   siteId: Types.ObjectId;
 
-  feedUrl: string;
+  uniqueKey: string;
+
+  sourceType: "rss" | "crawl";
+
+  feedUrl: string | null;
+
+  listingPageUrl: string | null;
+
+  listingPageConfig: unknown | null;
+
+  detailPageConfig: unknown | null;
+
+  crawlerState: {
+    lastSeenUrl: string | null;
+    lastCrawledAt: Date | null;
+  };
 
   status: FeedStatus;
 

@@ -2,7 +2,8 @@ import { Schema, model, models, Document } from "mongoose";
 
 /**
  * SiteStats MongoDB Document
- * * 통계 데이터를 위한 별도 컬렉션입니다.
+ *
+ * 사이트 수집 가능 상태 통계를 저장하는 컬렉션
  */
 export interface SiteStatsDocument extends Document {
   key: string;
@@ -10,11 +11,14 @@ export interface SiteStatsDocument extends Document {
   /** 전체 사이트 수 */
   total: number;
 
-  /** RSS 수집 가능한 사이트 수 (canRss: true) */
-  canRss: number;
+  /** RSS 기반 수집 가능 사이트 수 */
+  rss: number;
 
-  /** RSS 수집 불가능한 사이트 수 (canRss: false) */
-  noRss: number;
+  /** 크롤링 기반 수집 가능 사이트 수 */
+  crawlable: number;
+
+  /** 수집 불가능 사이트 수 */
+  unavailable: number;
 }
 
 const siteStatsSchema = new Schema<SiteStatsDocument>(
@@ -25,11 +29,18 @@ const siteStatsSchema = new Schema<SiteStatsDocument>(
       type: Number,
       default: 0,
     },
-    canRss: {
+
+    rss: {
       type: Number,
       default: 0,
     },
-    noRss: {
+
+    crawlable: {
+      type: Number,
+      default: 0,
+    },
+
+    unavailable: {
       type: Number,
       default: 0,
     },

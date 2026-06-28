@@ -9,6 +9,7 @@ import { useSiteSubscriptionStore } from "../store/siteSubscriptionStore";
 import { useSiteSearch } from "@/features/rss/site/hooks/useSiteSearch";
 import { useDebounce } from "@/shared/hooks/useDebounce";
 import { SiteContextDTO } from "@/features/rss/site/dto/siteDto";
+import { SITE_FEED_STATUS } from "@/features/rss/site/constants/site";
 
 const SiteSubscriptionForm = () => {
   const selectSite = useSiteSubscriptionStore((s) => s.selectSite);
@@ -28,7 +29,7 @@ const SiteSubscriptionForm = () => {
   const handleSelectSite = (site: SiteContextDTO) => {
     selectSite(site);
 
-    if (!site.rssAvailable) {
+    if (site.feedStatus === SITE_FEED_STATUS.UNAVAILABLE) {
       setNotSupported();
       return;
     }

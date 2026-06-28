@@ -219,7 +219,7 @@ export default class AdminFeedRepository {
               name: "$site.name",
               url: "$site.url",
               favicon_url: "$site.favicon_url",
-              feed_url: "$site.feed_url",
+              feedStatus: "$site.feedStatus",
             },
           },
         },

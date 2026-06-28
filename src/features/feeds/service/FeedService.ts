@@ -1,42 +1,34 @@
 import { feedRepository } from "../repository/FeedRepository.instance";
-import { Feed, FeedStatus } from "@/shared/types/feed";
+import { FeedStatus } from "@/shared/types/feed";
 import { getFeedItems } from "./getMyFeedItems/getFeedItems";
-import { toFeed } from "../mapper/toFeed";
 import { FeedDto, FeedWithSiteDtoPagedResponse } from "../dto/feedDto";
 import { toFeedWithSiteDto } from "../mapper/toFeedWithSiteDto";
 import { ADMIN_CONFIG } from "@/features/admin/constants/admin-config";
 import { PAGINATION } from "@/shared/constants/pagination";
 import { AdminFeedsQuery } from "@/features/admin/feeds/types/search";
-import { toFeedDto } from "../mapper/toFeedDto";
+import { toFeedDto, toFeedDtos } from "../mapper/toFeedDto";
 import { RSS_CONFIG } from "@/ingestion/rss/rss-config";
-import { SiteLean } from "@/features/rss/site/types/leans";
-import { adminFeedStatsService } from "@/features/admin/feeds/services/AdminFeedStatsService.instance";
 import { feedStatsService } from "./FeedStatService.instance";
 import { FEED_STATUS } from "../constants/feed-status";
-import { FeedLean } from "../types/leans";
+import { Types } from "mongoose";
+import {
+  DetailPageConfig,
+  ListingPageConfig,
+} from "@/features/ingestion/lib/discover/types";
+import { SiteLean } from "@/features/rss/site/types/leans";
 
 export class FeedService {
-  async ensureFeed(site: SiteLean): Promise<Feed | null> {
-    if (!site?.feed_url) return null;
+  async ensureFeed(site: SiteLean): Promise<FeedDto | null> {
+    if (!site || site.feedStatus !== "rss") return null;
 
-    let feed = await feedRepository.findBySiteId(site._id);
+    const feed = await this.findRssFeedBySiteId(site._id);
 
     if (!feed) {
-      feed = await feedRepository.create({
-        siteId: site._id.toString(),
-        feedUrl: site.feed_url,
-        status: "active",
-        errorCount: 0,
-        categories: [],
-      });
-
-      await adminFeedStatsService.updateStats({
-        total: 1,
-        active: 1,
-      });
+      // RSS feed는 discovery 단계에서 이미 확보된 상태라고 가정
+      return null;
     }
 
-    return toFeed(feed as FeedLean);
+    return feed;
   }
 
   async getMyFeedItems(userId: string, cursor?: string) {
@@ -149,5 +141,74 @@ export class FeedService {
   async decrementSubscriberCount(feedId: string): Promise<FeedDto> {
     const doc = await feedRepository.decrementSubscriberCount(feedId);
     return toFeedDto(doc);
+  }
+
+  async createRssFeed(
+    siteId: string | Types.ObjectId,
+    feedUrl: string,
+  ): Promise<FeedDto | null> {
+    const uniqueKey = `rss:${feedUrl}`;
+
+    const doc = await feedRepository.create({
+      siteId,
+      uniqueKey,
+      sourceType: "rss",
+      feedUrl,
+      listingPageUrl: null,
+      listingPageConfig: null,
+      detailPageConfig: null,
+    });
+
+    if (!doc) return null;
+
+    return toFeedDto(doc);
+  }
+
+  async createCrawlFeed(
+    siteId: string | Types.ObjectId,
+    listingPageUrl: string,
+    listingPageConfig: ListingPageConfig,
+    detailPageConfig: DetailPageConfig | null,
+  ): Promise<FeedDto | null> {
+    const uniqueKey = `crawl:${listingPageUrl}`;
+
+    const doc = await feedRepository.create({
+      siteId,
+      uniqueKey,
+      sourceType: "crawl",
+      feedUrl: null,
+      listingPageUrl,
+      listingPageConfig,
+      detailPageConfig,
+    });
+
+    if (!doc) return null;
+
+    return toFeedDto(doc);
+  }
+
+  // RSS — 사이트당 1개
+  async findRssFeedBySiteId(
+    siteId: string | Types.ObjectId,
+  ): Promise<FeedDto | null> {
+    const feeds = await feedRepository.findBySiteId(siteId);
+    const feed = feeds.find((f) => f.sourceType === "rss");
+
+    if (!feed) return null;
+
+    return toFeedDto(feed);
+  }
+
+  // 크롤링 — 사이트당 여러 개
+  async findCrawlFeedsBySiteId(
+    siteId: string | Types.ObjectId,
+  ): Promise<FeedDto[]> {
+    const feeds = await feedRepository.findBySiteId(siteId);
+    return toFeedDtos(feeds.filter((f) => f.sourceType === "crawl"));
+  }
+
+  async findBySiteId(siteId: string | Types.ObjectId): Promise<FeedDto[]> {
+    const docs = await feedRepository.findBySiteId(siteId);
+    return toFeedDtos(docs);
   }
 }

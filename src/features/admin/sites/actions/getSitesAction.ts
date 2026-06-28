@@ -4,6 +4,7 @@ import { AdminSiteQuery } from "@/features/admin/sites/types/search";
 import { adminSiteService } from "../services/AdminSiteService.instance";
 import { connectMongo } from "@/shared/lib/db/mongoose";
 import { requireAdmin } from "@/features/admin/lib/requireAdmin";
+import { defaultSiteStats } from "../constants/stats";
 
 export async function getSitesAction(query: AdminSiteQuery) {
   try {
@@ -22,7 +23,7 @@ export async function getSitesAction(query: AdminSiteQuery) {
         totalCount: 0,
         totalPages: 0,
       },
-      stats: { total: 0, canRss: 0, noRss: 0 },
+      stats: defaultSiteStats,
       error: "사이트 목록을 불러올 수 없습니다.",
     };
   }

@@ -16,11 +16,6 @@ export interface ListingDetectionResult {
   fromCache: boolean;
 }
 
-interface SiteParserConfig {
-  listing: ListingPageConfig;
-  detail: DetailPageConfig;
-}
-
 export interface FieldExtractor {
   selector: string;
   extract: "text" | "attr";

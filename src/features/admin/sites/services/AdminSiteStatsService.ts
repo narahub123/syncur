@@ -10,22 +10,22 @@ export class AdminSiteStatsService {
   async getStats(): Promise<SiteStatsDto> {
     const stats = await this.statsRepo.getStats();
 
-    // DB 모델에서 필요한 필드만 추출하여 DTO로 변환
     return {
       total: stats.total,
-      canRss: stats.canRss,
-      noRss: stats.noRss,
+      rss: stats.rss,
+      crawlable: stats.crawlable,
+      unavailable: stats.unavailable,
     };
   }
 
   /**
    * 사이트 수집 상태 변경에 따른 통계 증감 로직
-   * @param increment 값 (예: { total: 1, canRss: 1 })
    */
   async updateStats(increment: {
     total?: number;
-    canRss?: number;
-    noRss?: number;
+    rss?: number;
+    crawlable?: number;
+    unavailable?: number;
   }) {
     return await this.statsRepo.incrementStats(increment);
   }

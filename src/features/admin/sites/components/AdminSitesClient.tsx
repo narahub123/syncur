@@ -22,7 +22,7 @@ import { useAdminSites } from "@/features/admin/sites/hooks/useAdminSites";
 import { FilterBar } from "../../components/FilterBar";
 import { FilterValue } from "../../constants/filters";
 import { AdminStatsCard } from "../../components/AdminStatsCard";
-import { getRssStatusList } from "../constants/stats";
+import { defaultSiteStats, getRssStatusList } from "../constants/stats";
 
 export const AdminSitesClient = () => {
   const [query, setQuery] = useState<AdminSiteQuery>({
@@ -53,16 +53,23 @@ export const AdminSitesClient = () => {
   const { data, isLoading } = useAdminSites(query);
 
   const sites = data?.items ?? [];
-  const stats = data?.stats ?? { total: 0, canRss: 0, noRss: 0 };
+  const stats = data?.stats ?? defaultSiteStats;
   const totalPages = data?.pagination?.totalPages ?? 1;
 
-  const rssRate = stats.total > 0 ? (stats.canRss / stats.total) * 100 : 0;
+  /**
+   * feedRate
+   * - 실제 수집 가능한 사이트 비율
+   * - RSS + 크롤링 가능 사이트 기준
+   */
+  const feedRate =
+    stats.total > 0 ? ((stats.rss + stats.crawlable) / stats.total) * 100 : 0;
+
   return (
     <div className="space-y-6 p-6">
       <AdminStatsCard
         title="사이트 수집 현황"
         items={getRssStatusList(stats)}
-        progressValue={rssRate}
+        progressValue={feedRate}
         total={stats.total}
         isLoading={isLoading}
       />

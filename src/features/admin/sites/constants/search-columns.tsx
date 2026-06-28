@@ -4,6 +4,7 @@ import { Badge } from "@/shared/components/ui/badge";
 import { Avatar } from "@/shared/components/common/Avartar";
 import { SiteDto } from "@/features/rss/site/dto/siteDto";
 import Link from "next/link";
+import { SITE_FEED_STATUS } from "@/features/rss/site/constants/site";
 
 export const adminSiteColumns: Column<SiteDto, AdminSiteSort>[] = [
   {
@@ -34,12 +35,27 @@ export const adminSiteColumns: Column<SiteDto, AdminSiteSort>[] = [
   },
   {
     key: "status",
-    header: "RSS 상태",
+    header: "수집 상태",
     render: (site: SiteDto) => (
-      <Badge variant={site.feed_url ? "default" : "destructive"}>
-        {site.feed_url ? "RSS 가능" : "미탐색"}
+      <Badge
+        variant={
+          site.feedStatus === SITE_FEED_STATUS.RSS
+            ? "default"
+            : site.feedStatus === SITE_FEED_STATUS.PENDING
+              ? "secondary"
+              : "destructive"
+        }
+      >
+        {site.feedStatus === SITE_FEED_STATUS.RSS
+          ? "RSS 가능"
+          : site.feedStatus === SITE_FEED_STATUS.PENDING
+            ? "탐색 중"
+            : site.feedStatus === SITE_FEED_STATUS.CRAWLABLE
+              ? "크롤링 가능"
+              : "미지원"}
       </Badge>
     ),
+
     align: COLUMN_ALIGN.CENTER,
     sortable: true,
   },
