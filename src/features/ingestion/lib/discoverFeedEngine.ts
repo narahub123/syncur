@@ -1,7 +1,7 @@
 "use server";
 
 import { fetchDynamicSite, fetchSite } from "../lib/fetch-utils";
-import { parseRss } from "../lib/parsers/rss-parser";
+import { discoverParseRss } from "./discover/parser/discover-rss-parser";
 import { rssDetector } from "../lib/detectors/rss-detector";
 import { HTML_SITE_TYPE, SOURCE_TYPE } from "../lib/detectors/types";
 import { htmlSiteDetector } from "../lib/detectors/html-site-detector";
@@ -95,7 +95,7 @@ export async function discoverFeedEngine(
       // 이후 HTML 크롤링 대신 RSS 파싱으로 즉시 전환
 
       const rssFeed = await withLogging(
-        parseRss,
+        discoverParseRss,
         logger,
         INGESTION_STAGE.PARSE,
       )(rssResult.rssUrl, logger);
@@ -103,7 +103,7 @@ export async function discoverFeedEngine(
       // =========================
       // [2. RSS 원본 데이터 → 내부 표준 구조 변환]
       // =========================
-      // parseRss 결과는 외부 RSS 구조(xml 기반 파싱 결과)라서
+      // discoverParseRss 결과는 외부 RSS 구조(xml 기반 파싱 결과)라서
       // 프로젝트 내부에서 사용하는 FeedItemInput 구조와 다를 수 있음
       //
       // → 그래서 "표준화(normalization)" 단계 필요

@@ -1,8 +1,8 @@
 import Parser from "rss-parser";
-import { FEED_HEADERS } from "../../constants/feed";
+import { FEED_HEADERS } from "../../../constants/feed";
 import * as crypto from "crypto";
 import { convert } from "html-to-text";
-import { Logger } from "../../logger/types";
+import { Logger } from "../../../logger/types";
 
 // rss-parser에서 제공하는 Item 인터페이스 사용
 interface CustomItem extends Parser.Item {
@@ -39,7 +39,7 @@ const parser = new Parser({
  * @param {string} feedUrl - 발견된 피드의 절대 경로 URL
  * @returns {Promise<any>} 파싱된 피드 객체 (제목, 아이템 목록 등)
  */
-export async function parseRss(feedUrl: string, logger: Logger) {
+export async function discoverParseRss(feedUrl: string, logger: Logger) {
   const feed = await parser.parseURL(feedUrl);
 
   logger.debug("RSS 응답 수신", {
