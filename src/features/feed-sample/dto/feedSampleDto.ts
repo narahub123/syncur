@@ -9,7 +9,8 @@ export interface FeedSampleDto {
   title: string;
 
   description?: string;
-  author?: string;
+
+  author?: string | null;
 
   publishedAt?: string;
 

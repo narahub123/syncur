@@ -1,10 +1,10 @@
 import cron from "node-cron";
 import mongoose from "mongoose";
-import { runFeedIngestion } from "@/ingestion/rss/runFeedIngestion";
 import dotenv from "dotenv";
 import { RSS_CONFIG } from "@/ingestion/rss/rss-config";
-import { runRecovery } from "@/ingestion/rss/runRecovery";
 import { feedService } from "@/features/feeds/service/FeedService.instance";
+import { runFeedIngestion } from "@/features/ingestion/lib/runFeedIngestion";
+import { runRecovery } from "@/features/ingestion/lib/runRecovery";
 
 dotenv.config({ path: ".env.local" });
 

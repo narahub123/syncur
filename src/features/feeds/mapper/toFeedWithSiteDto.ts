@@ -27,6 +27,8 @@ export function toFeedWithSiteDto(feed: FeedWithSiteLean): FeedWithSiteDto {
 
     listingPageUrl: feed.listingPageUrl,
 
+    crawlerConfig: feed.crawlerConfig,
+
     listingPageConfig: feed.listingPageConfig,
 
     detailPageConfig: feed.detailPageConfig,

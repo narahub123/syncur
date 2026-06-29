@@ -17,7 +17,8 @@ export interface FeedSampleLean {
   title: string;
 
   description?: string;
-  author?: string;
+  
+  author?: string | null;
 
   publishedAt?: Date;
 

@@ -1,5 +1,5 @@
 import { FeedItemModel } from "@/features/feed-items/models/feed-item";
-import { RSSItem } from "./types";
+import { FeedItemInput } from "@/features/feed-sample/types";
 
 /**
  * FeedItem DB upsert layer
@@ -26,7 +26,7 @@ import { RSSItem } from "./types";
  * - retry/backoff 정책
  * - ETag 기반 fetch optimization
  */
-export async function upsertFeedItems(feedId: string, items: RSSItem[]) {
+export async function upsertFeedItems(feedId: string, items: FeedItemInput[]) {
   const operations = items.map((item) => {
     const hash = item.link;
 
@@ -35,10 +35,10 @@ export async function upsertFeedItems(feedId: string, items: RSSItem[]) {
       guid: item.guid ?? null,
       link: item.link,
       title: item.title,
-      description: item.description,
-      author: item.author,
-      publishedAt: item.publishedAt,
-      categories: item.categories,
+      description: item.description ?? "",
+      author: item.author ?? null,
+      publishedAt: item.publishedAt ?? null,
+      categories: item.categories ?? [],
       hash,
     };
 

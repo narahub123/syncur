@@ -17,6 +17,7 @@ import {
 } from "@/features/ingestion/lib/discover/types";
 import { ListingPageDto } from "@/features/subscriptions/components/CrawlDialog";
 import { subscriptionRepository } from "@/features/subscriptions/repository/SubscriptionRepository.instance";
+import { HtmlSiteType } from "@/features/ingestion/lib/detectors/types";
 
 export class FeedService {
   async getMyFeedItems(userId: string, cursor?: string) {
@@ -160,6 +161,7 @@ export class FeedService {
     listingPageUrl: string,
     listingPageConfig: ListingPageConfig,
     detailPageConfig: DetailPageConfig | null,
+    htmlType: HtmlSiteType,
   ): Promise<FeedDto | null> {
     const uniqueKey = `crawl:${listingPageUrl}`;
 
@@ -172,6 +174,9 @@ export class FeedService {
       listingPageUrl,
       listingPageConfig,
       detailPageConfig,
+      crawlerConfig: {
+        htmlType,
+      },
     });
 
     if (!doc) return null;
@@ -241,5 +246,4 @@ export class FeedService {
       isSubscribed: subscribedSet.has(feed._id.toString()),
     }));
   }
-
 }

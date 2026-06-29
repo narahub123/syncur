@@ -1,11 +1,9 @@
 export interface FeedItemInput {
+  guid?: string | null; // 추가
   link: string;
   title: string;
-
   description?: string;
-  author?: string;
-
-  publishedAt?: string | Date;
-
+  author?: string | null;
+  publishedAt?: string | Date | null;
   categories?: string[];
 }

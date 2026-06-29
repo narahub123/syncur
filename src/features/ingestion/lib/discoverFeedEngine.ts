@@ -204,6 +204,7 @@ export async function discoverFeedEngine(
             fetchResult.html,
             c.listingPageConfig,
             baseUrl,
+            undefined,
             5,
           );
 
@@ -235,6 +236,7 @@ export async function discoverFeedEngine(
             items = await extractCrawlerItemsDynamic(
               page,
               c.listingPageConfig,
+              baseUrl,
               5,
             );
 
@@ -257,6 +259,7 @@ export async function discoverFeedEngine(
           c.url,
           c.listingPageConfig,
           c.detailPageConfig,
+          htmlType,
         );
 
         const feedId = feed?.id;

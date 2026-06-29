@@ -1,9 +1,11 @@
+import { HtmlSiteType } from "@/features/ingestion/lib/detectors/types";
 import {
   DetailPageConfig,
   ListingPageConfig,
 } from "@/features/ingestion/lib/discover/types";
 import { FeedStatus } from "@/shared/types/feed";
 import { Types } from "mongoose";
+import { CrawlerConfig } from "../model/feed";
 
 /**
  * FeedModel lean() 반환 타입
@@ -24,6 +26,8 @@ export type FeedLean = {
   feedUrl: string | null;
 
   listingPageUrl: string | null;
+
+  crawlerConfig?: CrawlerConfig;
 
   listingPageConfig: ListingPageConfig | null;
 

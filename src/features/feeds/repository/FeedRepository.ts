@@ -1,4 +1,4 @@
-import { FeedModel } from "../model/feed";
+import { CrawlerConfig, FeedModel } from "../model/feed";
 import { Types } from "mongoose";
 import { toObjectId } from "@/shared/utils/toObjectId";
 import {
@@ -79,6 +79,7 @@ export class FeedRepository {
     status?: "active" | "disabled";
     errorCount?: number;
     categories?: string[];
+    crawlerConfig?: CrawlerConfig;
   }): Promise<FeedLean | null> {
     const doc = await FeedModel.create({
       siteId: toObjectId(data.siteId),
@@ -92,6 +93,7 @@ export class FeedRepository {
       status: data.status ?? "active",
       errorCount: data.errorCount ?? 0,
       categories: data.categories ?? [],
+      crawlerConfig: data.crawlerConfig,
     });
 
     return doc.toObject();
@@ -299,8 +301,9 @@ export class FeedRepository {
     feedId: string;
     etag?: string;
     lastModified?: string;
+    lastSeenUrl?: string;
   }) {
-    const { feedId, etag, lastModified } = params;
+    const { feedId, etag, lastModified, lastSeenUrl } = params;
 
     return FeedModel.updateOne(
       { _id: feedId },
@@ -311,6 +314,8 @@ export class FeedRepository {
 
           ...(etag && { etag }),
           ...(lastModified && { lastModified }),
+          ...(lastSeenUrl && { "crawlerState.lastSeenUrl": lastSeenUrl }),
+          ...(lastSeenUrl && { "crawlerState.lastCrawledAt": new Date() }),
         },
       },
     );

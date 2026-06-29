@@ -20,6 +20,7 @@ export class FeedIngestionService {
     feedId: string;
     etag?: string;
     lastModified?: string;
+    lastSeenUrl?: string;
   }) {
     return this.repo.markIngestionSuccess(params);
   }

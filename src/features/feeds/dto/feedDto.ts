@@ -11,6 +11,7 @@ import {
   DetailPageConfig,
   ListingPageConfig,
 } from "@/features/ingestion/lib/discover/types";
+import { CrawlerConfig } from "../model/feed";
 
 export type FeedDto = {
   id: string;
@@ -24,6 +25,8 @@ export type FeedDto = {
   name: string;
 
   feedUrl: string | null;
+
+  crawlerConfig?: CrawlerConfig;
 
   listingPageUrl: string | null;
 
@@ -166,6 +169,8 @@ export type FeedWithSiteLean = {
 
   feedUrl: string | null;
 
+  crawlerConfig?: CrawlerConfig;
+
   listingPageUrl: string | null;
 
   listingPageConfig: unknown | null;
@@ -224,6 +229,8 @@ export type FeedWithSiteDto = {
   feedUrl: string | null;
 
   listingPageUrl: string | null;
+
+  crawlerConfig?: CrawlerConfig;
 
   listingPageConfig: unknown | null;
 

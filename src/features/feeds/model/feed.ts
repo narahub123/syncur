@@ -1,16 +1,20 @@
 import { AdminDashboardStatsModel } from "@/features/admin/dashboard/model/AdminDashboardStats";
 import {
+  HTML_SITE_TYPE,
+  HtmlSiteType,
+} from "@/features/ingestion/lib/detectors/types";
+import {
   DetailPageConfig,
   ListingPageConfig,
 } from "@/features/ingestion/lib/discover/types";
 import { FeedStatus } from "@/shared/types/feed";
 import mongoose, { Schema, Document, Types } from "mongoose";
 
-// =====================
-// Types
-// =====================
-
 export type FeedSourceType = "rss" | "crawl";
+
+export type CrawlerConfig = {
+  htmlType: HtmlSiteType;
+};
 
 export interface CrawlerState {
   lastSeenUrl: string | null;
@@ -65,6 +69,8 @@ export interface FeedDocument extends Document {
    * - sourceType이 "crawl"일 때만 사용
    */
   listingPageUrl: string | null;
+
+  crawlerConfig?: CrawlerConfig;
 
   /**
    * 목록 페이지 파싱 config
@@ -167,6 +173,19 @@ const FeedSchema = new Schema<FeedDocument>(
       type: String,
       default: null,
       trim: true,
+    },
+
+    crawlerConfig: {
+      type: {
+        htmlType: {
+          type: String,
+          enum: Object.values(HTML_SITE_TYPE),
+          required: true,
+        },
+      },
+      _id: false, // 추가
+      required: false,
+      default: undefined,
     },
 
     listingPageConfig: {

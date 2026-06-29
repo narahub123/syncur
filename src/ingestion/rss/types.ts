@@ -9,15 +9,11 @@
  * - RSS/Atom 필드명이 다름 (guid/id/link 혼재)
  * - optional 필드 많음
  */
-export type RSSItem = {
-  guid?: string | null;
-  link: string;
-  title: string;
-  description: string;
-  author?: string | null;
-  publishedAt?: Date | null;
-  categories: string[];
-};
+
+import { FeedItemInput } from "@/features/feed-sample/types";
+
+/** @deprecated FeedItemInput을 사용하세요 */
+export type RSSItem = FeedItemInput;
 
 /**
  * XML 파서 결과는 구조가 고정되지 않기 때문에

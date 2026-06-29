@@ -1,7 +1,8 @@
 import { XMLParser } from "fast-xml-parser";
-import { RSSItem, XMLNode } from "./types";
+import { XMLNode } from "./types";
 import { createDescriptionFromContent } from "./helpers/createDescriptionFromContent";
 import { getString } from "./helpers/getString";
+import { FeedItemInput } from "@/features/feed-sample/types";
 
 /**
  * RSS/Atom XML → normalized RSSItem[]
@@ -16,7 +17,7 @@ import { getString } from "./helpers/getString";
  * === 핵심 ===
  * "파싱 이후에는 구조를 무조건 동일하게 만든다"
  */
-export function parseRSS(xml: string): RSSItem[] {
+export function parseRSS(xml: string): FeedItemInput[] {
   const parser = new XMLParser({
     ignoreAttributes: false,
     attributeNamePrefix: "@_",
@@ -29,7 +30,7 @@ export function parseRSS(xml: string): RSSItem[] {
   // 단일 object → array 강제 변환 (RSS edge case 대응)
   const normalized = Array.isArray(items) ? items : [items];
 
-  return normalized.map((item: XMLNode): RSSItem => {
+  return normalized.map((item: XMLNode): FeedItemInput => {
     const guid = (item.guid as XMLNode)?.["#text"] ?? item.guid ?? item.id;
 
     const rawContent =

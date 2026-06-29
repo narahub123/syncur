@@ -17,6 +17,8 @@ export function toFeedDto(feed: FeedLean): FeedDto {
 
     listingPageUrl: feed.listingPageUrl,
 
+    crawlerConfig: feed.crawlerConfig,
+
     listingPageConfig: feed.listingPageConfig,
 
     detailPageConfig: feed.detailPageConfig,
