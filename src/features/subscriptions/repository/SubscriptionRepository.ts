@@ -90,8 +90,11 @@ export class SubscriptionRepository {
     const safePage = Math.max(1, page);
     const safeLimit = Math.max(1, limit);
 
-    return SubscriptionModel.find({ userId })
-      .sort({ createdAt: -1 })
+    return SubscriptionModel.find({
+      userId,
+      deletedAt: null,
+    })
+      .sort({ createdAt: -1, _id: -1 })
       .skip((safePage - 1) * safeLimit)
       .limit(safeLimit)
       .lean()

@@ -1,5 +1,5 @@
 import { Page } from "puppeteer";
-import { ListingPageConfig, FieldExtractor } from "../discover/types";
+import { ListingPageConfig } from "../discover/types";
 import { FeedItemInput } from "@/features/feed-sample/types";
 
 /**

@@ -48,6 +48,11 @@ export interface FeedDocument extends Document {
   sourceType: FeedSourceType;
 
   /**
+   * 피드 이름
+   */
+  name: string;
+
+  /**
    * RSS/Atom Feed URL
    *
    * - sourceType이 "rss"일 때만 사용
@@ -144,6 +149,12 @@ const FeedSchema = new Schema<FeedDocument>(
       type: String,
       enum: ["rss", "crawl"],
       required: true,
+    },
+
+    name: {
+      type: String,
+      default: "",
+      trim: true,
     },
 
     feedUrl: {

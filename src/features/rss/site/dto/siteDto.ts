@@ -55,6 +55,11 @@ export type CreateSiteDto = {
   feedStatus: SiteFeedStatus;
 };
 
+export type SubscribedListingPageDto = {
+  feedId: string;
+  title: string;
+};
+
 /**
  * Site + Subscription Context DTO
  *
@@ -65,7 +70,9 @@ export type SiteContextDTO = {
   siteId: string;
 
   /**
-   * 연결된 Feed ID (없을 수도 있음)
+   * RSS Feed ID
+   *
+   * RSS 사이트에서만 존재한다.
    */
   feedId: string | undefined;
 
@@ -74,17 +81,45 @@ export type SiteContextDTO = {
   favicon_url: string | null;
 
   /**
-   * RSS / crawl 가능 여부 (UI 판단 기준)
+   * RSS / Crawl / Unsupported
    */
   feedStatus: SiteFeedStatus;
 
   /**
+   * 사용자가 현재 구독 중인 목록 페이지
+   *
+   * - Crawl 사이트에서만 사용
+   * - 목록 페이지 선택 UI에서 표시
+   */
+  subscribedListingPages?: SubscribedListingPageDto[];
+
+  /**
+   * Crawl 가능한 목록 페이지 개수
+   *
+   * - feedStatus === "crawlable" 인 경우에만 사용
+   * - 상세 목록은 별도 API에서 조회
+   */
+  listingPageCount?: number;
+
+  /**
    * 현재 사용자의 구독 여부
+   *
+   * RSS:
+   * - RSS Feed를 구독 중인지
+   *
+   * Crawl:
+   * - 목록 페이지 중 하나 이상을 구독 중인지
    */
   isSubscribed: boolean;
 
   /**
-   * 구독 가능 여부
+   * 현재 사이트에서 새로운 구독이 가능한지
+   *
+   * RSS:
+   * - RSS Feed를 아직 구독하지 않은 경우
+   *
+   * Crawl:
+   * - 구독 가능한 목록 페이지가 존재하는 경우
    */
   canSubscribe: boolean;
 };

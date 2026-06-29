@@ -1,6 +1,5 @@
 "use server";
 
-import { normalizeUrl } from "@/features/ingestion/utils/url";
 import { fetchDynamicSite, fetchSite } from "../lib/fetch-utils";
 import { parseRss } from "../lib/parsers/rss-parser";
 import { rssDetector } from "../lib/detectors/rss-detector";
@@ -22,19 +21,22 @@ import { extractCrawlerItems } from "../lib/extractors/extractCrawlerItems";
 import { feedSampleService } from "@/features/feed-sample/service/FeedSampleService.instance";
 import { normalizeToRssInput } from "../utils/normalizeToRssInput";
 import { extractCrawlerItemsDynamic } from "../lib/extractors/extractCrawlerItemsDynamic";
+import { SITE_FEED_STATUS } from "@/features/rss/site/constants/site";
+import { SiteDto } from "@/features/rss/site/dto/siteDto";
 
 /**
  * 피드 탐색 결과 인터페이스
  */
 export interface DiscoveryResult {
   success: boolean;
-  url: string;
-  feedUrl: string | null;
-  message?: string;
+
+  message: string;
+
+  site?: SiteDto;
 }
 
-export async function discoverFeedAction(
-  input: string,
+export async function discoverFeedEngine(
+  targetUrl: string,
 ): Promise<DiscoveryResult> {
   try {
     // =========================
@@ -43,63 +45,14 @@ export async function discoverFeedAction(
     const traceId = createTraceId();
     const logger: Logger = createLogger({ traceId });
 
-    // =========================
-    // [1. URL 정규화]
-    // =========================
-    const targetUrl = await withLogging(
-      normalizeUrl,
-      logger,
-      INGESTION_STAGE.NORMALIZE_URL,
-    )(input, logger);
-
-    // =========================
-    // [2. 기존 사이트 조회]
-    // =========================
-    const existingSite = await siteService.findByUrl(targetUrl);
-
-    logger.info("기존 사이트 조회", { exists: !!existingSite });
-
-    if (existingSite) {
-      // =========================
-      // [2-1. 기존 feed 상태 기반 빠른 반환]
-      // =========================
-      switch (existingSite.feedStatus) {
-        case "rss": {
-          const feed = await feedService.findRssFeedBySiteId(existingSite._id);
-          return {
-            success: true,
-            url: targetUrl,
-            feedUrl: feed?.feedUrl ?? null,
-            message: "RSS 피드를 찾았습니다.",
-          };
-        }
-
-        case "crawlable": {
-          const feeds = await feedService.findCrawlFeedsBySiteId(
-            existingSite._id,
-          );
-          return {
-            success: true,
-            url: targetUrl,
-            feedUrl: null,
-            message: `${feeds.length}개의 구독 가능한 목록 페이지를 찾았습니다.`,
-          };
-        }
-
-        case "unavailable":
-          return {
-            success: true,
-            url: targetUrl,
-            feedUrl: null,
-            message: "구독 가능한 페이지를 찾지 못했습니다.",
-          };
-
-        case "pending":
-          // 이전 탐색 실패 → 재탐색 진행
-          logger.info("pending 상태 사이트 재탐색", { url: targetUrl });
-          break;
-      }
-    }
+    // // =========================
+    // // [1. URL 정규화]
+    // // =========================
+    // const targetUrl = await withLogging(
+    //   normalizeUrl,
+    //   logger,
+    //   INGESTION_STAGE.NORMALIZE_URL,
+    // )(input, logger);
 
     // =========================
     // [3. 사이트 HTML fetch]
@@ -113,8 +66,6 @@ export async function discoverFeedAction(
     if (!res) {
       return {
         success: false,
-        url: targetUrl,
-        feedUrl: null,
         message: "사이트에 연결할 수 없습니다.",
       };
     }
@@ -182,8 +133,8 @@ export async function discoverFeedAction(
       // + RSS feed URL 저장
 
       await Promise.all([
-        siteService.updateFeedStatus(site._id, "rss"),
-        feedService.createRssFeed(site._id, rssResult.rssUrl, ""),
+        siteService.updateFeedStatus(site._id, SITE_FEED_STATUS.RSS),
+        feedService.createRssFeed(site._id, rssResult.rssUrl, site.name),
       ]);
 
       // =========================
@@ -191,8 +142,10 @@ export async function discoverFeedAction(
       // =========================
       return {
         success: true,
-        url: targetUrl,
-        feedUrl: rssResult.rssUrl,
+        site: {
+          ...site,
+          feedStatus: SITE_FEED_STATUS.RSS,
+        },
         message: "RSS 피드를 찾았습니다.",
       };
     }
@@ -300,7 +253,7 @@ export async function discoverFeedAction(
 
         const feed = await feedService.createCrawlFeed(
           site._id,
-          "",
+          c.title,
           c.url,
           c.listingPageConfig,
           c.detailPageConfig,
@@ -314,8 +267,10 @@ export async function discoverFeedAction(
 
       return {
         success: true,
-        url: targetUrl,
-        feedUrl: null,
+        site: {
+          ...site,
+          feedStatus: SITE_FEED_STATUS.CRAWLABLE,
+        },
         message: `${candidates.length}개의 구독 가능한 목록 페이지를 찾았습니다.`,
       };
     }
@@ -327,8 +282,10 @@ export async function discoverFeedAction(
 
     return {
       success: true,
-      url: targetUrl,
-      feedUrl: null,
+      site: {
+        ...site,
+        feedStatus: SITE_FEED_STATUS.UNAVAILABLE,
+      },
       message: "구독 가능한 페이지를 찾지 못했습니다.",
     };
   } catch (error) {
@@ -336,8 +293,6 @@ export async function discoverFeedAction(
 
     return {
       success: false,
-      url: input,
-      feedUrl: null,
       message: "분석 중 오류가 발생했습니다.",
     };
   }

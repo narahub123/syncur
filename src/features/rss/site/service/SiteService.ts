@@ -1,6 +1,6 @@
 import { SiteInfo } from "@/features/ingestion/lib/extractors/extractSiteInfo";
 import { SiteDto } from "../dto/siteDto";
-import { toSiteDto } from "../mappers/toSiteDto";
+import { toSiteDto, toSiteDtos } from "../mappers/toSiteDto";
 import { SiteRepository } from "../repository/SiteRepository";
 import { normalizeSiteIdentity } from "../utils/normalizeSiteIdentity";
 import { AdminSiteStatsService } from "@/features/admin/sites/services/AdminSiteStatsService";
@@ -33,6 +33,12 @@ export class SiteService {
     return url.includes(q) || name.includes(q);
   }
 
+  async search(normalizedUrl: string) {
+    const docs = await this.siteRepository.search(normalizedUrl);
+
+    return toSiteDtos(docs);
+  }
+
   async findByUrl(url: string): Promise<SiteDto | null> {
     const doc = await this.siteRepository.findByUrl(url);
 
@@ -59,6 +65,14 @@ export class SiteService {
     const doc = await this.siteRepository.updateFeedStatus(siteId, feedStatus);
 
     if (!doc) return null;
+    return toSiteDto(doc);
+  }
+
+  async findById(siteId: string | Types.ObjectId) {
+    const doc = await this.siteRepository.findById(siteId);
+
+    if (!doc) return null;
+
     return toSiteDto(doc);
   }
 }

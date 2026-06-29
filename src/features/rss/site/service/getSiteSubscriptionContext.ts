@@ -1,8 +1,11 @@
-import { buildSiteContext } from "@/features/rss/site/domain/siteContext";
-import { siteRepository } from "@/features/rss/site/repository/SiteRepository.instance";
 import { subscriptionRepository } from "@/features/subscriptions/repository/SubscriptionRepository.instance";
 import { dedupedDiscoverSite } from "./dedupedDiscoverSite";
 import { feedService } from "@/features/feeds/service/FeedService.instance";
+import { siteService } from "./SiteService.instance";
+import { SITE_FEED_STATUS } from "../constants/site";
+import { buildRssSiteContext } from "../domain/buildRssSiteContext";
+import { buildCrawlSiteContext } from "../domain/buildCrawlSiteContext";
+import { buildUnsupportedSiteContext } from "../domain/buildUnsupportedSiteContext";
 
 export async function getSiteSubscriptionContext(
   normalizedUrl: string,
@@ -14,18 +17,19 @@ export async function getSiteSubscriptionContext(
    */
   const siteStart = performance.now();
 
-  let sites = await siteRepository.search(normalizedUrl);
-
+  // =========================
+  // [1. 기존 사이트 조회]
+  // =========================
+  let sites = await siteService.search(normalizedUrl);
   /**
    * 2. Site가 없으면 RSS discovery 수행
    * - 외부 요청 비용이 크므로 fallback 방식으로만 실행
    */
   if (sites.length === 0) {
-    const discovered = await dedupedDiscoverSite(normalizedUrl);
+    const { site, success } = await dedupedDiscoverSite(normalizedUrl);
 
-    if (discovered) {
-      const saved = await siteRepository.upsert(discovered);
-      sites = [saved];
+    if (success && site) {
+      sites = [site];
     }
   }
 
@@ -38,11 +42,11 @@ export async function getSiteSubscriptionContext(
    */
   const sitesWithFeeds = await Promise.all(
     sites.map(async (site) => {
-      const feed = await feedService.ensureFeed(site);
+      const feeds = await feedService.findBySiteId(site._id);
 
       return {
         site,
-        feed,
+        feeds,
       };
     }),
   );
@@ -65,15 +69,69 @@ export async function getSiteSubscriptionContext(
 
   /**
    * 6. UI Context 생성
-   * - Site + Feed + Subscription 상태를 합쳐 반환
+   * - FeedStatus에 따라 적절한 Context Builder 호출
    */
-  return sitesWithFeeds.map(({ site, feed }) => {
-    const subscriptionExists = subscribedFeedIds.has(site._id.toString());
+  return sitesWithFeeds.map(({ site, feeds }) => {
+    /**
+     * RSS 사이트
+     *
+     * - Site당 RSS Feed는 하나만 존재
+     * - 해당 Feed의 구독 여부를 확인하여 Context 생성
+     */
+    if (site.feedStatus === SITE_FEED_STATUS.RSS) {
+      const rssFeed = feeds.find((feed) => feed.sourceType === "rss");
 
-    return buildSiteContext({
+      if (!rssFeed) {
+        throw new Error("RSS Feed가 존재하지 않습니다.");
+      }
+
+      const subscriptionExists = subscribedFeedIds.has(rssFeed.id);
+
+      return buildRssSiteContext({
+        site,
+        feed: rssFeed,
+        subscriptionExists,
+      });
+    }
+
+    /**
+     * Crawl 가능한 사이트
+     *
+     * - Site는 여러 개의 Crawl Feed를 가진다.
+     * - Feed 개수는 목록 페이지 개수와 동일하다.
+     * - Feed 하나라도 구독 중이면 구독 중인 사이트로 판단한다.
+     */
+    if (site.feedStatus === SITE_FEED_STATUS.CRAWLABLE) {
+      const crawlFeeds = feeds.filter((feed) => feed.sourceType === "crawl");
+
+      const listingPageCount = crawlFeeds.length;
+
+      const subscribedListingPages = crawlFeeds
+        .filter((feed) => subscribedFeedIds.has(feed.id))
+        .map((feed) => ({
+          feedId: feed.id,
+          title: feed.name ?? "이름 없음",
+        }));
+
+      const subscriptionExists = subscribedListingPages.length > 0;
+
+      return buildCrawlSiteContext({
+        site,
+        listingPageCount,
+        subscriptionExists,
+        subscribedListingPages,
+      });
+    }
+
+    /**
+     * 구독을 지원하지 않는 사이트
+     *
+     * - RSS Feed 없음
+     * - Crawl Feed 없음
+     * - 구독 기능 비활성화
+     */
+    return buildUnsupportedSiteContext({
       site,
-      subscriptionExists,
-      feed,
     });
   });
 }

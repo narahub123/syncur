@@ -128,7 +128,10 @@ function ComboboxItem({
     <ComboboxPrimitive.Item
       data-slot="combobox-item"
       className={cn(
-        "data-highlighted:bg-accent data-highlighted:text-accent-foreground not-data-[variant=destructive]:data-highlighted:**:text-accent-foreground relative flex w-full min-w-0 cursor-default items-center gap-2 rounded-md px-1.5 py-1 text-sm outline-hidden select-none data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+        "relative flex w-full min-w-0 cursor-default items-center gap-2 rounded-md px-1.5 py-1 text-sm outline-hidden select-none",
+        "data-highlighted:bg-accent data-highlighted:text-accent-foreground",
+        // 핵심: 콘텐츠가 팝업 너비를 뚫고 나가지 않도록 함
+        "flex-col items-start",
         className,
       )}
       {...props}

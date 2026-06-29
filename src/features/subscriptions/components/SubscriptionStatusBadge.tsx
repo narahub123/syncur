@@ -17,7 +17,7 @@ export const SubscriptionStatusBadge = ({ status }: Props) => {
       className={cn("flex items-center gap-1 text-xs", ui.className)}
     >
       <span>{ui.text}</span>
-      <Icon />
+      <Icon size={12} className="flex items-center justify-center" />
     </span>
   );
 };

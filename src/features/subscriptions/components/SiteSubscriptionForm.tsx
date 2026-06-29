@@ -10,6 +10,7 @@ import { useSiteSearch } from "@/features/rss/site/hooks/useSiteSearch";
 import { useDebounce } from "@/shared/hooks/useDebounce";
 import { SiteContextDTO } from "@/features/rss/site/dto/siteDto";
 import { SITE_FEED_STATUS } from "@/features/rss/site/constants/site";
+import CrawlDialog from "./CrawlDialog";
 
 const SiteSubscriptionForm = () => {
   const selectSite = useSiteSubscriptionStore((s) => s.selectSite);
@@ -18,6 +19,10 @@ const SiteSubscriptionForm = () => {
     (s) => s.setAlreadySubscribed,
   );
   const setIdle = useSiteSubscriptionStore((s) => s.setIdle);
+  const crawlDialogOpen = useSiteSubscriptionStore((s) => s.crawlDialogOpen);
+  const setCrawlDialogOpen = useSiteSubscriptionStore(
+    (s) => s.setCrawlDialogOpen,
+  );
 
   const inputValue = useSiteSubscriptionStore((s) => s.inputValue);
   const setInputValue = useSiteSubscriptionStore((s) => s.setInputValue);
@@ -26,8 +31,15 @@ const SiteSubscriptionForm = () => {
 
   const { data: options, isFetching } = useSiteSearch(debouncedInput);
 
+  console.log("검색 결과", options);
+
   const handleSelectSite = (site: SiteContextDTO) => {
     selectSite(site);
+
+    if (site.feedStatus === SITE_FEED_STATUS.CRAWLABLE) {
+      setCrawlDialogOpen(true);
+      return;
+    }
 
     if (site.feedStatus === SITE_FEED_STATUS.UNAVAILABLE) {
       setNotSupported();
@@ -44,6 +56,7 @@ const SiteSubscriptionForm = () => {
 
   return (
     <div className="space-y-4 rounded-xl border border-gray-200 p-4">
+      <CrawlDialog open={crawlDialogOpen} onOpenChange={setCrawlDialogOpen} />
       <h3 className="h-6 text-sm font-medium">관심 사이트를 등록하세요</h3>
 
       {/* input + selection layer */}

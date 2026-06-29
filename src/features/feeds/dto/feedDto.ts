@@ -7,6 +7,10 @@ import {
 import { Types } from "mongoose";
 import { FeedLean } from "../types/leans";
 import { SiteFeedStatus } from "@/features/rss/site/types";
+import {
+  DetailPageConfig,
+  ListingPageConfig,
+} from "@/features/ingestion/lib/discover/types";
 
 export type FeedDto = {
   id: string;
@@ -17,15 +21,17 @@ export type FeedDto = {
 
   sourceType: "rss" | "crawl";
 
+  name: string;
+
   feedUrl: string | null;
 
   listingPageUrl: string | null;
 
-  listingPageConfig: unknown | null;
+  listingPageConfig: ListingPageConfig | null;
 
-  detailPageConfig: unknown | null;
+  detailPageConfig: DetailPageConfig | null;
 
-  crawlerState: {
+  crawlerState?: {
     lastSeenUrl: string | null;
     lastCrawledAt: string | null;
   };
@@ -166,7 +172,7 @@ export type FeedWithSiteLean = {
 
   detailPageConfig: unknown | null;
 
-  crawlerState: {
+  crawlerState?: {
     lastSeenUrl: string | null;
     lastCrawledAt: Date | null;
   };
@@ -223,7 +229,7 @@ export type FeedWithSiteDto = {
 
   detailPageConfig: unknown | null;
 
-  crawlerState: {
+  crawlerState?: {
     lastSeenUrl: string | null;
     lastCrawledAt: string | null;
   };

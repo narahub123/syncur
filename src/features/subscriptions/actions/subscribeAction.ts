@@ -24,8 +24,5 @@ export async function subscribeAction(feedId: string) {
     throw new Error("Unauthorized");
   }
 
-  return await subscriptionService.create({
-    userId,
-    feedId,
-  });
+  return await subscriptionService.subscribe(userId, feedId);
 }

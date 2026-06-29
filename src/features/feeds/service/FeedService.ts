@@ -15,22 +15,10 @@ import {
   DetailPageConfig,
   ListingPageConfig,
 } from "@/features/ingestion/lib/discover/types";
-import { SiteLean } from "@/features/rss/site/types/leans";
+import { ListingPageDto } from "@/features/subscriptions/components/CrawlDialog";
+import { subscriptionRepository } from "@/features/subscriptions/repository/SubscriptionRepository.instance";
 
 export class FeedService {
-  async ensureFeed(site: SiteLean): Promise<FeedDto | null> {
-    if (!site || site.feedStatus !== "rss") return null;
-
-    const feed = await this.findRssFeedBySiteId(site._id);
-
-    if (!feed) {
-      // RSS feed는 discovery 단계에서 이미 확보된 상태라고 가정
-      return null;
-    }
-
-    return feed;
-  }
-
   async getMyFeedItems(userId: string, cursor?: string) {
     return getFeedItems(userId, cursor);
   }
@@ -146,6 +134,7 @@ export class FeedService {
   async createRssFeed(
     siteId: string | Types.ObjectId,
     feedUrl: string,
+    name: string,
   ): Promise<FeedDto | null> {
     const uniqueKey = `rss:${feedUrl}`;
 
@@ -153,6 +142,7 @@ export class FeedService {
       siteId,
       uniqueKey,
       sourceType: "rss",
+      name,
       feedUrl,
       listingPageUrl: null,
       listingPageConfig: null,
@@ -166,6 +156,7 @@ export class FeedService {
 
   async createCrawlFeed(
     siteId: string | Types.ObjectId,
+    name: string,
     listingPageUrl: string,
     listingPageConfig: ListingPageConfig,
     detailPageConfig: DetailPageConfig | null,
@@ -176,6 +167,7 @@ export class FeedService {
       siteId,
       uniqueKey,
       sourceType: "crawl",
+      name,
       feedUrl: null,
       listingPageUrl,
       listingPageConfig,
@@ -211,4 +203,43 @@ export class FeedService {
     const docs = await feedRepository.findBySiteId(siteId);
     return toFeedDtos(docs);
   }
+
+  async getListingPages(
+    siteId: string,
+    userId: string,
+  ): Promise<ListingPageDto[]> {
+    if (!siteId) return [];
+
+    // =========================
+    // 1. feeds 조회
+    // =========================
+    const feeds = await feedRepository.findBySiteId(siteId);
+
+    // =========================
+    // 2. crawl feeds만 필터링
+    // =========================
+    const crawlFeeds = feeds.filter((f) => f.sourceType === "crawl");
+
+    if (crawlFeeds.length === 0) return [];
+
+    // =========================
+    // 3. subscription 조회
+    // =========================
+    const subscriptions = await subscriptionRepository.findByUserId(userId);
+
+    const subscribedSet = new Set(
+      subscriptions.map((s) => s.feedId.toString()),
+    );
+
+    // =========================
+    // 4. DTO 반환
+    // =========================
+    return crawlFeeds.map((feed) => ({
+      feedId: feed._id.toString(),
+      title: feed.name,
+      url: feed.listingPageUrl ?? "",
+      isSubscribed: subscribedSet.has(feed._id.toString()),
+    }));
+  }
+
 }

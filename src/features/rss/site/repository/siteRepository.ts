@@ -119,4 +119,8 @@ export class SiteRepository {
       _id: { $in: siteIds },
     }).lean();
   }
+
+  async findById(siteId: string | Types.ObjectId): Promise<SiteLean | null> {
+    return SiteModel.findById({ _id: toObjectId(siteId) }).lean();
+  }
 }

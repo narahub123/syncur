@@ -83,6 +83,7 @@ const SiteCombobox = ({
   };
 
   const handleClick = (site: SiteContextDTO) => {
+    console.log("handleClick 눌림");
     /**
      * 선택 이벤트:
      * - 상태 변경 없음
@@ -144,12 +145,39 @@ const SiteCombobox = ({
                     onClick={() => handleClick(site)}
                   >
                     <div className="flex w-full items-center justify-between">
-                      <div className="flex flex-1 items-center gap-2">
-                        <Avatar src={site.favicon_url} name={site.name} />
-                        <span className="text-xs">{site.name}</span>
+                      {/* ===== 기본 영역 ===== */}
+                      <div className="flex min-w-0 flex-1 items-center gap-2">
+                        <Avatar
+                          src={site.favicon_url}
+                          name={site.name}
+                          className="h-6 w-6"
+                        />
+                        <span className="truncate text-xs">{site.name}</span>
                       </div>
+
                       <SubscriptionStatusBadge status={getSiteStatus(site)} />
                     </div>
+
+                    {/* ========================= Crawl 확장 영역 (핵심) ========================= */}
+                    {site.listingPageCount != null &&
+                      site.listingPageCount > 0 && (
+                        <div className="mt-1 text-right text-[11px] text-gray-500">
+                          구독 가능 페이지 {site.listingPageCount}개
+                        </div>
+                      )}
+
+                    {site.subscribedListingPages &&
+                      site.subscribedListingPages.length > 0 && (
+                        <div className="mt-1 text-[11px] text-gray-600">
+                          <div className="font-medium">구독 중</div>
+
+                          <ul className="ml-2 list-disc">
+                            {site.subscribedListingPages.map((p) => (
+                              <li key={p.feedId}>{p.title}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
                   </ComboboxItem>
                 );
               })}

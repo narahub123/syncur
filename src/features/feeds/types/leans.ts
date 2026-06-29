@@ -1,3 +1,7 @@
+import {
+  DetailPageConfig,
+  ListingPageConfig,
+} from "@/features/ingestion/lib/discover/types";
 import { FeedStatus } from "@/shared/types/feed";
 import { Types } from "mongoose";
 
@@ -15,15 +19,17 @@ export type FeedLean = {
 
   sourceType: "rss" | "crawl";
 
+  name: string;
+
   feedUrl: string | null;
 
   listingPageUrl: string | null;
 
-  listingPageConfig: unknown | null;
+  listingPageConfig: ListingPageConfig | null;
 
-  detailPageConfig: unknown | null;
+  detailPageConfig: DetailPageConfig | null;
 
-  crawlerState: {
+  crawlerState?: {
     lastSeenUrl: string | null;
     lastCrawledAt: Date | null;
   };

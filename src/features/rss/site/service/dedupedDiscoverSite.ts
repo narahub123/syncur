@@ -1,8 +1,11 @@
-import { discoverSite, SiteDiscoveryResult } from "../../discovery";
+import {
+  discoverFeedEngine,
+  DiscoveryResult,
+} from "@/features/ingestion/lib/discoverFeedEngine";
 
 // URL별 진행 중인 discovery 작업을 캐싱
 // 동일 URL에 대한 중복 탐색 요청을 방지하기 위해 사용
-const inflightDiscoveryMap = new Map<string, Promise<SiteDiscoveryResult>>();
+const inflightDiscoveryMap = new Map<string, Promise<DiscoveryResult>>();
 
 export async function dedupedDiscoverSite(url: string) {
   /**
@@ -25,7 +28,7 @@ export async function dedupedDiscoverSite(url: string) {
    */
   const promise = (async () => {
     try {
-      return await discoverSite(url);
+      return await discoverFeedEngine(url);
     } finally {
       /**
        * 3. 성공/실패 여부와 관계없이

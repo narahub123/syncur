@@ -159,24 +159,25 @@ export class SubscriptionService {
   ): Promise<CreateSubscriptionResult> {
     const { userId, feedId } = input;
 
-    // 1. 구독 상태 확인 (소프트 삭제된 것까지 포함해서 조회해야 함)
-    // repository에 `findOneIncludingDeleted` 같은 메서드를 만들거나
-    // 기존 find를 확장하여 deletedAt이 null인지 확인합니다.
     const subscription = await this.repository.find(userId, feedId);
 
-    // 2. 이미 활성화된 구독이 있는 경우 (중복 방지)
     if (subscription && subscription.deletedAt === null) {
       return { status: "already_subscribed" };
     }
 
-    // 3. 신규 구독 또는 재구독 생성
-    // repository의 create 메서드 안에서 이미 "재구독(복구) vs 신규 생성" 로직을 처리하도록 했습니다.
     await this.repository.create(userId, feedId);
 
-    // 4. 구독자 수 증가
-    await this.feedService.incrementSubscriberCount(feedId);
-
     return { status: "subscribed" };
+  }
+
+  async subscribe(userId: string, feedId: string) {
+    const result = await this.create({ userId, feedId });
+
+    if (result.status === "subscribed") {
+      await this.feedService.incrementSubscriberCount(feedId);
+    }
+
+    return result;
   }
 
   /**
@@ -214,5 +215,20 @@ export class SubscriptionService {
    */
   async getSubscribers(feedId: string) {
     return this.repository.findByFeedId(feedId);
+  }
+
+  async subscribeMany(userId: string, feedIds: string[]) {
+    try {
+      const uniqueFeedIds = [...new Set(feedIds)];
+
+      await Promise.all(
+        uniqueFeedIds.map((feedId) => this.subscribe(userId, feedId)),
+      );
+
+      return { success: true };
+    } catch (error) {
+      console.error("구독 추가 실패", error);
+      return { success: false };
+    }
   }
 }

@@ -94,6 +94,12 @@ type SiteSubscriptionStoreState = {
    * 전체 상태 초기화
    */
   reset: () => void;
+
+  /**
+   * crawlDiaglog
+   */
+  crawlDialogOpen: boolean;
+  setCrawlDialogOpen: (crawlDialogOpen: boolean) => void;
 };
 
 export const useSiteSubscriptionStore = create<SiteSubscriptionStoreState>(
@@ -137,6 +143,7 @@ export const useSiteSubscriptionStore = create<SiteSubscriptionStoreState>(
      * - input 값 동기화
      */
     selectSite: (site) => {
+      console.log("selectSite 눌림");
       set({
         selectedSite: site,
         inputValue: site.url,
@@ -194,5 +201,11 @@ export const useSiteSubscriptionStore = create<SiteSubscriptionStoreState>(
         selectedSite: null,
       });
     },
+
+    crawlDialogOpen: false,
+    setCrawlDialogOpen: (crawlDialogOpen: boolean) =>
+      set({
+        crawlDialogOpen,
+      }),
   }),
 );

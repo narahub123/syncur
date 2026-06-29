@@ -71,6 +71,7 @@ export class FeedRepository {
     siteId: string | Types.ObjectId;
     uniqueKey: string;
     sourceType: "rss" | "crawl";
+    name: string;
     feedUrl: string | null;
     listingPageUrl?: string | null;
     listingPageConfig?: ListingPageConfig | null;
@@ -83,6 +84,7 @@ export class FeedRepository {
       siteId: toObjectId(data.siteId),
       uniqueKey: data.uniqueKey,
       sourceType: data.sourceType,
+      name: data.name,
       feedUrl: data.feedUrl,
       listingPageUrl: data.listingPageUrl ?? null,
       listingPageConfig: data.listingPageConfig ?? null,

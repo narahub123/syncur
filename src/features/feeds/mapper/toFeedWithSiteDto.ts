@@ -32,8 +32,8 @@ export function toFeedWithSiteDto(feed: FeedWithSiteLean): FeedWithSiteDto {
     detailPageConfig: feed.detailPageConfig,
 
     crawlerState: {
-      lastSeenUrl: feed.crawlerState.lastSeenUrl,
-      lastCrawledAt: feed.crawlerState.lastCrawledAt
+      lastSeenUrl: feed.crawlerState?.lastSeenUrl ?? null,
+      lastCrawledAt: feed.crawlerState?.lastCrawledAt
         ? feed.crawlerState.lastCrawledAt.toISOString()
         : null,
     },
