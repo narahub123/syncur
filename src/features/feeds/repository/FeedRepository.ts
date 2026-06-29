@@ -273,6 +273,9 @@ export class FeedRepository {
     return FeedModel.find({
       status: "active",
       errorCount: { $lt: errorThreshold },
+
+      subscriberCount: { $gt: 0 },
+
       $or: [
         { lastFetchedAt: null },
         {
