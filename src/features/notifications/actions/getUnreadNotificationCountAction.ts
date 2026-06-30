@@ -4,6 +4,7 @@ import { connectMongo } from "@/shared/lib/db/mongoose";
 import { notificationService } from "@/features/notifications/service/NotificationService.instance";
 import { requireAuth } from "@/shared/lib/auth/requireAuth";
 import { NotificationTarget } from "../constants/notification-target";
+import { NotificationType } from "../constants/notification-type";
 
 /**
  * 현재 로그인 사용자의
@@ -11,10 +12,15 @@ import { NotificationTarget } from "../constants/notification-target";
  */
 export async function getUnreadNotificationCountAction(
   target: NotificationTarget,
+  types?: NotificationType[],
 ) {
   await connectMongo();
 
   const session = await requireAuth();
 
-  return await notificationService.countUnreadByUserId(session.user.id, target);
+  return await notificationService.countUnreadByUserId(
+    session.user.id,
+    target,
+    types,
+  );
 }

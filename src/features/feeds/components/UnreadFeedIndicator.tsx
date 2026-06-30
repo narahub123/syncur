@@ -4,14 +4,18 @@ import { useEffect, useRef, useState } from "react";
 import { NOTIFICATION_TARGET } from "@/features/notifications/constants/notification-target";
 import { useUnreadNotificationCountQuery } from "@/features/notifications/hooks/useUnreadNotificationCountQuery";
 import { X } from "lucide-react";
-import { useMarkAllNotificationsAsReadMutation } from "@/features/admin/notifiactions/hooks/useMarkAllNotificationsAsReadMutation";
+
+import { NOTIFICATION_TYPE } from "@/features/notifications/constants/notification-type";
+import { useMarkAllNotificationsAsReadMutation } from "@/features/notifications/hooks/useMarkAllNotificationsAsReadMutation";
 
 const UnreadFeedIndicator = () => {
   const { data: unreadCount = 0 } = useUnreadNotificationCountQuery(
     NOTIFICATION_TARGET.USER,
+    [NOTIFICATION_TYPE.NEW_FEED_ITEM],
   );
   const { mutate: markAllRead } = useMarkAllNotificationsAsReadMutation(
     NOTIFICATION_TARGET.USER,
+    [NOTIFICATION_TYPE.NEW_FEED_ITEM],
   );
 
   const hasMarkedRef = useRef(false);

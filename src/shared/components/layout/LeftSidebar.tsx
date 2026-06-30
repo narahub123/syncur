@@ -3,6 +3,7 @@ import { ThemeToggle } from "../common/ThemeToggle";
 import Logo from "../common/Logo";
 import SiteSubscriptionDialog from "../common/SiteSubscriptionDialog";
 import AdminButton from "../common/AdminButton";
+import { NotificationNavButton } from "@/features/notifications/components/NotificationNavButton";
 
 const LeftSidebar = () => {
   return (
@@ -11,6 +12,7 @@ const LeftSidebar = () => {
       <div className="flex w-full flex-col items-center gap-2">
         <SiteSubscriptionDialog />
         <ThemeToggle />
+        <NotificationNavButton />
         <AdminButton />
       </div>
 

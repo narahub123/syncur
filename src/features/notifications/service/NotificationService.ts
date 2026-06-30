@@ -2,6 +2,7 @@ import { Types } from "mongoose";
 import { NotificationRepository } from "../repository/NotificationRepository";
 import {
   NotificationDto,
+  NotificationDtoPagedResponse,
   NotificationWithSiteAndFeedExecutionLogDto,
   NotificationWithSiteAndFeedExecutionLogDtoPagedResponse,
 } from "../dtos/notificationDto";
@@ -39,6 +40,7 @@ import {
   FEED_EXECUTION_STAGE,
   FeedExecutionStage,
 } from "@/features/admin/logs/types/search";
+import { UserNotificationsQuery } from "../types/search";
 
 /**
  * Notification Service
@@ -110,8 +112,14 @@ export class NotificationService {
   async countUnreadByUserId(
     userId: Types.ObjectId | string,
     target: NotificationTarget,
+    types?: NotificationType[], // 이 부분을 추가해야 합니다
   ): Promise<number> {
-    return this.notificationRepository.countUnreadByUserId(userId, target);
+    // 레포지토리로 types를 전달합니다.
+    return await this.notificationRepository.countUnreadByUserId(
+      userId,
+      target,
+      types,
+    );
   }
 
   /**
@@ -134,13 +142,16 @@ export class NotificationService {
   }
 
   /**
-   * 사용자 전체 알림 읽음 처리
+   * 사용자 알림 전체 읽음 처리
+   * @param types 읽음 처리할 타입 목록 (생략 시 해당 target의 모든 타입)
    */
   async markAllAsRead(
     userId: Types.ObjectId | string,
     target: NotificationTarget,
+    types?: NotificationType[],
   ): Promise<number> {
-    return this.notificationRepository.markAllAsRead(userId, target);
+    // 필요한 경우 여기서 권한 검증이나 사전 로직 수행
+    return this.notificationRepository.markAllAsRead(userId, target, types);
   }
 
   /**
@@ -467,5 +478,35 @@ export class NotificationService {
       type: params.type,
       channelName: "사용자 답변 알림",
     });
+  }
+
+  /**
+   * 사용자 알림 목록 조회
+   */
+  async findUserNotificationsPaginated(
+    userId: string,
+    query: UserNotificationsQuery,
+  ): Promise<NotificationDtoPagedResponse> {
+    const page = query.page ?? PAGINATION.DEFAULT_PAGE;
+    const limit = query.limit ?? 10;
+
+    const { items, totalCount } =
+      await this.notificationRepository.findUserNotificationsPaginated(
+        userId,
+        page,
+        limit,
+      );
+
+    const totalPages = Math.max(Math.ceil(totalCount / limit), 0);
+
+    return {
+      items: toNotificationDtos(items),
+      pagination: {
+        page,
+        limit,
+        totalCount,
+        totalPages,
+      },
+    };
   }
 }

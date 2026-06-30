@@ -12,6 +12,17 @@ import {
   NOTIFICATION_TARGET,
   NotificationTarget,
 } from "../constants/notification-target";
+import {
+  NOTIFICATION_TYPE,
+  NotificationType,
+} from "../constants/notification-type";
+
+export interface NotificationFilter {
+  userId: Types.ObjectId;
+  target: NotificationTarget;
+  isRead: boolean;
+  type?: { $in: NotificationType[] }; // $in 연산자를 위한 조건부 타입
+}
 
 /**
  * Notification Repository
@@ -71,15 +82,33 @@ export class NotificationRepository {
   /**
    * 읽지 않은 알림 개수 조회
    */
+  /**
+   * 특정 조건(target 및 선택적 types)에 맞는 읽지 않은 알림 개수 조회
+   */
   async countUnreadByUserId(
     userId: Types.ObjectId | string,
     target: NotificationTarget,
+    types?: NotificationType[],
   ): Promise<number> {
-    return NotificationModel.countDocuments({
+    // 1. NotificationFilter 타입을 명시적으로 사용
+    const filter: {
+      userId: Types.ObjectId;
+      isRead: boolean;
+      target: NotificationTarget;
+      type?: { $in: NotificationType[] };
+    } = {
       userId: toObjectId(userId),
       isRead: false,
       target,
-    });
+    };
+
+    // 2. 타입이 있을 경우 $in 조건 추가
+    if (types && types.length > 0) {
+      filter.type = { $in: types };
+    }
+
+    // 3. 필터 적용하여 카운트 조회
+    return await NotificationModel.countDocuments(filter);
   }
 
   /**
@@ -102,23 +131,29 @@ export class NotificationRepository {
 
   /**
    * 사용자 전체 알림 읽음 처리
+   * @param types 특정 타입들만 읽음 처리하고 싶을 때 사용 (비어있으면 target 전체)
    */
   async markAllAsRead(
     userId: Types.ObjectId | string,
     target: NotificationTarget,
+    types?: NotificationType[],
   ): Promise<number> {
-    const result = await NotificationModel.updateMany(
-      {
-        userId,
-        target,
-        isRead: false,
-      },
-      {
-        $set: {
-          isRead: true,
-        },
-      },
-    );
+    // 1. 타입을 명시한 객체 생성
+    const filter: NotificationFilter = {
+      userId: toObjectId(userId),
+      target,
+      isRead: false,
+    };
+
+    // 2. 타입이 있을 경우 $in 조건 추가
+    if (types && types.length > 0) {
+      filter.type = { $in: types };
+    }
+
+    // 3. 쿼리 실행
+    const result = await NotificationModel.updateMany(filter, {
+      $set: { isRead: true },
+    });
 
     return result.modifiedCount;
   }
@@ -425,5 +460,45 @@ export class NotificationRepository {
     return await NotificationModel.insertMany(notifications, {
       ordered: false,
     });
+  }
+
+  /**
+   * 사용자 알림 목록 조회
+   */
+  async findUserNotificationsPaginated(
+    userId: string | Types.ObjectId,
+    page: number,
+    limit: number,
+  ): Promise<{
+    items: NotificationLean[];
+    totalCount: number;
+  }> {
+    const safePage = Math.max(1, page);
+    const safeLimit = Math.max(1, limit);
+
+    const filter = {
+      userId,
+      type: {
+        $in: [
+          NOTIFICATION_TYPE.INQUIRY_REPLIED,
+          NOTIFICATION_TYPE.BUG_REPORT_REPLIED,
+        ],
+      },
+    };
+
+    const [items, totalCount] = await Promise.all([
+      NotificationModel.find(filter)
+        .sort({ createdAt: -1 })
+        .skip((safePage - 1) * safeLimit)
+        .limit(safeLimit)
+        .lean<NotificationLean[]>(),
+
+      NotificationModel.countDocuments(filter),
+    ]);
+
+    return {
+      items,
+      totalCount,
+    };
   }
 }

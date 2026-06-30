@@ -16,6 +16,7 @@ export const ROUTES = {
   POPULAR: "/popular",
   LIKES: "/likes",
   BOOKMARKS: "/bookmarks",
+  NOTIFICATIONS: "/notifications",
 
   SETTINGS: "/settings",
   SETTINGS_ACCOUNT: "/settings/account",
