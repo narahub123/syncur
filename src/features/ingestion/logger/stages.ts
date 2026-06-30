@@ -83,6 +83,11 @@ export const INGESTION_STAGE = {
    * - ingestion pipeline 실패 상태
    */
   ERROR: "ERROR",
+
+  /**
+   * robots.txt 탐지
+   */
+  ROBOTS_CHECK: "ROBOTS_CHECK",
 } as const;
 
 export const INGESTION_STAGE_LABEL = {
@@ -103,4 +108,5 @@ export const INGESTION_STAGE_LABEL = {
   RSS_DISCOVER: "RSS 탐색",
   SITEMAP_DETECT: "사이트맵 존재 판별",
   HTML_SITE_DETECT: "HTML SITE 판별",
+  ROBOTS_CHECK: "robots.txt 탐지",
 } satisfies Record<IngestionStage, string>;

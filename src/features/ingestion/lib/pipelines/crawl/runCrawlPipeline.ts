@@ -12,6 +12,10 @@ import { notificationService } from "@/features/notifications/service/Notificati
 import { fetchCrawl } from "./fetchCrawl";
 import { extractCrawlerItems } from "../../extractors/extractCrawlerItems";
 import { upsertFeedItems } from "@/ingestion/rss/upsertFeedItems";
+import { robotsDetector } from "../../detectors/RobotsDetector";
+import { createTraceId } from "@/features/ingestion/logger/trace-id";
+import { createLogger } from "@/features/ingestion/logger/logger";
+import { Logger } from "@/features/ingestion/logger/types";
 
 export async function runCrawlPipeline(params: {
   feed: FeedLean;
@@ -20,6 +24,8 @@ export async function runCrawlPipeline(params: {
 }) {
   const { feed, executionId, feedExecutionLogId } = params;
   const feedId = feed._id.toString();
+  const traceId = createTraceId();
+  const logger: Logger = createLogger({ traceId });
 
   let currentStage: FeedExecutionStage = FEED_EXECUTION_STAGE.FETCH;
 
@@ -32,6 +38,25 @@ export async function runCrawlPipeline(params: {
     }
 
     /**
+     * 2. ROBOTS CHECK
+     */
+    currentStage = FEED_EXECUTION_STAGE.FETCH;
+    const robotsAllowed = await robotsDetector.detect(
+      feed?.listingPageUrl,
+      logger,
+    );
+
+    if (!robotsAllowed) {
+      await feedExecutionLogService.updateExecution(executionId, {
+        status: FEED_EXECUTION_STATUS.SKIPPED,
+        reason: FEED_EXECUTION_REASON.ROBOTS_DISALLOWED, // 추가 필요
+        finishedAt: new Date(),
+      });
+
+      return { skipped: true };
+    }
+
+    /**
      * 2. FETCH
      *
      * static  → fetchSite (HTTP)
@@ -39,7 +64,6 @@ export async function runCrawlPipeline(params: {
      * 두 경우 모두 렌더링된 HTML string을 반환하므로
      * 이후 파싱은 extractCrawlerItems (Cheerio)로 통일
      */
-    currentStage = FEED_EXECUTION_STAGE.FETCH;
     const fetchResult = await fetchCrawl(feed);
 
     /**

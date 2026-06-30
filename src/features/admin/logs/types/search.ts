@@ -163,6 +163,8 @@ export const FEED_EXECUTION_REASON = {
    * (write error / duplicate key / connection issue 등)
    */
   PERSIST_ERROR: "PERSIST_ERROR",
+
+  ROBOTS_DISALLOWED: "ROBOTS_DISALLOWED",
 } as const;
 
 /**
@@ -204,6 +206,7 @@ export const FEED_EXECUTION_REASON_KR: Record<FeedExecutionReason, string> = {
   FETCH_ERROR: "수집 실패",
   PARSE_ERROR: "파싱 실패",
   PERSIST_ERROR: "저장 실패",
+  ROBOTS_DISALLOWED: "robots 차단",
 };
 
 export const ADMIN_FEED_EXECUTION_LOG_FILTER_CONFIG = {
@@ -265,7 +268,6 @@ export type AdminFeedExecutionLogFilterKey =
   keyof typeof ADMIN_FEED_EXECUTION_LOG_FILTER_CONFIG;
 
 export type AdminFeedExecutionLogsQuery = {
-  
   search: string;
   searchField: AdminFeedExecutionLogSearchField;
   sort: AdminFeedExecutionLogSort;

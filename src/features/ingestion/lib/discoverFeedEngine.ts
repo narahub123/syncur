@@ -23,6 +23,7 @@ import { normalizeToRssInput } from "../utils/normalizeToRssInput";
 import { extractCrawlerItemsDynamic } from "../lib/extractors/extractCrawlerItemsDynamic";
 import { SITE_FEED_STATUS } from "@/features/rss/site/constants/site";
 import { SiteDto } from "@/features/rss/site/dto/siteDto";
+import { robotsDetector } from "./detectors/RobotsDetector";
 
 /**
  * 피드 탐색 결과 인터페이스
@@ -147,6 +148,28 @@ export async function discoverFeedEngine(
           feedStatus: SITE_FEED_STATUS.RSS,
         },
         message: "RSS 피드를 찾았습니다.",
+      };
+    }
+
+    // =========================
+    // [6. robots.txt 확인]
+    // =========================
+    const robotsAllowed = await withLogging(
+      robotsDetector.detect,
+      logger,
+      INGESTION_STAGE.ROBOTS_CHECK, // stage 추가 필요
+    )(targetUrl, logger);
+
+    if (!robotsAllowed) {
+      await siteService.updateFeedStatus(site._id, "unavailable");
+
+      return {
+        success: true,
+        site: {
+          ...site,
+          feedStatus: SITE_FEED_STATUS.UNAVAILABLE,
+        },
+        message: "robots.txt에 의해 크롤링이 차단된 사이트입니다.",
       };
     }
 
