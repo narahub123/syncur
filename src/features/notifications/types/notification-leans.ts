@@ -27,6 +27,13 @@ export interface NotificationMetadataLean {
    * 관련 RSS 실행 로그 ID
    */
   feedExecutionLogId?: Types.ObjectId;
+
+  originUrl?: string; // 형식을 안정적으로 받아오기 위해 string 타입 추가
+
+  inquiryId?: Types.ObjectId;
+  reportId?: Types.ObjectId;
+  userId?: Types.ObjectId;
+  requestId?: Types.ObjectId;
 }
 
 /**

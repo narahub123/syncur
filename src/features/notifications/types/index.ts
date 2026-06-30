@@ -33,6 +33,11 @@ export interface NotificationMetadata {
    * 💡 RSS 아이템의 실제 외부 원문 링크 URL 주소
    */
   originUrl?: string; // 형식을 안정적으로 받아오기 위해 string 타입 추가
+
+  inquiryId?: Types.ObjectId | string;
+  reportId?: Types.ObjectId | string;
+  userId?: Types.ObjectId | string;
+  requestId?: Types.ObjectId | string;
 }
 
 /**

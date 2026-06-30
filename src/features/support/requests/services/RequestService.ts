@@ -22,6 +22,7 @@ import { BugReportStatsService } from "../../bug-reports/service/BugReportStatsS
 import { BUG_REPORT_STATUS } from "@/features/admin/bug-reports/types/search";
 import { InquiryStatsService } from "../../inquiries/service/InquiryStatsService";
 import { INQUIRY_STATUS } from "@/features/admin/inquiries/types/search";
+import { notificationService } from "@/features/notifications/service/NotificationService.instance";
 
 export class RequestService {
   private readonly bugReportStatsService = new BugReportStatsService();
@@ -51,6 +52,11 @@ export class RequestService {
 
     // 1. 버그 리포트인 경우 기존 통계 트리거
     if (request.type === REQUEST_TYPE.BUG_REPORT) {
+      await notificationService.createAdminReportNotification({
+        reportId: request._id.toString(),
+        userId: userId.toString(),
+        reason: dto.title,
+      });
       await this.bugReportStatsService.handleBugReportCreated(
         BUG_REPORT_STATUS.PENDING,
       );
@@ -58,6 +64,13 @@ export class RequestService {
 
     // 🎯 2. 일반 문의(INQUIRY)인 경우 신규 통계 트리거
     if (request.type === REQUEST_TYPE.INQUIRY) {
+      await notificationService.createAdminInquiryNotification({
+        inquiryId: request._id.toString(),
+        userId: userId.toString(),
+        title: dto.title,
+        message: dto.title,
+      });
+
       await this.inquiryStatsService.handleInquiryCreated(
         INQUIRY_STATUS.PENDING,
       );

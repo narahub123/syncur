@@ -24,7 +24,14 @@ export interface CreateNotificationMetadataDto {
   /**
    * 관련 RSS 실행 로그 ID
    */
-  executionId?: string;
+  feedExecutionLogId?: string;
+
+  originUrl?: string; // 형식을 안정적으로 받아오기 위해 string 타입 추가
+
+  inquiryId?: string;
+  reportId?: string;
+  userId?: string;
+  requestId?: string;
 }
 
 /**

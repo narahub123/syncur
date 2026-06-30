@@ -13,6 +13,8 @@ import { InquiryStatsService } from "@/features/support/inquiries/service/Inquir
 import { DashboardResponse } from "../../sites/types/stats";
 import { InquiryStatsDTO } from "@/features/support/inquiries/dto/inquiryStatDTO";
 import { defaultInquiryStats } from "@/features/support/inquiries/constants/stats";
+import { notificationService } from "@/features/notifications/service/NotificationService.instance";
+import { NOTIFICATION_TYPE } from "@/features/notifications/constants/notification-type";
 
 export class InquiryService {
   private readonly inquiryStatsService = new InquiryStatsService();
@@ -68,6 +70,7 @@ export class InquiryService {
    */
   async replyToInquiry(params: {
     inquiryId: string;
+    userId: string;
     replyContent: string;
     images: ImageInfo[];
     adminId: string;
@@ -105,6 +108,13 @@ export class InquiryService {
     }
 
     // TODO: SSE / Notification hook
+    await notificationService.createAdminReplyNotification({
+      requestId: params.inquiryId,
+      userId: params.userId,
+      title: "문의 사항에 대한 답변입니다.",
+      message: params.replyContent,
+      type: NOTIFICATION_TYPE.INQUIRY_REPLIED,
+    });
     return toRequestDto(updated);
   }
 }

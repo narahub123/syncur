@@ -39,6 +39,7 @@ export default function AdminInquiryReplyClient({
   const handleReplySubmit = (data: AnswerFormValues) => {
     reply({
       inquiryId: inquiry.id,
+      userId: inquiry.user?._id || "",
       replyContent: data.replyContent,
       status: data.status as InquiryStatus,
       images: data.images || [],

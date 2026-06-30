@@ -8,6 +8,7 @@ import { BugReportStatus } from "../types/search";
 
 interface ReplyBugReportParams {
   bugReportId: string;
+  userId: string;
   replyContent: string;
   status: BugReportStatus;
   images: ImageInfo[];
@@ -15,6 +16,7 @@ interface ReplyBugReportParams {
 
 export async function replyToBugReportAction({
   bugReportId,
+  userId,
   replyContent,
   status,
   images,
@@ -24,6 +26,7 @@ export async function replyToBugReportAction({
 
   return await bugReportService.replyToBugReport({
     bugReportId,
+    userId,
     replyContent,
     images,
     adminId: session.user.id,

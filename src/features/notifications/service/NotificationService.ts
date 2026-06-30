@@ -14,7 +14,10 @@ import {
   NOTIFICATION_TARGET,
   NotificationTarget,
 } from "../constants/notification-target";
-import { NOTIFICATION_TYPE } from "../constants/notification-type";
+import {
+  NOTIFICATION_TYPE,
+  NotificationType,
+} from "../constants/notification-type";
 import { UserService } from "@/features/users/services/UserService";
 
 import { PAGINATION } from "@/shared/constants/pagination";
@@ -28,7 +31,10 @@ import { AdminNotificationsQuery } from "@/features/admin/notifiactions/types";
 import { notFound } from "next/navigation";
 import { SubscriptionService } from "@/features/subscriptions/services/SubscriptionService";
 import { API_ROUTES } from "@/shared/sse/sse-api-routes";
-import { sendBulkSseNotifications } from "@/shared/api/sse-client";
+import {
+  sendBulkSseNotifications,
+  sendSseNotification,
+} from "@/shared/api/sse-client";
 import {
   FEED_EXECUTION_STAGE,
   FeedExecutionStage,
@@ -345,6 +351,121 @@ export class NotificationService {
       target: NOTIFICATION_TARGET.USER,
       type: NOTIFICATION_TYPE.NEW_FEED_ITEM,
       channelName: "유저 피드 알림",
+    });
+  }
+
+  // 문의 관리자 알림
+  async createAdminInquiryNotification(params: {
+    inquiryId: string;
+    userId: string;
+    title: string;
+    message: string;
+  }): Promise<void> {
+    const admins = await this.userService.findAdmins();
+    if (!admins.length) return;
+
+    const notifications = admins.map((admin) => ({
+      userId: toObjectId(admin._id),
+      target: NOTIFICATION_TARGET.ADMIN,
+      type: NOTIFICATION_TYPE.INQUIRY_CREATED,
+      title: "새 문의 등록",
+      message: [
+        `Title: ${params.title}`,
+        `Message: ${params.message}`,
+        `User ID: ${params.userId}`,
+      ].join("\n"),
+      metadata: {
+        inquiryId: toObjectId(params.inquiryId),
+        userId: toObjectId(params.userId),
+      },
+    }));
+
+    const savedNotifications =
+      await this.notificationRepository.createMany(notifications);
+
+    await sendBulkSseNotifications({
+      url: API_ROUTES.SSE.ADMIN,
+      savedNotifications,
+      target: NOTIFICATION_TARGET.ADMIN,
+      type: NOTIFICATION_TYPE.INQUIRY_CREATED,
+      channelName: "관리자 문의 알림",
+      extraMeta: {
+        inquiryId: params.inquiryId,
+        userId: params.userId,
+      },
+    });
+  }
+
+  // 버그 신고 관리자 알림
+  async createAdminReportNotification(params: {
+    reportId: string;
+    userId: string;
+    reason: string;
+  }): Promise<void> {
+    const admins = await this.userService.findAdmins();
+    if (!admins.length) return;
+
+    const title = "새 신고 접수";
+
+    const message = [
+      `Report ID: ${params.reportId}`,
+      `Reporter ID: ${params.userId}`,
+      `Reason: ${params.reason}`,
+    ].join("\n");
+
+    const notifications = admins.map((admin) => ({
+      userId: toObjectId(admin._id),
+      target: NOTIFICATION_TARGET.ADMIN,
+      type: NOTIFICATION_TYPE.REPORT_CREATED,
+      title,
+      message,
+      metadata: {
+        reportId: params.reportId,
+        userId: params.userId,
+      },
+    }));
+
+    const savedNotifications =
+      await this.notificationRepository.createMany(notifications);
+
+    await sendBulkSseNotifications({
+      url: API_ROUTES.SSE.ADMIN,
+      savedNotifications,
+      target: NOTIFICATION_TARGET.ADMIN,
+      type: NOTIFICATION_TYPE.REPORT_CREATED,
+      channelName: "관리자 신고 알림",
+      extraMeta: {
+        reportId: params.reportId,
+        userId: params.userId,
+      },
+    });
+  }
+
+  async createAdminReplyNotification(params: {
+    requestId: string;
+    userId: string;
+    title: string;
+    message: string;
+    type: NotificationType;
+  }): Promise<void> {
+    const notification = await this.notificationRepository.create({
+      userId: toObjectId(params.userId),
+      target: NOTIFICATION_TARGET.USER,
+      type: params.type,
+      title: params.title,
+      message: params.message,
+      metadata: {
+        requestId: params.requestId,
+        userId: params.userId,
+      },
+    });
+
+    await sendSseNotification({
+      url: API_ROUTES.SSE.USER, // 👈 admin이 아니라 user 채널
+      notification,
+      target: NOTIFICATION_TARGET.USER,
+      type: params.type,
+      channelName: "사용자 답변 알림",
     });
   }
 }

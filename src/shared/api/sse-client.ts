@@ -4,6 +4,7 @@ import { NotificationType } from "@/features/notifications/constants/notificatio
 import { NotificationMessageDTO } from "@/features/notifications/dtos/notificationDto";
 import { NotificationDocument } from "@/features/notifications/model/notification";
 import { NotificationMetadata } from "@/features/notifications/types";
+import { NotificationLean } from "@/features/notifications/types/notification-leans";
 
 interface BulkSseParams {
   url: string; // API_ROUTES.SSE.USER 또는 ADMIN
@@ -91,5 +92,59 @@ export async function sendBulkSseNotifications({
         loopError,
       );
     }
+  }
+}
+
+interface SingleSseParams {
+  url: string;
+  notification: NotificationLean;
+  target: NotificationTarget;
+  type: NotificationType;
+  channelName: string;
+  extraMeta?: NotificationMetadata;
+}
+
+/**
+ * 3. 💡 [단건 전송] Notification 1건을 SSE 브릿지로 전송
+ */
+export async function sendSseNotification({
+  url,
+  notification,
+  target,
+  type,
+  channelName,
+  extraMeta = {},
+}: SingleSseParams): Promise<void> {
+  try {
+    if (!notification) return;
+
+    const safeMessage = (notification.message || "").replace(/\n/g, " | ");
+
+    const integratedMeta = {
+      feedId: notification.metadata?.feedId?.toString() || extraMeta.feedId,
+      feedItemId:
+        notification.metadata?.feedItemId?.toString() || extraMeta.feedItemId,
+      siteId: notification.metadata?.siteId?.toString() || extraMeta.siteId,
+      feedExecutionLogId: notification.metadata?.feedExecutionLogId?.toString(),
+      originUrl: notification.metadata?.originUrl,
+    };
+
+    const payload: NotificationMessageDTO = {
+      id: notification._id.toString(),
+      target,
+      type,
+      title: notification.title,
+      message: safeMessage,
+      createdAt: Date.now(),
+      meta: integratedMeta,
+    };
+
+    console.log(
+      `📡 [${channelName}] 단건 SSE 전송 시도... (${notification.title})`,
+    );
+
+    await triggerSseNotification(url, payload, channelName);
+  } catch (error) {
+    console.error(`❌ [${channelName}] 단건 SSE 전송 실패:`, error);
   }
 }

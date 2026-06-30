@@ -32,6 +32,7 @@ export default function AdminBugReplyClient({
   const handleBugReplySubmit = (data: BugAnswerFormValues) => {
     reply({
       bugReportId: bugReport._id,
+      userId: bugReport.user?._id || "",
       replyContent: data.replyContent,
       status: data.status,
       images: data.images || [],

@@ -8,6 +8,7 @@ import { InquiryStatus } from "../types/search";
 
 interface ReplyInquiryParams {
   inquiryId: string;
+  userId: string;
   replyContent: string;
   status: InquiryStatus;
   images: ImageInfo[];
@@ -15,6 +16,7 @@ interface ReplyInquiryParams {
 
 export async function replyToInquiryAction({
   inquiryId,
+  userId,
   replyContent,
   status,
   images,
@@ -24,6 +26,7 @@ export async function replyToInquiryAction({
 
   return await inquiryService.replyToInquiry({
     inquiryId,
+    userId,
     replyContent,
     images,
     adminId: session.user.id,

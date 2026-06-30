@@ -146,11 +146,32 @@ const NotificationSchema = new Schema<NotificationDocument>(
 
       feedExecutionLogId: {
         type: Schema.Types.ObjectId,
-        ref: "feedExecutionLog",
+        ref: "FeedExecutionLog",
       },
 
       originUrl: {
         type: String,
+      },
+
+      // ✅ inquiry / request / report 계열
+      inquiryId: {
+        type: Schema.Types.ObjectId,
+        ref: "Inquiry",
+      },
+
+      reportId: {
+        type: Schema.Types.ObjectId,
+        ref: "Report",
+      },
+
+      userId: {
+        type: Schema.Types.ObjectId,
+        ref: "User",
+      },
+
+      requestId: {
+        type: Schema.Types.ObjectId,
+        ref: "Request",
       },
     },
   },

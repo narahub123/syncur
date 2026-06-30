@@ -14,6 +14,8 @@ import { REQUEST_TYPE } from "@/features/support/requests/constants/request-type
 import { DashboardResponse } from "../../sites/types/stats";
 import { BugReportStatsDTO } from "@/features/support/bug-reports/dto/bugReportStatsDTO";
 import { defaultBugReportStats } from "@/features/support/bug-reports/constants/stats";
+import { notificationService } from "@/features/notifications/service/NotificationService.instance";
+import { NOTIFICATION_TYPE } from "@/features/notifications/constants/notification-type";
 
 export class BugReportService {
   private readonly bugReportStatsService = new BugReportStatsService();
@@ -69,6 +71,7 @@ export class BugReportService {
    */
   async replyToBugReport(params: {
     bugReportId: string;
+    userId: string;
     replyContent: string;
     images: ImageInfo[];
     adminId: string;
@@ -104,6 +107,13 @@ export class BugReportService {
     }
 
     // TODO: SSE / Notification hook
+    await notificationService.createAdminReplyNotification({
+      requestId: params.bugReportId,
+      userId: params.userId,
+      title: "버그 신고에 대한 답변입니다.",
+      message: params.replyContent,
+      type: NOTIFICATION_TYPE.BUG_REPORT_REPLIED,
+    });
     return toRequestDto(updated);
   }
 }

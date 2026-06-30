@@ -38,6 +38,11 @@ export function toNotificationDto(
           siteId: notification.metadata.siteId?.toString(),
           feedExecutionLogId:
             notification.metadata.feedExecutionLogId?.toString(),
+          originUrl: notification.metadata.originUrl,
+          inquiryId: notification.metadata.inquiryId?.toString(),
+          reportId: notification.metadata.reportId?.toString(),
+          userId: notification.metadata.userId?.toString(),
+          requestId: notification.metadata.requestId?.toString(),
         }
       : undefined,
 
