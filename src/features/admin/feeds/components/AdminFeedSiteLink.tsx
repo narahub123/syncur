@@ -1,5 +1,5 @@
 import { FeedWithSiteDto } from "@/features/feeds/dto/feedDto";
-import SiteLinkCard from "@/features/rss/site/components/SiteLinkCard";
+import SiteLinkCard from "@/features/sites/components/SiteLinkCard";
 
 type Props = { feed: FeedWithSiteDto };
 const AdminFeedSiteLink = ({ feed }: Props) => {

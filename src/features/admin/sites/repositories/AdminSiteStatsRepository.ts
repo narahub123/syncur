@@ -1,5 +1,5 @@
-import { SiteStatsDto } from "@/features/rss/site/dto/siteStatsDto";
-import { SiteStatsModel } from "@/features/rss/site/model/SiteStats";
+import { SiteStatsDto } from "@/features/sites/dto/siteStatsDto";
+import { SiteStatsModel } from "@/features/sites/model/SiteStats";
 import { SITE_STATS_KEY } from "../constants/stats";
 
 export class AdminSiteStatsRepository {

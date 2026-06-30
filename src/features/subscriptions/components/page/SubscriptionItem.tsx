@@ -2,7 +2,7 @@ import { SubscriptionItemDto } from "../../dto/subscriptionDto";
 import SubscriptionToggleButton from "./SubscriptionToggleButton";
 import SiteLinkCard, {
   SiteLinkCardDto,
-} from "@/features/rss/site/components/SiteLinkCard";
+} from "@/features/sites/components/SiteLinkCard";
 
 type Props = {
   item: SubscriptionItemDto;

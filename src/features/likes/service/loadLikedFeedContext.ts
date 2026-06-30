@@ -1,11 +1,11 @@
 import { subscriptionRepository } from "@/features/subscriptions/repository/SubscriptionRepository.instance";
 
-import { siteRepository } from "@/features/rss/site/repository/SiteRepository.instance";
+import { siteRepository } from "@/features/sites/repository/SiteRepository.instance";
 import { feedItemRepository } from "@/features/feed-items/repositories/FeedItemRepository.instance";
 import { userFeedInteractionRepository } from "@/features/feed-interaction/repositories/UserFeedInteractionRepository.instance";
 import { FeedItemLean } from "@/shared/types/domain-leans";
 import { feedRepository } from "@/features/feeds/repository/FeedRepository.instance";
-import { SiteLean } from "@/features/rss/site/types/leans";
+import { SiteLean } from "@/features/sites/types/leans";
 import { FeedLean } from "@/features/feeds/types/leans";
 
 type FeedContext = {

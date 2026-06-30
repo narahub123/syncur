@@ -1,9 +1,9 @@
 import { subscriptionRepository } from "@/features/subscriptions/repository/SubscriptionRepository.instance";
 import { feedRepository } from "../../repository/FeedRepository.instance";
-import { siteRepository } from "@/features/rss/site/repository/SiteRepository.instance";
+import { siteRepository } from "@/features/sites/repository/SiteRepository.instance";
 import { feedItemRepository } from "@/features/feed-items/repositories/FeedItemRepository.instance";
 import { FeedItemLean } from "@/shared/types/domain-leans";
-import { SiteLean } from "@/features/rss/site/types/leans";
+import { SiteLean } from "@/features/sites/types/leans";
 import { FeedLean } from "../../types/leans";
 
 type FeedContext = {

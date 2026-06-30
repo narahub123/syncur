@@ -4,7 +4,7 @@ import { FEED_EXECUTION_LOG_STATS_KEY } from "@/features/admin/logs/constants/st
 import { SITE_STATS_KEY } from "@/features/admin/sites/constants/stats";
 import { FeedExecutionLogStatsModel } from "@/features/feed-execution-logs/model/FeedExecutionLogStat";
 import { FeedStatsModel } from "@/features/feeds/model/FeedStats";
-import { SiteStatsModel } from "@/features/rss/site/model/SiteStats";
+import { SiteStatsModel } from "@/features/sites/model/SiteStats";
 import { REQUEST_TYPE } from "@/features/support/requests/constants/request-type";
 import { RequestModel } from "@/features/support/requests/model/Request";
 

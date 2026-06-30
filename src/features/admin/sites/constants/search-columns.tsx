@@ -2,9 +2,9 @@ import { Column, COLUMN_ALIGN } from "../../types/admin-table";
 import { AdminSiteSort } from "../types/search";
 import { Badge } from "@/shared/components/ui/badge";
 import { Avatar } from "@/shared/components/common/Avartar";
-import { SiteDto } from "@/features/rss/site/dto/siteDto";
+import { SiteDto } from "@/features/sites/dto/siteDto";
 import Link from "next/link";
-import { SITE_FEED_STATUS } from "@/features/rss/site/constants/site";
+import { SITE_FEED_STATUS } from "@/features/sites/constants/site";
 
 export const adminSiteColumns: Column<SiteDto, AdminSiteSort>[] = [
   {

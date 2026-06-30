@@ -1,5 +1,5 @@
 import { FeedLean } from "@/features/feeds/types/leans";
-import { SiteLean } from "@/features/rss/site/types/leans";
+import { SiteLean } from "@/features/sites/types/leans";
 import {
   BookmarkCollectionLean,
   FeedItemLean,

@@ -1,8 +1,8 @@
 import mongoose from "mongoose";
 import dotenv from "dotenv";
 
-import { SiteModel } from "@/features/rss/site/model/Site";
-import { SiteStatsModel } from "@/features/rss/site/model/SiteStats";
+import { SiteModel } from "@/features/sites/model/Site";
+import { SiteStatsModel } from "@/features/sites/model/SiteStats";
 import { SITE_STATS_KEY } from "@/features/admin/sites/constants/stats";
 
 dotenv.config({ path: ".env.local" });

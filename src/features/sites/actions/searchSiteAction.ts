@@ -1,9 +1,9 @@
 "use server";
 
-import { getSiteSubscriptionContext } from "@/features/rss/site/service/getSiteSubscriptionContext";
+import { getSiteSubscriptionContext } from "@/features/sites/service/getSiteSubscriptionContext";
 import { auth } from "@/auth";
 import { SiteContextDTO } from "../dto/siteDto";
-import { normalizeInputUrl } from "../../discovery/utils/normalizeInputUrl";
+import { normalizeInputUrl } from "../utils/normalizeInputUrl";
 
 /**
  * Site 검색 Server Action

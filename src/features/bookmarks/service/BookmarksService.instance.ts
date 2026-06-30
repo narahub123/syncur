@@ -3,7 +3,7 @@ import { FeedItemRepository } from "@/features/feed-items/repositories/FeedItemR
 import { FeedItemStatsRepository } from "@/features/feed-items/repositories/FeedItemStatsRepository";
 
 import { FeedRepository } from "@/features/feeds/repository/FeedRepository";
-import { SiteRepository } from "@/features/rss/site/repository/SiteRepository";
+import { SiteRepository } from "@/features/sites/repository/SiteRepository";
 
 import { BookmarkService } from "./BookmarksService";
 

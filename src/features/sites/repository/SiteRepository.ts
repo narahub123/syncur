@@ -1,10 +1,9 @@
 import { SITE_SEARCH_LIMIT } from "../constants/site";
 import { SiteModel } from "../model/Site";
 import { escapeRegExp } from "@/shared/utils/regex";
-import { SiteDiscoveryResult } from "../../discovery";
 import { Types } from "mongoose";
 import { SiteLean } from "../types/leans";
-import { SiteFeedStatus } from "../types";
+import { SiteDiscoveryResult, SiteFeedStatus } from "../types";
 import { toObjectId } from "@/shared/utils/toObjectId";
 
 /**

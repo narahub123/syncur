@@ -1,5 +1,5 @@
-import { SiteModel } from "../features/rss/site/model/Site";
-import { SiteStatsModel } from "../features/rss/site/model/SiteStats";
+import { SiteModel } from "../features/sites/model/Site";
+import { SiteStatsModel } from "../features/sites/model/SiteStats";
 import mongoose from "mongoose";
 import dotenv from "dotenv";
 

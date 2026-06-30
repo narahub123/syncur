@@ -1,10 +1,10 @@
 import { AdminSiteRepository } from "../repositories/AdminSiteRepository";
 import { AdminSiteQuery } from "../types/search";
-import { SiteDto } from "@/features/rss/site/dto/siteDto";
-import { toSiteDtos } from "@/features/rss/site/mappers/toSiteDto";
+import { SiteDto } from "@/features/sites/dto/siteDto";
+import { toSiteDtos } from "@/features/sites/mappers/toSiteDto";
 import { AdminSiteStatsService } from "./AdminSiteStatsService";
 import { DashboardResponse } from "../types/stats";
-import { SiteStatsDto } from "@/features/rss/site/dto/siteStatsDto";
+import { SiteStatsDto } from "@/features/sites/dto/siteStatsDto";
 
 export class AdminSiteService {
   private readonly adminSiteRepository: AdminSiteRepository;

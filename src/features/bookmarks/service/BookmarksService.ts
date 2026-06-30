@@ -5,7 +5,7 @@ import { UserFeedInteractionRepository } from "@/features/feed-interaction/repos
 import { FeedItemRepository } from "@/features/feed-items/repositories/FeedItemRepository";
 import { FeedItemStatsRepository } from "@/features/feed-items/repositories/FeedItemStatsRepository";
 import { FeedRepository } from "@/features/feeds/repository/FeedRepository";
-import { SiteRepository } from "@/features/rss/site/repository/SiteRepository";
+import { SiteRepository } from "@/features/sites/repository/SiteRepository";
 import { bookmarkCollectionMapRepository } from "../collection-map/repository/BookmarkCollectionMapRepository.instance";
 import { bookmarkCollectionRepository } from "../collections/repository/BookmarkCollectionRepository.instance";
 import { toBookmarkItemDto } from "../mappers/toBookmarkItemDto";

@@ -1,4 +1,4 @@
-import { parseAndNormalizeFeed } from "@/features/rss/parser/parseFeed";
+import { parseAndNormalizeFeed } from "@/features/ingestion/lib/detectors/parseFeed";
 import { FEED_HEADERS } from "../../constants/feed";
 import { Logger } from "pino";
 

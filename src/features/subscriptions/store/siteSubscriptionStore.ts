@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import type { SiteContextDTO } from "@/features/rss/site/dto/siteDto";
+import type { SiteContextDTO } from "@/features/sites/dto/siteDto";
 import { SiteSubscriptionState } from "../types/site-subscription-status";
 
 /**

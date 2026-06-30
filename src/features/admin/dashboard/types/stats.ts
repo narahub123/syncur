@@ -1,6 +1,6 @@
 import { FeedExecutionLogStatsDto } from "@/features/feed-execution-logs/dto/feedExecutionLogStatsDto";
 import { FeedStatsDto } from "@/features/feeds/dto/feedStatsDto";
-import { SiteStatsDto } from "@/features/rss/site/dto/siteStatsDto";
+import { SiteStatsDto } from "@/features/sites/dto/siteStatsDto";
 import { BugReportStatsDTO } from "@/features/support/bug-reports/dto/bugReportStatsDTO";
 import { InquiryStatsDTO } from "@/features/support/inquiries/dto/inquiryStatDTO";
 

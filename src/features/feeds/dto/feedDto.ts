@@ -1,4 +1,4 @@
-import { FeedItemSiteDto } from "@/features/rss/site/dto/siteDto";
+import { FeedItemSiteDto } from "@/features/sites/dto/siteDto";
 import { FeedStatus } from "@/shared/types/feed";
 import {
   CursorPaginationResponse,
@@ -6,7 +6,7 @@ import {
 } from "@/shared/types/pagination";
 import { Types } from "mongoose";
 import { FeedLean } from "../types/leans";
-import { SiteFeedStatus } from "@/features/rss/site/types";
+import { SiteFeedStatus } from "@/features/sites/types";
 import {
   DetailPageConfig,
   ListingPageConfig,

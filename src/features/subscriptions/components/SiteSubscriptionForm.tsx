@@ -6,10 +6,10 @@ import SubscriptionStatusIndicator from "./SubscriptionStatusIndicator";
 
 import { useSiteSubscriptionStore } from "../store/siteSubscriptionStore";
 
-import { useSiteSearch } from "@/features/rss/site/hooks/useSiteSearch";
+import { useSiteSearch } from "@/features/sites/hooks/useSiteSearch";
 import { useDebounce } from "@/shared/hooks/useDebounce";
-import { SiteContextDTO } from "@/features/rss/site/dto/siteDto";
-import { SITE_FEED_STATUS } from "@/features/rss/site/constants/site";
+import { SiteContextDTO } from "@/features/sites/dto/siteDto";
+import { SITE_FEED_STATUS } from "@/features/sites/constants/site";
 import CrawlDialog from "./CrawlDialog";
 
 const SiteSubscriptionForm = () => {

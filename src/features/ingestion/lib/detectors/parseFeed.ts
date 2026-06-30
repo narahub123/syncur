@@ -1,5 +1,5 @@
+import { ParsedFeedItem, RawRssItem } from "@/features/sites/types";
 import { parseStringPromise } from "xml2js";
-import { ParsedFeedItem, RawRssItem } from "./types";
 
 /**
  * RSS / Atom XML → ParsedFeedItem[] 변환

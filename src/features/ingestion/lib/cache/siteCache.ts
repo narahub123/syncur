@@ -1,4 +1,4 @@
-import { SiteDiscoveryResult } from "@/features/rss/discovery";
+import { SiteDiscoveryResult } from "@/features/sites/types";
 
 /**
  * L1: memory cache

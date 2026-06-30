@@ -1,7 +1,7 @@
 import { useFeedAction } from "@/features/feed-interaction/hooks/useFeedAction";
 import { FEED_ACTION } from "@/features/feed-interaction/types/feedActionDispatcher";
 import { FeedItemMetaDto } from "@/features/feeds/dto/feedDto";
-import { SiteInfoPopover } from "@/features/rss/site/components/SiteInfoPopover";
+import { SiteInfoPopover } from "@/features/sites/components/SiteInfoPopover";
 import { formatFeedPublishedTime } from "@/shared/utils/date";
 import { MouseEvent } from "react";
 

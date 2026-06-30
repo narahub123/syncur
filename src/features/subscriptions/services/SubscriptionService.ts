@@ -1,4 +1,4 @@
-import { siteRepository } from "@/features/rss/site/repository/SiteRepository.instance";
+import { siteRepository } from "@/features/sites/repository/SiteRepository.instance";
 import { subscriptionRepository } from "../repository/SubscriptionRepository.instance";
 import { SubscriptionDto, SubscriptionItemDto } from "../dto/subscriptionDto";
 import { feedRepository } from "@/features/feeds/repository/FeedRepository.instance";

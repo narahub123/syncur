@@ -9,7 +9,7 @@ import {
 } from "@/shared/components/ui/combobox";
 
 import { LoaderCircle } from "lucide-react";
-import { SiteContextDTO } from "@/features/rss/site/dto/siteDto";
+import { SiteContextDTO } from "@/features/sites/dto/siteDto";
 import { SubscriptionStatusBadge } from "./SubscriptionStatusBadge";
 import { getSiteStatus } from "../domain/getSiteStatus";
 import { Avatar } from "@/shared/components/common/Avartar";

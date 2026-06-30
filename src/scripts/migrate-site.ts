@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 import dotenv from "dotenv";
-import { SiteModel } from "@/features/rss/site/model/Site";
-import { SITE_FEED_STATUS } from "@/features/rss/site/constants/site";
+import { SiteModel } from "@/features/sites/model/Site";
+import { SITE_FEED_STATUS } from "@/features/sites/constants/site";
 
 dotenv.config({
   path: ".env.local",

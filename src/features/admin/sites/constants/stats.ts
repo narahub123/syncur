@@ -1,4 +1,4 @@
-import { SiteStatsDto } from "@/features/rss/site/dto/siteStatsDto";
+import { SiteStatsDto } from "@/features/sites/dto/siteStatsDto";
 
 export const SITE_STATS_KEY = "site_stats_main";
 

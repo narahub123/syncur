@@ -1,8 +1,8 @@
 import { PipelineStage } from "mongoose"; // FilterQuery 제거
-import { SiteLean } from "@/features/rss/site/types/leans";
+import { SiteLean } from "@/features/sites/types/leans";
 import { PaginatedResponse } from "@/shared/types/pagination";
 import { AdminSiteQuery } from "../types/search";
-import { SiteModel } from "@/features/rss/site/model/Site";
+import { SiteModel } from "@/features/sites/model/Site";
 
 export class AdminSiteRepository {
   async getSites(query: AdminSiteQuery): Promise<PaginatedResponse<SiteLean>> {

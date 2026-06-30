@@ -1,4 +1,4 @@
-import { SiteStatsDto } from "@/features/rss/site/dto/siteStatsDto";
+import { SiteStatsDto } from "@/features/sites/dto/siteStatsDto";
 import { AdminSiteStatsRepository } from "../repositories/AdminSiteStatsRepository";
 
 export class AdminSiteStatsService {
