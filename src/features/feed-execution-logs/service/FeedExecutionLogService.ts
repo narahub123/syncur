@@ -86,6 +86,12 @@ export class FeedExecutionLogService {
       },
     );
 
+    // ✅ 항상 total 증가
+    await feedExecutionLogStatsService.updateStats({
+      total: 1,
+    });
+
+    // ❌ 실패일 때만 fails 추가 증가
     if (data.status === FEED_EXECUTION_STATUS.FAILED) {
       await feedExecutionLogStatsService.updateStats({
         fails: 1,

@@ -3,16 +3,17 @@ import { SiteDto } from "../dto/siteDto";
 import { toSiteDto, toSiteDtos } from "../mappers/toSiteDto";
 import { SiteRepository } from "../repository/SiteRepository";
 import { normalizeSiteIdentity } from "../utils/normalizeSiteIdentity";
-import { AdminSiteStatsService } from "@/features/admin/sites/services/AdminSiteStatsService";
 import { Types } from "mongoose";
 import { SiteFeedStatus } from "../types";
+import { SiteStatsService } from "./SiteStatsService";
+import { SITE_FEED_STATUS } from "../constants/site";
 
 export class SiteService {
   private readonly siteRepository: SiteRepository;
 
   constructor(
     siteRepository: SiteRepository,
-    private statsService: AdminSiteStatsService,
+    private statsService: SiteStatsService,
   ) {
     this.siteRepository = siteRepository;
   }
@@ -65,6 +66,12 @@ export class SiteService {
     const doc = await this.siteRepository.updateFeedStatus(siteId, feedStatus);
 
     if (!doc) return null;
+
+    if (feedStatus !== SITE_FEED_STATUS.PENDING) {
+      console.log("피드 상태", feedStatus);
+      await this.statsService.incrementByFeedStatus(feedStatus);
+    }
+
     return toSiteDto(doc);
   }
 

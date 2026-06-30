@@ -204,7 +204,10 @@ export async function discoverFeedEngine(
     if (!robotsAllowed) {
       stage = "robots.blocked";
 
-      await siteService.updateFeedStatus(site._id, "unavailable");
+      await siteService.updateFeedStatus(
+        site._id,
+        SITE_FEED_STATUS.UNAVAILABLE,
+      );
 
       return {
         success: true,
@@ -253,7 +256,7 @@ export async function discoverFeedEngine(
     if (candidates.length > 0) {
       stage = "crawl.persist";
 
-      await siteService.updateFeedStatus(site._id, "crawlable");
+      await siteService.updateFeedStatus(site._id, SITE_FEED_STATUS.CRAWLABLE);
 
       const puppeteer =
         htmlType === HTML_SITE_TYPE.DYNAMIC ? await import("puppeteer") : null;
@@ -422,7 +425,7 @@ export async function discoverFeedEngine(
     // =========================
     stage = "final.unavailable";
 
-    await siteService.updateFeedStatus(site._id, "unavailable");
+    await siteService.updateFeedStatus(site._id, SITE_FEED_STATUS.UNAVAILABLE);
 
     return {
       success: true,

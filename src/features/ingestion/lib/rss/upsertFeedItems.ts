@@ -33,11 +33,12 @@ export async function upsertFeedItems(
   logger: Logger,
 ) {
   const operations = items.map((item) => {
+    const safeGuid = item.guid ?? item.link ?? null;
     const hash = item.link;
 
     const doc = {
       feedId,
-      guid: item.guid ?? null,
+      guid: safeGuid,
       link: item.link,
       title: item.title,
       description: item.description ?? "",
