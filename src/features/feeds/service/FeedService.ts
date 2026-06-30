@@ -152,6 +152,7 @@ export class FeedService {
 
     if (!doc) return null;
 
+    await feedStatsService.updateStats({ total: 1, active: 1 });
     return toFeedDto(doc);
   }
 
@@ -181,6 +182,7 @@ export class FeedService {
 
     if (!doc) return null;
 
+    await feedStatsService.updateStats({ total: 1, active: 1 });
     return toFeedDto(doc);
   }
 
