@@ -1,5 +1,5 @@
 import * as cheerio from "cheerio";
-import { Logger } from "../../logger/types";
+import { Logger } from "pino";
 
 // 1. 객체 상수 정의 (as const를 사용하여 리터럴 타입으로 고정)
 export const SOURCE_TYPE = {

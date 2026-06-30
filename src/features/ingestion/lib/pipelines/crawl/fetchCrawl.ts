@@ -1,8 +1,7 @@
 import { FeedLean } from "@/features/feeds/types/leans";
-import { createLogger } from "@/features/ingestion/logger/logger";
-import { createTraceId } from "@/features/ingestion/logger/trace-id";
 import { fetchDynamicSite, fetchSite } from "../../fetch-utils";
 import { HTML_SITE_TYPE } from "../../detectors/types";
+import { Logger } from "pino";
 
 export type FetchCrawlResult =
   | {
@@ -14,11 +13,21 @@ export type FetchCrawlResult =
       type: "NOT_MODIFIED";
     };
 
-export async function fetchCrawl(feed: FeedLean): Promise<FetchCrawlResult> {
+export async function fetchCrawl(
+  feed: FeedLean,
+  logger: Logger,
+): Promise<FetchCrawlResult> {
   const url = feed.listingPageUrl!;
   const htmlType = feed.crawlerConfig?.htmlType ?? HTML_SITE_TYPE.STATIC;
 
-  const logger = createLogger({ traceId: createTraceId() });
+  logger.info(
+    {
+      url,
+      htmlType,
+      feedId: feed._id.toString(),
+    },
+    "crawl.fetch.start",
+  );
 
   const res =
     htmlType === HTML_SITE_TYPE.DYNAMIC
@@ -26,12 +35,29 @@ export async function fetchCrawl(feed: FeedLean): Promise<FetchCrawlResult> {
       : await fetchSite(url, logger);
 
   if (!res) {
+    logger.error(
+      {
+        url,
+        htmlType,
+      },
+      "crawl.fetch.failed",
+    );
+
     throw new Error(
       htmlType === HTML_SITE_TYPE.STATIC
         ? `CRAWL_FETCH_ERROR: ${url}`
         : `CRAWL_FETCH_DYNAMIC_ERROR: ${url}`,
     );
   }
+
+  logger.info(
+    {
+      url,
+      finalUrl: res.finalUrl,
+      htmlLength: res.html?.length ?? 0,
+    },
+    "crawl.fetch.success",
+  );
 
   return {
     type: "OK",

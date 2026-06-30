@@ -1,5 +1,5 @@
 import { FeedItemInput } from "@/features/feed-sample/types";
-import { Logger } from "../../logger/types";
+import { Logger } from "pino";
 
 type RssParserFeed = {
   items: Array<{
@@ -36,15 +36,21 @@ export function extractRssItems(
   // [0. 유효성 검사]
   // =========================
   if (!feed?.items?.length) {
-    logger?.debug("RSS 아이템 없음");
+    logger?.debug({ limit }, "rss.extract.empty");
     return [];
   }
 
-  logger?.debug("RSS item 변환 완료", {
-    input: feed.items.length,
-    output: Math.min(feed.items.length, limit),
-  });
-  return feed.items.slice(0, limit).map((item) => ({
+  const outputCount = Math.min(feed.items.length, limit);
+
+  logger?.debug(
+    {
+      input: feed.items.length,
+      output: outputCount,
+    },
+    "rss.extract.start",
+  );
+
+  const result = feed.items.slice(0, limit).map((item) => ({
     // =========================
     // [1. 기본 링크 / 제목]
     // =========================
@@ -75,4 +81,13 @@ export function extractRssItems(
     // =========================
     categories: item.categories ?? [],
   }));
+
+  logger?.debug(
+    {
+      output: result.length,
+    },
+    "rss.extract.success",
+  );
+
+  return result;
 }

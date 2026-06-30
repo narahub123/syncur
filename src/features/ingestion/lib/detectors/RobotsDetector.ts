@@ -1,5 +1,5 @@
 import axios from "axios";
-import { Logger } from "../../logger/types";
+import { Logger } from "pino";
 
 /**
  * robots.txt 기반 크롤링 허용 여부 확인
@@ -17,20 +17,25 @@ export class RobotsDetector {
     const robotsUrl = `${domain}/robots.txt`;
 
     try {
+      logger.info({ robotsUrl }, "robots.detect.start");
+
       const res = await axios.get(robotsUrl, { timeout: 3000 });
 
-      logger.info("robots.txt 조회 성공", { domain });
+      logger.info(
+        { robotsUrl, status: res.status },
+        "robots.detect.fetch.success",
+      );
 
       const allowed = this.parse(res.data, logger);
 
-      logger.info("robots.txt 파싱 완료", { domain, allowed });
+      logger.info({ robotsUrl, allowed }, "robots.detect.parse.success");
 
       return allowed;
     } catch (e) {
       /**
        * fetch 실패 = robots.txt 없음으로 간주 → 허용
        */
-      logger.warn("robots.txt 조회 실패 — 허용으로 간주", { domain });
+      logger.warn({ robotsUrl, err: e }, "robots.detect.fetch.failed");
       return true;
     }
   };
@@ -45,6 +50,8 @@ export class RobotsDetector {
     const lines = text.split("\n").map((l) => l.trim());
 
     let inWildcardSection = false;
+
+    logger.debug({ lineCount: lines.length }, "robots.parse.start");
 
     for (const line of lines) {
       /**
@@ -64,10 +71,12 @@ export class RobotsDetector {
         line.toLowerCase().startsWith("disallow:") &&
         line.split(":")[1].trim() === "/"
       ) {
-        logger.info("robots.txt — 전체 크롤링 차단 감지");
+        logger.info({}, "robots.parse.blocked");
         return false;
       }
     }
+
+    logger.debug({}, "robots.parse.allowed");
 
     return true;
   };

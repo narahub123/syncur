@@ -13,27 +13,30 @@ import { fetchCrawl } from "./fetchCrawl";
 import { extractCrawlerItems } from "../../extractors/extractCrawlerItems";
 import { upsertFeedItems } from "@/ingestion/rss/upsertFeedItems";
 import { robotsDetector } from "../../detectors/RobotsDetector";
-import { createTraceId } from "@/features/ingestion/logger/trace-id";
-import { createLogger } from "@/features/ingestion/logger/logger";
-import { Logger } from "@/features/ingestion/logger/types";
+import { Logger } from "pino";
 
 export async function runCrawlPipeline(params: {
   feed: FeedLean;
   executionId: string;
   feedExecutionLogId: string;
+  logger: Logger;
 }) {
-  const { feed, executionId, feedExecutionLogId } = params;
+  const { feed, executionId, feedExecutionLogId, logger } = params;
   const feedId = feed._id.toString();
-  const traceId = createTraceId();
-  const logger: Logger = createLogger({ traceId });
 
   let currentStage: FeedExecutionStage = FEED_EXECUTION_STAGE.FETCH;
+
+  logger.info({ feedId, executionId }, "crawl.pipeline.start");
 
   try {
     /**
      * 1. CONFIG 검증
      */
+    logger.debug({ feedId }, "crawl.pipeline.config.check");
+
     if (!feed.listingPageUrl || !feed.listingPageConfig) {
+      logger.warn({ feedId }, "crawl.pipeline.config.invalid");
+
       throw new Error("listingPageUrl 또는 listingPageConfig가 없습니다.");
     }
 
@@ -41,15 +44,25 @@ export async function runCrawlPipeline(params: {
      * 2. ROBOTS CHECK
      */
     currentStage = FEED_EXECUTION_STAGE.FETCH;
+
+    logger.debug({ feedId }, "crawl.pipeline.robots.check.start");
+
     const robotsAllowed = await robotsDetector.detect(
       feed?.listingPageUrl,
       logger,
     );
 
+    logger.debug(
+      { feedId, allowed: robotsAllowed },
+      "crawl.pipeline.robots.check.done",
+    );
+
     if (!robotsAllowed) {
+      logger.info({ feedId }, "crawl.pipeline.skipped.robots");
+
       await feedExecutionLogService.updateExecution(executionId, {
         status: FEED_EXECUTION_STATUS.SKIPPED,
-        reason: FEED_EXECUTION_REASON.ROBOTS_DISALLOWED, // 추가 필요
+        reason: FEED_EXECUTION_REASON.ROBOTS_DISALLOWED,
         finishedAt: new Date(),
       });
 
@@ -58,21 +71,24 @@ export async function runCrawlPipeline(params: {
 
     /**
      * 2. FETCH
-     *
-     * static  → fetchSite (HTTP)
-     * dynamic → fetchDynamicSite (Puppeteer, JS 렌더링 완료 후 HTML 반환)
-     * 두 경우 모두 렌더링된 HTML string을 반환하므로
-     * 이후 파싱은 extractCrawlerItems (Cheerio)로 통일
      */
-    const fetchResult = await fetchCrawl(feed);
+    logger.debug({ feedId }, "crawl.pipeline.fetch.start");
+
+    const fetchResult = await fetchCrawl(feed, logger);
+
+    logger.debug(
+      { feedId, type: fetchResult.type },
+      "crawl.pipeline.fetch.done",
+    );
 
     /**
      * 3. CACHE CHECK
-     *
-     * 현재는 NOT_MODIFIED 미지원
-     * 추후 lastSeenUrl 기반 변경 감지 확장 포인트
      */
+    logger.debug({ feedId }, "crawl.pipeline.cache.check");
+
     if (fetchResult.type === "NOT_MODIFIED") {
+      logger.info({ feedId }, "crawl.pipeline.skipped.not_modified");
+
       await feedExecutionLogService.updateExecution(executionId, {
         status: FEED_EXECUTION_STATUS.SKIPPED,
         reason: FEED_EXECUTION_REASON.FETCH_NOT_MODIFIED,
@@ -90,32 +106,50 @@ export async function runCrawlPipeline(params: {
 
     /**
      * 4. PARSE
-     *
-     * static/dynamic 모두 렌더링된 HTML이므로 Cheerio로 통일
-     * 무한 스크롤 등 추가 인터랙션이 필요한 경우
-     * extractCrawlerItemsDynamic 확장 포인트
      */
-
     currentStage = FEED_EXECUTION_STAGE.PARSE;
+
+    logger.debug({ feedId }, "crawl.pipeline.parse.start");
+
     const parsedItems = extractCrawlerItems(
       html,
       feed.listingPageConfig,
       finalUrl,
-      feed.crawlerState?.lastSeenUrl ?? undefined, // 추가
+      logger,
+      feed.crawlerState?.lastSeenUrl ?? undefined,
+    );
+
+    logger.debug(
+      { feedId, count: parsedItems.length },
+      "crawl.pipeline.parse.done",
     );
 
     /**
      * 5. PERSIST
      */
     currentStage = FEED_EXECUTION_STAGE.PERSIST;
+
+    logger.debug({ feedId }, "crawl.pipeline.persist.start");
+
     const { result: persistResult, createdItems } = await upsertFeedItems(
       feedId,
       parsedItems,
+      logger,
+    );
+
+    logger.info(
+      {
+        feedId,
+        created: createdItems?.length ?? 0,
+      },
+      "crawl.pipeline.persist.done",
     );
 
     /**
      * USER NOTIFICATION
      */
+    logger.debug({ feedId }, "crawl.pipeline.notification.start");
+
     await notificationService.createFeedItemNotifications({
       feedId,
       createdItems,
@@ -141,6 +175,8 @@ export async function runCrawlPipeline(params: {
       },
     });
 
+    logger.info({ feedId }, "crawl.pipeline.success");
+
     /**
      * 7. FEED STATE UPDATE
      */
@@ -149,8 +185,12 @@ export async function runCrawlPipeline(params: {
       lastSeenUrl: createdItems[0]?.link ?? undefined,
     });
 
+    logger.debug({ feedId }, "crawl.pipeline.state.updated");
+
     return { skipped: false };
   } catch (err) {
+    logger.error({ feedId, stage: currentStage, err }, "crawl.pipeline.error");
+
     const reason =
       currentStage === FEED_EXECUTION_STAGE.FETCH
         ? FEED_EXECUTION_REASON.FETCH_ERROR
@@ -197,6 +237,14 @@ export async function runCrawlPipeline(params: {
      * FEED FAILURE POLICY
      */
     const result = await feedIngestionService.handleFailure(feedId);
+
+    logger.warn(
+      {
+        feedId,
+        disabled: result.disabled,
+      },
+      "crawl.pipeline.failure.handled",
+    );
 
     return {
       feedId,

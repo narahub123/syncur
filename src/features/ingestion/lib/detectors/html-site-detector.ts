@@ -34,24 +34,30 @@ export const htmlSiteDetector: HtmlSiteDetector = {
 
     const textLength = text.trim().length;
 
-    logger.debug("HTML 판별 시작", {
-      hasContent,
-      hasSpaRoot,
-      scriptCount,
-      textLength,
-      spaRootFound: SPA_ROOT_IDS.filter((id) => $(id).length > 0), // 어떤 id가 매칭됐는지
-      bodyLength: $("body").html()?.length, // body HTML 길이
-      rootText: $("#root").text().trim().slice(0, 200), // #root 안 텍스트
-    });
+    logger.debug(
+      {
+        hasContent,
+        hasSpaRoot,
+        scriptCount,
+        textLength,
+        spaRootFound: SPA_ROOT_IDS.filter((id) => $(id).length > 0),
+        bodyLength: $("body").html()?.length,
+        rootPreview: $("#root").text().trim().slice(0, 200),
+      },
+      "html.detect.analyze",
+    );
     /**
      * 1. 의미 있는 본문이 이미 존재한다.
      *
      * Next.js SSR + Hydration도 여기서 STATIC 처리된다.
      */
     if (hasContent && textLength >= STATIC_TEXT_LENGTH) {
-      logger.info("STATIC 판정", {
-        reason: "content + 충분한 텍스트",
-      });
+      logger.info(
+        {
+          textLength,
+        },
+        "html.detect.static",
+      );
       return HTML_SITE_TYPE.STATIC;
     }
 
@@ -60,9 +66,12 @@ export const htmlSiteDetector: HtmlSiteDetector = {
      * 본문이 거의 없다.
      */
     if (hasSpaRoot && textLength <= DYNAMIC_TEXT_LENGTH) {
-      logger.info("DYNAMIC 판정", {
-        reason: "SPA root + 부족한 텍스트",
-      });
+      logger.info(
+        {
+          textLength,
+        },
+        "html.detect.dynamic.spa",
+      );
       return HTML_SITE_TYPE.DYNAMIC;
     }
 
@@ -75,18 +84,21 @@ export const htmlSiteDetector: HtmlSiteDetector = {
       scriptCount >= SCRIPT_HEAVY_COUNT &&
       textLength <= DYNAMIC_TEXT_LENGTH
     ) {
-      logger.info("DYNAMIC 판정", {
-        reason: "script-heavy + low text",
-      });
+      logger.info(
+        {
+          scriptCount,
+          textLength,
+        },
+        "html.detect.dynamic.script_heavy",
+      );
       return HTML_SITE_TYPE.DYNAMIC;
     }
 
     /**
      * 4. 기본값
      */
-    logger.debug("STATIC fallback 판정", {
-      reason: "기본 규칙",
-    });
+    logger.debug({}, "html.detect.static.fallback");
+
     return HTML_SITE_TYPE.STATIC;
   },
 };

@@ -1,7 +1,6 @@
 import { parseAndNormalizeFeed } from "@/features/rss/parser/parseFeed";
-import { normalizeError } from "../../logger/normalizeError";
 import { FEED_HEADERS } from "../../constants/feed";
-import { Logger } from "../../logger/types";
+import { Logger } from "pino";
 
 /**
  * RSS 후보 URL 목록을 검증해서 유효한 첫 번째 URL 반환
@@ -30,10 +29,13 @@ export async function validateFeeds(
 
         return url;
       } catch (error) {
-        logger.warn("RSS 후보 검증 실패", {
-          url,
-          error: normalizeError(error),
-        });
+        logger.warn(
+          {
+            url,
+            error,
+          },
+          "rss.candidate.validate.failed",
+        );
         return null;
       }
     }),

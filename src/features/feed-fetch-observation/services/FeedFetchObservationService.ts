@@ -22,7 +22,6 @@ export class FeedFetchObservationService {
   async record(
     log: FeedFetchObservationCreateDTO,
   ): Promise<FeedFetchObservationDTO> {
-    console.log("log", log);
     /**
      * 여기서 추가 정책 가능
      * - sampling

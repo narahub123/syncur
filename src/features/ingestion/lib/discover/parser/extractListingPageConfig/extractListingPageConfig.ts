@@ -4,8 +4,8 @@ import { findListingContainer } from "./helpers/findListingContainer";
 import { buildItemSelector } from "./helpers/buildItemSelector";
 import { extractItemFields } from "./helpers/extractItemFields";
 import { detectPagination } from "./helpers/detectPagination";
-import { Logger } from "@/features/ingestion/logger/types";
 import { ListingPageConfig } from "../../types";
+import { Logger } from "pino";
 
 /**
  * 목록 페이지 DOM을 분석해 ParserConfig를 추출합니다.
@@ -29,21 +29,21 @@ export function extractListingPageConfig(
   const container = findListingContainer(url, dom);
 
   if (!container) {
-    logger.debug("컨테이너 없음");
+    logger.debug({ url }, "listing.container.not_found");
     return null;
   }
 
-  logger.debug("컨테이너 선택 완료");
+  logger.debug({ url }, "listing.container.found");
 
   // ── 2. item selector 생성 ─────────────────────────
   const itemSelector = buildItemSelector(container, dom);
 
   if (!itemSelector) {
-    logger.debug("아이템 셀렉터 없음");
+    logger.debug({ url }, "listing.item_selector.not_found");
     return null;
   }
 
-  logger.debug("아이템 셀렉터 생성 완료");
+  logger.debug({ url, itemSelector }, "listing.item_selector.built");
 
   // ── 3. 대표 item 추출 ─────────────────────────────
   const $ = dom;
@@ -52,30 +52,35 @@ export function extractListingPageConfig(
   const firstItem = $(container).children(tag).first()[0];
 
   if (!firstItem) {
-    logger.debug("대표 아이템 없음");
+    logger.debug({ url, itemSelector }, "listing.first_item.not_found");
     return null;
   }
 
-  logger.debug("대표 아이템 선택 완료");
+  logger.debug({ url }, "listing.first_item.found");
 
   // ── 4. 필드 추출 ──────────────────────────────────
   const fields = extractItemFields(firstItem, url, dom);
 
   if (!fields.link || !fields.title) {
-    logger.debug("필드 추출 실패");
+    logger.debug(
+      { url, hasLink: !!fields.link, hasTitle: !!fields.title },
+      "listing.fields.extract.failed",
+    );
     return null;
   }
 
-  logger.debug("필드 추출 완료", {
-    hasPublishedAt: !!fields.publishedAt,
-  });
+  logger.debug(
+    { url, hasPublishedAt: !!fields.publishedAt },
+    "listing.fields.extract.success",
+  );
 
   // ── 5. pagination 탐지 ─────────────────────────────
   const pagination = detectPagination(dom);
 
-  logger.debug("페이지네이션 탐지", {
-    found: pagination.hasPagination,
-  });
+  logger.debug(
+    { url, found: pagination.hasPagination },
+    "listing.pagination.detected",
+  );
 
   // ── 6. firstItemUrl 생성 ──────────────────────────
   const href = $(firstItem).find("a[href]").first().attr("href") ?? null;
@@ -90,12 +95,13 @@ export function extractListingPageConfig(
     }
   }
 
-  logger.debug("대표 URL 추출", {
-    found: !!firstItemUrl,
-  });
+  logger.debug(
+    { url, found: !!firstItemUrl },
+    "listing.first_item_url.extracted",
+  );
 
   // ── 7. 최종 config 조립 ───────────────────────────
-  logger.info("목록 설정 생성");
+  logger.info({ url, itemSelector }, "listing.config.created");
 
   return {
     itemSelector,

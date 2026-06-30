@@ -1,4 +1,3 @@
-import { HtmlSiteType } from "@/features/ingestion/lib/detectors/types";
 import {
   DetailPageConfig,
   ListingPageConfig,

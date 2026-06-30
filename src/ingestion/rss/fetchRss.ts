@@ -6,6 +6,7 @@ import { executeRSSRequest } from "./executeRSSRequest";
 import { RSSObservationCollector } from "./rss-observation/RSSObservationCollector";
 import { isRetryableError, sleep } from "./rss-policy/isRetryableError";
 import { FeedFetchObservationCreateDTO } from "@/features/feed-fetch-observation/dtos/feedFetchObservationDTO";
+import { Logger } from "pino";
 
 /**
  * RSS Fetch Result (❗ 반환 계약 고정)
@@ -42,8 +43,17 @@ export type FetchRSSResult =
 export async function fetchRSS(
   feed: FeedLean,
   executionId: string,
+  logger: Logger,
   observer?: (log: FeedFetchObservationCreateDTO) => void,
 ) {
+  logger.info(
+    {
+      feedId: feed._id.toString(),
+      executionId,
+      url: feed.feedUrl,
+    },
+    "rss.fetch.start",
+  );
   /**
    * RSS fetch 시작 (실행 단위 메타 정보)
    * - feed: 대상 RSS feed
@@ -75,6 +85,14 @@ export async function fetchRSS(
       }, RSS_CONFIG.RSS_FETCH_TIMEOUT);
 
       try {
+        logger.debug(
+          {
+            attempt,
+            url: feed.feedUrl,
+          },
+          "rss.fetch.request",
+        );
+
         /**
          * =========================
          * HTTP REQUEST EXECUTION
@@ -109,10 +127,25 @@ export async function fetchRSS(
           success: true,
         });
 
+        logger.debug(
+          {
+            attempt,
+            status: res.status,
+            durationMs: end - start,
+          },
+          "rss.fetch.response",
+        );
+
         /**
          * 304 Not Modified 처리
          */
         if (res.status === 304) {
+          logger.info(
+            {
+              feedId: feed._id.toString(),
+            },
+            "rss.fetch.not_modified",
+          );
           result = { type: "NOT_MODIFIED" };
           break;
         }
@@ -126,6 +159,14 @@ export async function fetchRSS(
           etag: res.headers["etag"],
           lastModified: res.headers["last-modified"],
         };
+
+        logger.info(
+          {
+            feedId: feed._id.toString(),
+            bytes: res.data?.length ?? 0,
+          },
+          "rss.fetch.success",
+        );
 
         break;
       } catch (err) {
@@ -147,6 +188,15 @@ export async function fetchRSS(
           errorMessage: err instanceof Error ? err.message : String(err),
         });
 
+        logger.warn(
+          {
+            attempt,
+            url: feed.feedUrl,
+            error: err instanceof Error ? err.message : String(err),
+          },
+          "rss.fetch.retry_error",
+        );
+
         /**
          * retry 불가능한 경우 즉시 종료
          */
@@ -161,6 +211,14 @@ export async function fetchRSS(
          * exponential backoff delay
          */
         const delay = RSS_CONFIG.RETRY_BACKOFF_BASE_MS * Math.pow(2, attempt);
+
+        logger.debug(
+          {
+            attempt,
+            delay,
+          },
+          "rss.fetch.retry_backoff",
+        );
 
         await sleep(delay);
       } finally {
@@ -201,7 +259,17 @@ export async function fetchRSS(
    * RESULT RETURN
    * =========================
    */
-  if (result) return result;
+  if (result) {
+    logger.info(
+      {
+        feedId: feed._id.toString(),
+        type: result.type,
+      },
+      "rss.fetch.end",
+    );
+
+    return result;
+  }
 
   /**
    * =========================
@@ -209,6 +277,15 @@ export async function fetchRSS(
    * =========================
    */
   if (axios.isAxiosError(lastError)) {
+    logger.error(
+      {
+        feedId: feed._id.toString(),
+        code: lastError.code,
+        status: lastError.response?.status,
+      },
+      "rss.fetch.final_error",
+    );
+
     if (lastError.code === "ERR_CANCELED") {
       throw new Error(`RSS_FETCH_TIMEOUT: ${feed.feedUrl}`);
     }
@@ -223,6 +300,13 @@ export async function fetchRSS(
       throw new Error(`RSS_DNS_ERROR: ${feed.feedUrl}`);
     }
   }
+
+  logger.error(
+    {
+      feedId: feed._id.toString(),
+    },
+    "rss.fetch.unknown_error",
+  );
 
   throw new Error(`RSS_UNKNOWN_ERROR: ${feed.feedUrl}`);
 }

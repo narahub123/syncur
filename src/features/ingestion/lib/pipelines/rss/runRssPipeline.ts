@@ -13,32 +13,45 @@ import { notificationService } from "@/features/notifications/service/Notificati
 import { fetchRSS } from "@/ingestion/rss/fetchRss";
 import { parseRSS } from "@/ingestion/rss/parseRss";
 import { upsertFeedItems } from "@/ingestion/rss/upsertFeedItems";
+import { Logger } from "pino";
 
 export async function runRssPipeline(params: {
   feed: FeedLean;
   executionId: string;
   feedExecutionLogId: string;
+  logger: Logger;
 }) {
-  const { feed, executionId, feedExecutionLogId } = params;
+  const { feed, executionId, feedExecutionLogId, logger } = params;
   const feedId = feed._id.toString();
 
   let currentStage: FeedExecutionStage = FEED_EXECUTION_STAGE.FETCH;
+
+  logger.info({ feedId, executionId }, "rss.pipeline.start");
 
   try {
     /**
      * 1. FETCH
      */
     currentStage = FEED_EXECUTION_STAGE.FETCH;
-    const fetchResult = await fetchRSS(feed, executionId, (log) =>
+
+    logger.debug({ feedId }, "rss.pipeline.fetch.start");
+
+    const fetchResult = await fetchRSS(feed, executionId, logger, (log) =>
       feedFetchObservationService.record(log),
     );
+
+    logger.debug({ feedId }, "rss.pipeline.fetch.done");
 
     /**
      * 2. CACHE CHECK
      */
     currentStage = FEED_EXECUTION_STAGE.CACHE_CHECK;
 
+    logger.debug({ feedId }, "rss.pipeline.cache.check");
+
     if (fetchResult.type === "NOT_MODIFIED") {
+      logger.info({ feedId }, "rss.pipeline.skipped.not_modified");
+
       await feedExecutionLogService.updateExecution(executionId, {
         status: FEED_EXECUTION_STATUS.SKIPPED,
         reason: FEED_EXECUTION_REASON.FETCH_NOT_MODIFIED,
@@ -58,20 +71,39 @@ export async function runRssPipeline(params: {
      * 3. PARSE
      */
     currentStage = FEED_EXECUTION_STAGE.PARSE;
-    const parsed = parseRSS(xml);
+
+    logger.debug({ feedId }, "rss.pipeline.parse.start");
+
+    const parsed = parseRSS(xml, logger);
+
+    logger.debug({ feedId, count: parsed.length }, "rss.pipeline.parse.done");
 
     /**
      * 4. PERSIST
      */
     currentStage = FEED_EXECUTION_STAGE.PERSIST;
+
+    logger.debug({ feedId }, "rss.pipeline.persist.start");
+
     const { result: persistResult, createdItems } = await upsertFeedItems(
       feedId,
       parsed,
+      logger,
+    );
+
+    logger.info(
+      {
+        feedId,
+        created: createdItems?.length ?? 0,
+      },
+      "rss.pipeline.persist.done",
     );
 
     /**
      * USER NOTIFICATION
      */
+    logger.debug({ feedId }, "rss.pipeline.notification.start");
+
     await notificationService.createFeedItemNotifications({
       feedId,
       createdItems,
@@ -99,6 +131,8 @@ export async function runRssPipeline(params: {
       },
     });
 
+    logger.info({ feedId }, "rss.pipeline.success");
+
     /**
      * 6. FEED STATE UPDATE
      */
@@ -108,8 +142,12 @@ export async function runRssPipeline(params: {
       lastModified,
     });
 
+    logger.debug({ feedId }, "rss.pipeline.state.updated");
+
     return { skipped: false };
   } catch (err) {
+    logger.error({ feedId, stage: currentStage, err }, "rss.pipeline.error");
+
     const reason =
       currentStage === FEED_EXECUTION_STAGE.FETCH
         ? FEED_EXECUTION_REASON.FETCH_ERROR
@@ -156,6 +194,14 @@ export async function runRssPipeline(params: {
      * FEED FAILURE POLICY
      */
     const result = await feedIngestionService.handleFailure(feedId);
+
+    logger.warn(
+      {
+        feedId,
+        disabled: result.disabled,
+      },
+      "rss.pipeline.failure.handled",
+    );
 
     return {
       feedId,

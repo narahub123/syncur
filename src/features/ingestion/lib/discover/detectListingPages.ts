@@ -6,9 +6,8 @@ import { getBaseUrl, isSameDomain, resolveUrl } from "./utils";
 import { ListingDetectionResult, ListingPageCandidate } from "./types";
 import { extractListingPageConfig } from "./parser/extractListingPageConfig/extractListingPageConfig";
 import { testDetailPageConfig } from "@/scripts/testDetailPageConfig";
-import { Logger } from "../../logger/types";
-import { normalizeError } from "../../logger/normalizeError";
 import { extractDetailPageConfig } from "./parser/extractDetailPageConfig/extractDetailPageConfig";
+import { Logger } from "pino";
 
 /**
  * 사이트 홈 페이지를 분석하여 목록 페이지 후보를 감지합니다.
@@ -47,9 +46,7 @@ export async function detectListingPages(
     });
   });
 
-  logger.debug("노이즈 수집", {
-    count: noiseSet.size,
-  });
+  logger.debug({ count: noiseSet.size }, "listing.detect.noise.collected");
 
   // ── 2단계: 내부 링크 전체 수집 ──────────────────────────
   const linkMap = new Map<string, string>();
@@ -74,9 +71,7 @@ export async function detectListingPages(
     }
   });
 
-  logger.debug("내부 링크 수집", {
-    count: linkMap.size,
-  });
+  logger.debug({ count: linkMap.size }, "listing.detect.links.collected");
 
   // ── 3단계: URL 패턴으로 1차 점수 ────────────────────────
   // 허들을 낮춰서 점수 > 0 이면 전부 후보로 올림
@@ -96,15 +91,16 @@ export async function detectListingPages(
     }
   }
 
-  logger.debug("후보 선별", {
-    count: scored.length,
-  });
-
   scored.sort((a, b) => b.score - a.score);
+
+  logger.debug({ count: scored.length }, "listing.detect.scored");
 
   // ── 4단계: 상위 후보 fetch 검증 ─────────────────────────
   // maxProbe를 넉넉하게 잡아서 키워드 미매칭 URL도 검증 기회를 줌
   const probeTargets = scored.slice(0, maxProbe);
+
+  logger.debug({ count: probeTargets.length }, "listing.detect.probe.start");
+
   await Promise.all(
     probeTargets.map(async (c) => {
       const { score, reason, title, lastUpdated, dom } = await scoreByContent(
@@ -124,11 +120,7 @@ export async function detectListingPages(
           const { firstItemUrl, ...listingConfig } = result;
           c.listingPageConfig = listingConfig;
 
-          if (c.listingPageConfig) {
-            logger.info("목록 설정 추출", {
-              url: c.url,
-            });
-          }
+          logger.info({ url: c.url }, "listing.detect.config.found");
 
           // ── 6단계: 상세 페이지 config 추출 ──────────────────
           if (firstItemUrl) {
@@ -145,9 +137,10 @@ export async function detectListingPages(
                   detailDom,
                 );
 
-                logger.info("상세 설정 추출", {
-                  url: firstItemUrl,
-                });
+                logger.info(
+                  { url: firstItemUrl },
+                  "listing.detect.detail.config.found",
+                );
 
                 // 추출 결과 확인
                 // TODO: 개발 완료 후 제거
@@ -160,17 +153,15 @@ export async function detectListingPages(
                     headers,
                   );
 
-                  logger.debug("상세 설정 검증", {
-                    result,
-                  });
+                  logger.debug({ result }, "listing.detect.detail.config.test");
                 }
               }
             } catch (error: unknown) {
               // fetch 실패 무시
-              logger.warn("상세 요청 실패", {
-                url: firstItemUrl,
-                error: normalizeError(error),
-              });
+              logger.warn(
+                { url: firstItemUrl, err: error },
+                "listing.detect.detail.fetch.failed",
+              );
             }
           }
         }
@@ -178,9 +169,7 @@ export async function detectListingPages(
     }),
   );
 
-  logger.debug("후보 검증", {
-    count: probeTargets.length,
-  });
+  logger.debug({ count: probeTargets.length }, "listing.detect.probe.end");
 
   // ── 5단계: 최종 정렬 및 필터 ────────────────────────────
   // scoreByContent에서 반복 구조(20)가 확인된 것만 유의미하므로
@@ -191,9 +180,7 @@ export async function detectListingPages(
     .sort((a, b) => b.score - a.score)
     .slice(0, 15);
 
-  logger.info("목록 탐지 완료", {
-    count: final.length,
-  });
+  logger.info({ count: final.length }, "listing.detect.completed");
 
   return { candidates: final, fromCache: false };
 }

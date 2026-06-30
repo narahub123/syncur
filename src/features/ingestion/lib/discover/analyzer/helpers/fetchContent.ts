@@ -1,7 +1,6 @@
-import { normalizeError } from "@/features/ingestion/logger/normalizeError";
-import { Logger } from "@/features/ingestion/logger/types";
 import * as cheerio from "cheerio";
 import { FetchContentResult } from "./types";
+import { Logger } from "pino";
 
 /**
  * HTML을 요청하여 Cheerio DOM 객체를 생성합니다.
@@ -16,7 +15,17 @@ export async function fetchContent(
   headers: Record<string, string>,
   logger: Logger,
 ): Promise<FetchContentResult | null> {
+  const stage = "fetch.content";
+
   try {
+    logger.debug(
+      {
+        stage,
+        url,
+      },
+      "fetch.content.start",
+    );
+
     // 페이지를 요청하여 HTML을 가져옵니다.
     const res = await fetch(url, {
       headers,
@@ -25,10 +34,14 @@ export async function fetchContent(
 
     // 정상 응답이 아니면 실패로 처리합니다.
     if (!res.ok) {
-      logger.warn("페이지 조회 실패", {
-        url,
-        status: res.status,
-      });
+      logger.warn(
+        {
+          stage,
+          url,
+          status: res.status,
+        },
+        "fetch.content.failed",
+      );
 
       return null;
     }
@@ -37,20 +50,28 @@ export async function fetchContent(
     const html = await res.text();
     const dom = cheerio.load(html);
 
-    logger.debug("페이지 조회", {
-      url,
-      status: res.status,
-    });
+    logger.debug(
+      {
+        stage,
+        url,
+        status: res.status,
+      },
+      "fetch.content.success",
+    );
 
     return {
       dom,
     };
   } catch (error: unknown) {
     // 네트워크 오류 또는 timeout 발생 시 null을 반환합니다.
-    logger.warn("페이지 요청 실패", {
-      url,
-      error: normalizeError(error),
-    });
+    logger.warn(
+      {
+        stage,
+        url,
+        error,
+      },
+      "fetch.content.error",
+    );
 
     return null;
   }

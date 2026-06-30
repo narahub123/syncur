@@ -1,5 +1,6 @@
 import { FeedItemModel } from "@/features/feed-items/models/feed-item";
 import { FeedItemInput } from "@/features/feed-sample/types";
+import { Logger } from "pino";
 
 /**
  * FeedItem DB upsert layer
@@ -26,7 +27,11 @@ import { FeedItemInput } from "@/features/feed-sample/types";
  * - retry/backoff 정책
  * - ETag 기반 fetch optimization
  */
-export async function upsertFeedItems(feedId: string, items: FeedItemInput[]) {
+export async function upsertFeedItems(
+  feedId: string,
+  items: FeedItemInput[],
+  logger: Logger,
+) {
   const operations = items.map((item) => {
     const hash = item.link;
 
@@ -84,11 +89,15 @@ export async function upsertFeedItems(feedId: string, items: FeedItemInput[]) {
     ordered: false, // 중요: 하나 실패해도 계속 진행
   });
 
-  console.log("RSS ingestion result:", {
-    upserted: result.upsertedCount,
-    modified: result.modifiedCount,
-    matched: result.matchedCount,
-  });
+  logger?.info(
+    {
+      feedId,
+      upserted: result.upsertedCount,
+      modified: result.modifiedCount,
+      matched: result.matchedCount,
+    },
+    "feed.upsert.result",
+  );
 
   /**
    * 신규 생성된 FeedItem 추출

@@ -1,7 +1,6 @@
 import * as cheerio from "cheerio";
 import { FEED_HEADERS } from "@/features/ingestion/constants/feed";
-import { Logger } from "../logger/types";
-import { normalizeError } from "../logger/normalizeError";
+import { Logger } from "pino";
 
 export interface FetchSiteResult {
   finalUrl: string;
@@ -22,16 +21,21 @@ export async function fetchSite(
   logger: Logger,
 ): Promise<FetchSiteResult | null> {
   try {
+    logger.info({ url }, "fetch.start");
+
     const response = await fetch(url, {
       headers: FEED_HEADERS,
       // next: { revalidate: 3600 },
     });
 
     if (!response.ok) {
-      logger.warn("fetch 요청 실패", {
-        url,
-        status: response.status,
-      });
+      logger.warn(
+        {
+          url,
+          status: response.status,
+        },
+        "fetch.failed",
+      );
       return null;
     }
 
@@ -41,22 +45,35 @@ export async function fetchSite(
     const dom = cheerio.load(html);
 
     if (response.url !== url) {
-      logger.debug("리다이렉트", {
-        before: url,
-        after: response.url,
-      });
+      logger.debug(
+        {
+          before: url,
+          after: response.url,
+        },
+        "fetch.redirect",
+      );
     }
+
+    logger.info(
+      {
+        url,
+      },
+      "fetch.success",
+    );
 
     return {
       dom,
       html,
       finalUrl: response.url,
     };
-  } catch (error) {
-    logger.error("fetch 요청 오류", {
-      error: normalizeError(error),
-    });
-    console.error("HTML Fetch Error:", error);
+  } catch (err) {
+    logger.error(
+      {
+        err,
+        url,
+      },
+      "fetch.error",
+    );
     return null;
   }
 }
@@ -76,6 +93,8 @@ export async function fetchDynamicSite(
   let browser = null;
 
   try {
+    logger.info({ url }, "fetch.start");
+
     const puppeteer = await import("puppeteer");
 
     browser = await puppeteer.launch({
@@ -114,10 +133,7 @@ export async function fetchDynamicSite(
     });
 
     if (!response || !response.ok()) {
-      logger.warn("Puppeteer fetch 실패", {
-        url,
-        status: response?.status(),
-      });
+      logger.warn({ url, status: response?.status() }, "fetch.failed");
       return null;
     }
 
@@ -136,17 +152,12 @@ export async function fetchDynamicSite(
     const dom = cheerio.load(html);
 
     if (finalUrl !== url) {
-      logger.debug("리다이렉트", {
-        before: url,
-        after: finalUrl,
-      });
+      logger.debug({ before: url, after: finalUrl }, "fetch.redirect");
     }
 
     return { finalUrl, html, dom };
   } catch (error) {
-    logger.error("Puppeteer fetch 오류", {
-      error: normalizeError(error),
-    });
+    logger.error({ err: error, url }, "fetch.error");
     return null;
   } finally {
     if (browser) await browser.close();

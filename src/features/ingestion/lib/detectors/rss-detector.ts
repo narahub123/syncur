@@ -5,7 +5,6 @@ import {
   RSS_FALLBACK_PATHS,
   RSS_LINK_SELECTORS,
 } from "./constants";
-import { normalizeError } from "../../logger/normalizeError";
 import { validateFeeds } from "./validateFeeds";
 import { detectCmsFeed } from "../strategies/detectCmsFeed";
 import { extractMetaFeed } from "../strategies/extractMetaFeed";
@@ -23,27 +22,27 @@ export const rssDetector: SourceDetector = {
   async detect(dom, url, logger): Promise<DetectionResult | null> {
     // ── 1. HTML link 태그 기반 추출 ─────────────────────────
     for (const selector of RSS_LINK_SELECTORS) {
-      logger.debug("RSS link 탐색", { selector });
+      logger.debug({ selector }, "rss.detect.link.scan");
 
       const href = dom(selector).attr("href");
 
       if (href) {
         const rssUrl = new URL(href, url).href;
-        logger.info("RSS 발견", { selector, href, rssUrl });
+        logger.info({ selector, href, rssUrl }, "rss.detect.link.found");
         return { type: SOURCE_TYPE.RSS, rssUrl };
       }
     }
 
     // ── 2. 표준 경로 fallback ────────────────────────────────
-    logger.info("RSS fallback 탐색 시작", {
-      baseUrl: url,
-      paths: RSS_FALLBACK_PATHS,
-    });
+    logger.info(
+      { baseUrl: url, paths: RSS_FALLBACK_PATHS },
+      "rss.detect.fallback.start",
+    );
 
     for (const path of RSS_FALLBACK_PATHS) {
       const candidateUrl = new URL(path, url).href;
 
-      logger.debug("RSS 경로 탐색", { path, candidateUrl });
+      logger.debug({ path, candidateUrl }, "rss.detect.fallback.scan");
 
       try {
         const headRes = await fetch(candidateUrl, {
@@ -51,17 +50,19 @@ export const rssDetector: SourceDetector = {
           headers: FEED_HEADERS,
         });
 
-        logger.debug("RSS HEAD 응답", {
-          candidateUrl,
-          ok: headRes.ok,
-          status: headRes.status,
-        });
+        logger.debug(
+          { candidateUrl, ok: headRes.ok, status: headRes.status },
+          "rss.detect.fallback.head",
+        );
 
         if (!headRes.ok) continue;
 
         const getRes = await fetch(candidateUrl, { headers: FEED_HEADERS });
 
-        logger.debug("RSS GET 응답", { candidateUrl, ok: getRes.ok });
+        logger.debug(
+          { candidateUrl, ok: getRes.ok },
+          "rss.detect.fallback.get",
+        );
 
         if (!getRes.ok) continue;
 
@@ -71,21 +72,18 @@ export const rssDetector: SourceDetector = {
         );
 
         if (!isFeed) {
-          logger.debug("RSS 아님", {
-            candidateUrl,
-            contentType,
-            expected: RSS_CONTENT_TYPES,
-          });
+          logger.debug(
+            { candidateUrl, contentType, expected: RSS_CONTENT_TYPES },
+            "rss.detect.fallback.invalid",
+          );
           continue;
         }
 
-        logger.info("RSS 발견", { rssUrl: candidateUrl });
+        logger.info({ rssUrl: candidateUrl }, "rss.detect.fallback.found");
+
         return { type: SOURCE_TYPE.RSS, rssUrl: candidateUrl };
       } catch (error) {
-        logger.warn("RSS 요청 실패", {
-          candidateUrl,
-          error: normalizeError(error),
-        });
+        logger.warn({ candidateUrl, err: error }, "rss.detect.fallback.error");
         continue;
       }
     }
@@ -94,13 +92,15 @@ export const rssDetector: SourceDetector = {
     // HTML 문자열이 필요하므로 dom.html()로 추출
     const html = dom.html() ?? "";
 
-    logger.debug("CMS 휴리스틱 탐색 시작");
+    logger.debug({}, "rss.detect.cms.start");
+
     const cmsFeeds = detectCmsFeed(url, html);
 
     if (cmsFeeds.length > 0) {
       const result = await validateFeeds(cmsFeeds, logger);
       if (result) {
-        logger.info("CMS 휴리스틱으로 RSS 발견", { rssUrl: result });
+        logger.info({ rssUrl: result }, "rss.detect.cms.found");
+
         return { type: SOURCE_TYPE.RSS, rssUrl: result };
       }
     }
@@ -112,13 +112,13 @@ export const rssDetector: SourceDetector = {
     if (metaFeeds.length > 0) {
       const result = await validateFeeds(metaFeeds, logger);
       if (result) {
-        logger.info("메타데이터로 RSS 발견", { rssUrl: result });
+        logger.info({ rssUrl: result }, "rss.detect.meta.found");
         return { type: SOURCE_TYPE.RSS, rssUrl: result };
       }
     }
 
     // 모든 전략 실패
-    logger.info("RSS 없음");
+    logger.info({}, "rss.detect.not_found");
     return null;
   },
 };

@@ -1,14 +1,16 @@
 import { Page } from "puppeteer";
 import { ListingPageConfig } from "../discover/types";
 import { FeedItemInput } from "@/features/feed-sample/types";
+import { Logger } from "pino";
 
 export async function extractCrawlerItemsDynamic(
   page: Page,
   config: ListingPageConfig,
   baseUrl: string,
+  logger: Logger,
   limit?: number,
 ): Promise<FeedItemInput[]> {
-  const result = await page.evaluate(
+  const items = await page.evaluate(
     (cfg, max) => {
       const items: Array<{
         link: string | undefined;
@@ -31,6 +33,7 @@ export async function extractCrawlerItemsDynamic(
         }) => {
           const target = el.querySelector(f.selector);
           if (!target) return undefined;
+
           return f.extract === "text"
             ? (target.textContent?.trim() ?? undefined)
             : f.attr
@@ -46,7 +49,12 @@ export async function extractCrawlerItemsDynamic(
 
         if (!linkRaw || !title) continue;
 
-        items.push({ link: linkRaw, title, publishedAt, categories: [] });
+        items.push({
+          link: linkRaw,
+          title,
+          publishedAt,
+          categories: [],
+        });
       }
 
       return items;
@@ -55,9 +63,34 @@ export async function extractCrawlerItemsDynamic(
     limit,
   );
 
-  // page.evaluate는 브라우저 컨텍스트라 URL 변환 불가 → Node.js에서 처리
-  return result.map((item) => ({
+  // ── node side logging ─────────────────────────────
+
+  logger?.debug(
+    {
+      selector: config.itemSelector,
+      limit,
+    },
+    "crawler.dynamic.extract.start",
+  );
+
+  logger?.debug(
+    {
+      rawCount: items.length,
+    },
+    "crawler.dynamic.extract.evaluated",
+  );
+
+  const normalized = items.map((item) => ({
     ...item,
     link: item.link ? new URL(item.link, baseUrl).href : item.link,
-  })) as FeedItemInput[];
+  }));
+
+  logger?.debug(
+    {
+      count: normalized.length,
+    },
+    "crawler.dynamic.extract.done",
+  );
+
+  return normalized as FeedItemInput[];
 }
