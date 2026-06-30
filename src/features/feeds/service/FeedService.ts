@@ -7,7 +7,7 @@ import { ADMIN_CONFIG } from "@/features/admin/constants/admin-config";
 import { PAGINATION } from "@/shared/constants/pagination";
 import { AdminFeedsQuery } from "@/features/admin/feeds/types/search";
 import { toFeedDto, toFeedDtos } from "../mapper/toFeedDto";
-import { RSS_CONFIG } from "@/ingestion/rss/rss-config";
+import { RSS_CONFIG } from "@/features/ingestion/lib/rss/rss-config";
 import { feedStatsService } from "./FeedStatService.instance";
 import { FEED_STATUS } from "../constants/feed-status";
 import { Types } from "mongoose";

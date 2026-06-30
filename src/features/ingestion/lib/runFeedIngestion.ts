@@ -10,7 +10,7 @@ import {
 } from "@/features/admin/logs/types/search";
 import { runRssPipeline } from "./pipelines/rss/runRssPipeline";
 import { runCrawlPipeline } from "./pipelines/crawl/runCrawlPipeline";
-import { RSS_CONFIG } from "@/ingestion/rss/rss-config";
+import { RSS_CONFIG } from "@/features/ingestion/lib/rss/rss-config";
 import { createTraceId } from "../logger/trace-id";
 import { ingestionLogger } from "../logger/pipelines";
 

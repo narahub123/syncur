@@ -11,7 +11,7 @@ import { FeedLean } from "@/features/feeds/types/leans";
 import { notificationService } from "@/features/notifications/service/NotificationService.instance";
 import { fetchCrawl } from "./fetchCrawl";
 import { extractCrawlerItems } from "../../extractors/extractCrawlerItems";
-import { upsertFeedItems } from "@/ingestion/rss/upsertFeedItems";
+import { upsertFeedItems } from "@/features/ingestion/lib/rss/upsertFeedItems";
 import { robotsDetector } from "../../detectors/RobotsDetector";
 import { Logger } from "pino";
 

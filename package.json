@@ -12,7 +12,7 @@
     "format": "prettier . --write",
     "format:check": "prettier . --check",
     "prepare": "husky",
-    "rss:cron": "tsx src/cron/rssCron.ts"
+    "rss:cron": "tsx src/features/ingestion/rssCron.ts"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx}": [

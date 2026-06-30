@@ -10,9 +10,9 @@ import { feedFetchObservationService } from "@/features/feed-fetch-observation/s
 import { feedIngestionService } from "@/features/feeds/service/FeedIngestionService.instance";
 import { FeedLean } from "@/features/feeds/types/leans";
 import { notificationService } from "@/features/notifications/service/NotificationService.instance";
-import { fetchRSS } from "@/ingestion/rss/fetchRss";
-import { parseRSS } from "@/ingestion/rss/parseRss";
-import { upsertFeedItems } from "@/ingestion/rss/upsertFeedItems";
+import { fetchRSS } from "@/features/ingestion/lib/rss/fetchRss";
+import { parseRSS } from "@/features/ingestion/lib/rss/parseRss";
+import { upsertFeedItems } from "@/features/ingestion/lib/rss/upsertFeedItems";
 import { Logger } from "pino";
 
 export async function runRssPipeline(params: {

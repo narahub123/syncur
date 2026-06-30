@@ -1,4 +1,4 @@
-import { RSS_CONFIG } from "@/ingestion/rss/rss-config";
+import { RSS_CONFIG } from "@/features/ingestion/lib/rss/rss-config";
 import { FeedRepository } from "../repository/FeedRepository";
 import { feedStatsService } from "./FeedStatService.instance";
 

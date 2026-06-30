@@ -1,9 +1,9 @@
 import { feedExecutionLogService } from "@/features/feed-execution-logs/service/FeedExecutionLogService.instance";
 import { feedFetchObservationService } from "@/features/feed-fetch-observation/services/FeedFetchObservationService.instance";
 import { FeedModel } from "@/features/feeds/model/feed";
-import { fetchRSS } from "@/ingestion/rss/fetchRss";
-import { parseRSS } from "@/ingestion/rss/parseRss";
-import { RSS_CONFIG } from "@/ingestion/rss/rss-config";
+import { fetchRSS } from "@/features/ingestion/lib/rss/fetchRss";
+import { parseRSS } from "@/features/ingestion/lib/rss/parseRss";
+import { RSS_CONFIG } from "@/features/ingestion/lib/rss/rss-config";
 import { fetchCrawl } from "./pipelines/crawl/fetchCrawl";
 import { recoveryLogger } from "../logger/pipelines";
 import { createTraceId } from "../logger/trace-id";

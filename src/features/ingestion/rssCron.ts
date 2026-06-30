@@ -1,7 +1,7 @@
 import cron from "node-cron";
 import mongoose from "mongoose";
 import dotenv from "dotenv";
-import { RSS_CONFIG } from "@/ingestion/rss/rss-config";
+import { RSS_CONFIG } from "@/features/ingestion/lib/rss/rss-config";
 import { feedService } from "@/features/feeds/service/FeedService.instance";
 import { runFeedIngestion } from "@/features/ingestion/lib/runFeedIngestion";
 import { runRecovery } from "@/features/ingestion/lib/runRecovery";
