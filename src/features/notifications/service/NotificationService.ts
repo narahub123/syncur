@@ -41,6 +41,11 @@ import {
   FeedExecutionStage,
 } from "@/features/admin/logs/types/search";
 import { UserNotificationsQuery } from "../types/search";
+import {
+  NOTIFICATION_MESSAGE,
+  NOTIFICATION_TITLE,
+} from "../constants/notification-title";
+import { SSE_CHANNEL_NAME } from "@/shared/sse/sse-channel-name";
 
 /**
  * Notification Service
@@ -332,7 +337,7 @@ export class NotificationService {
         target: NOTIFICATION_TARGET.USER,
         type: NOTIFICATION_TYPE.NEW_FEED_ITEM,
         title: item.title,
-        message: "새로운 글이 등록되었습니다.",
+        message: NOTIFICATION_MESSAGE.NEW_FEED_ITEM,
         metadata: {
           feedId: toObjectId(feedId),
           feedItemId: toObjectId(item.feedItemId),
@@ -361,7 +366,7 @@ export class NotificationService {
       savedNotifications,
       target: NOTIFICATION_TARGET.USER,
       type: NOTIFICATION_TYPE.NEW_FEED_ITEM,
-      channelName: "유저 피드 알림",
+      channelName: SSE_CHANNEL_NAME.USER_FEED,
     });
   }
 
@@ -379,7 +384,7 @@ export class NotificationService {
       userId: toObjectId(admin._id),
       target: NOTIFICATION_TARGET.ADMIN,
       type: NOTIFICATION_TYPE.INQUIRY_CREATED,
-      title: "새 문의 등록",
+      title: NOTIFICATION_TITLE.NEW_INQUIRY,
       message: [
         `Title: ${params.title}`,
         `Message: ${params.message}`,
@@ -399,7 +404,7 @@ export class NotificationService {
       savedNotifications,
       target: NOTIFICATION_TARGET.ADMIN,
       type: NOTIFICATION_TYPE.INQUIRY_CREATED,
-      channelName: "관리자 문의 알림",
+      channelName: SSE_CHANNEL_NAME.ADMIN_INQUIRY,
       extraMeta: {
         inquiryId: params.inquiryId,
         userId: params.userId,
@@ -416,7 +421,7 @@ export class NotificationService {
     const admins = await this.userService.findAdmins();
     if (!admins.length) return;
 
-    const title = "새 신고 접수";
+    const title = NOTIFICATION_TITLE.NEW_REPORT;
 
     const message = [
       `Report ID: ${params.reportId}`,
@@ -444,7 +449,7 @@ export class NotificationService {
       savedNotifications,
       target: NOTIFICATION_TARGET.ADMIN,
       type: NOTIFICATION_TYPE.REPORT_CREATED,
-      channelName: "관리자 신고 알림",
+      channelName: SSE_CHANNEL_NAME.ADMIN_REPORT,
       extraMeta: {
         reportId: params.reportId,
         userId: params.userId,
@@ -476,7 +481,7 @@ export class NotificationService {
       notification,
       target: NOTIFICATION_TARGET.USER,
       type: params.type,
-      channelName: "사용자 답변 알림",
+      channelName: SSE_CHANNEL_NAME.USER_REPLY,
     });
   }
 
