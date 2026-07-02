@@ -8,7 +8,7 @@ type Props = {
 };
 
 const SubscriptionSettingSection = ({ data }: Props) => {
-  const { items: subscriptions, pagination } = data;
+  const { items: subscriptions } = data;
 
   return (
     <section className="rounded-lg border p-6">

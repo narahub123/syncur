@@ -3,6 +3,8 @@ import { FEED_FILTER, FeedFilter } from "../constants/feed-filter";
 import { NOTIFY_FILTER, NotifyFilter } from "../constants/notify-filter";
 
 export interface UserFeedSettingDocument extends Document {
+  userId: Types.ObjectId;
+
   subscriptionId: Types.ObjectId;
 
   feedFilter: FeedFilter;
@@ -15,6 +17,11 @@ export interface UserFeedSettingDocument extends Document {
 
 const UserFeedSettingSchema = new Schema<UserFeedSettingDocument>(
   {
+    userId: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
     subscriptionId: {
       type: Schema.Types.ObjectId,
       ref: "Subscription",
@@ -39,10 +46,7 @@ const UserFeedSettingSchema = new Schema<UserFeedSettingDocument>(
   },
 );
 
-/**
- * 구독당 1개 설정만 허용
- */
-UserFeedSettingSchema.index({ subscriptionId: 1 }, { unique: true });
+UserFeedSettingSchema.index({ userId: 1, subscriptionId: 1 }, { unique: true });
 
 export const UserFeedSettingModel =
   mongoose.models.UserFeedSetting ||

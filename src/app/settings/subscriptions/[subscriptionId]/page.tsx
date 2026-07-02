@@ -1,5 +1,11 @@
 import SubscriptionDetailClient from "@/features/subscriptions/components/SubscriptionDetailClient";
 
-export default async function SubscriptionDetailPage() {
-  return <SubscriptionDetailClient />;
+type Props = {
+  params: Promise<{ subscriptionId: string }>;
+};
+
+export default async function SubscriptionDetailPage({ params }: Props) {
+  const { subscriptionId } = await params;
+
+  return <SubscriptionDetailClient subscriptionId={subscriptionId} />;
 }

@@ -6,7 +6,7 @@ import KeywordSection from "./KeywordSection";
 import SubscriptionSettingSection from "./SubscriptionSettingSection";
 
 const SettingsKeywordsClient = () => {
-  const { data, isFetching } = useSubscriptionsQuery(1, 10);
+  const { data } = useSubscriptionsQuery(1, 10);
 
   if (!data) return null;
 

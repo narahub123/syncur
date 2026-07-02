@@ -1,10 +1,27 @@
 "use client";
 
-const SubscriptionDetailClient = () => {
+import { FEED_FILTER } from "@/features/keywords/constants/feed-filter";
+import { NOTIFY_FILTER } from "@/features/keywords/constants/notify-filter";
+import { useUpdateFeedFilterMutation } from "@/features/keywords/hooks/useFeedSettingUpdateFeedFilterMutation";
+import { useUpdateNotifyFilterMutation } from "@/features/keywords/hooks/useFeedSettingUpdateNotifyFilterMutation";
+import { useUserFeedSettingQuery } from "@/features/keywords/hooks/useUserFeedSettingQuery";
+
+const SubscriptionDetailClient = ({
+  subscriptionId,
+}: {
+  subscriptionId: string;
+}) => {
+  const { data: feedSettings } = useUserFeedSettingQuery(subscriptionId);
+
+  const feedMutation = useUpdateFeedFilterMutation();
+  const notifyMutation = useUpdateNotifyFilterMutation();
+
+  console.log(feedSettings?.feedName);
+
   return (
     <div className="space-y-6">
       <section className="rounded-lg border p-6">
-        <h1 className="text-2xl font-semibold">GitHub</h1>
+        <h1 className="text-2xl font-semibold">{feedSettings?.feedName}</h1>
 
         <p className="text-muted-foreground mt-2 text-sm">
           이 구독에만 적용할 피드 및 알림 설정을 관리합니다.
@@ -20,17 +37,47 @@ const SubscriptionDetailClient = () => {
 
         <div className="mt-6 space-y-3">
           <label className="flex items-center gap-2">
-            <input type="radio" name="feedFilter" defaultChecked />
+            <input
+              type="radio"
+              name="feedFilter"
+              checked={feedSettings?.feedFilter === FEED_FILTER.DEFAULT}
+              onChange={() =>
+                feedMutation.mutate({
+                  subscriptionId,
+                  feedFilter: FEED_FILTER.DEFAULT,
+                })
+              }
+            />
             <span>기본 설정 사용</span>
           </label>
 
           <label className="flex items-center gap-2">
-            <input type="radio" name="feedFilter" />
+            <input
+              type="radio"
+              name="feedFilter"
+              checked={feedSettings?.feedFilter === FEED_FILTER.ALL}
+              onChange={() =>
+                feedMutation.mutate({
+                  subscriptionId,
+                  feedFilter: FEED_FILTER.ALL,
+                })
+              }
+            />
             <span>모든 피드</span>
           </label>
 
           <label className="flex items-center gap-2">
-            <input type="radio" name="feedFilter" />
+            <input
+              type="radio"
+              name="feedFilter"
+              checked={feedSettings?.feedFilter === FEED_FILTER.KEYWORD_ONLY}
+              onChange={() =>
+                feedMutation.mutate({
+                  subscriptionId,
+                  feedFilter: FEED_FILTER.KEYWORD_ONLY,
+                })
+              }
+            />
             <span>키워드만</span>
           </label>
         </div>
@@ -45,17 +92,49 @@ const SubscriptionDetailClient = () => {
 
         <div className="mt-6 space-y-3">
           <label className="flex items-center gap-2">
-            <input type="radio" name="notifyFilter" defaultChecked />
+            <input
+              type="radio"
+              name="notifyFilter"
+              checked={feedSettings?.notifyFilter === NOTIFY_FILTER.DEFAULT}
+              onChange={() =>
+                notifyMutation.mutate({
+                  subscriptionId,
+                  notifyFilter: NOTIFY_FILTER.DEFAULT,
+                })
+              }
+            />
             <span>기본 설정 사용</span>
           </label>
 
           <label className="flex items-center gap-2">
-            <input type="radio" name="notifyFilter" />
+            <input
+              type="radio"
+              name="notifyFilter"
+              checked={feedSettings?.notifyFilter === NOTIFY_FILTER.ALL}
+              onChange={() =>
+                notifyMutation.mutate({
+                  subscriptionId,
+                  notifyFilter: NOTIFY_FILTER.ALL,
+                })
+              }
+            />
             <span>모든 알림</span>
           </label>
 
           <label className="flex items-center gap-2">
-            <input type="radio" name="notifyFilter" />
+            <input
+              type="radio"
+              name="notifyFilter"
+              checked={
+                feedSettings?.notifyFilter === NOTIFY_FILTER.KEYWORD_ONLY
+              }
+              onChange={() =>
+                notifyMutation.mutate({
+                  subscriptionId,
+                  notifyFilter: NOTIFY_FILTER.KEYWORD_ONLY,
+                })
+              }
+            />
             <span>키워드만</span>
           </label>
         </div>

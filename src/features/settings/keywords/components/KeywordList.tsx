@@ -2,7 +2,7 @@ import { useUserKeywordsQuery } from "@/features/keywords/hooks/useUserKeywordsQ
 import KeywordItem from "./KeywordItem";
 
 const KeywordList = () => {
-  const { data: keywords, isLoading } = useUserKeywordsQuery();
+  const { data: keywords } = useUserKeywordsQuery();
 
   if (!keywords) return null;
 
