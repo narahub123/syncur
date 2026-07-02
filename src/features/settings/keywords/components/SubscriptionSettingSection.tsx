@@ -1,26 +1,15 @@
+import { SubscriptionItemDto } from "@/features/subscriptions/dto/subscriptionDto";
 import { ROUTES } from "@/shared/constants/routes";
+import { PaginatedResponse } from "@/shared/types/pagination";
 import Link from "next/link";
 
-const subscriptions = [
-  {
-    subscriptionId: "sub_1",
-    name: "GitHub",
-  },
-  {
-    subscriptionId: "sub_2",
-    name: "Velog",
-  },
-  {
-    subscriptionId: "sub_3",
-    name: "Medium",
-  },
-  {
-    subscriptionId: "sub_4",
-    name: "Hacker News",
-  },
-];
+type Props = {
+  data: PaginatedResponse<SubscriptionItemDto>;
+};
 
-const SubscriptionSettingSection = () => {
+const SubscriptionSettingSection = ({ data }: Props) => {
+  const { items: subscriptions, pagination } = data;
+
   return (
     <section className="rounded-lg border p-6">
       <h2 className="text-xl font-semibold">구독별 설정</h2>
@@ -36,7 +25,7 @@ const SubscriptionSettingSection = () => {
             key={subscription.subscriptionId}
             className="hover:bg-muted/50 flex w-full items-center justify-between px-4 py-4 text-left"
           >
-            <span>{subscription.name}</span>
+            <span>{subscription.siteName}</span>
 
             <span>〉</span>
           </Link>

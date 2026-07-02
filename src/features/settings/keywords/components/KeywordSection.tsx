@@ -1,7 +1,13 @@
+import { SubscriptionItemDto } from "@/features/subscriptions/dto/subscriptionDto";
 import KeywordCreateForm from "./KeywordCreateForm";
 import KeywordList from "./KeywordList";
+import { PaginatedResponse } from "@/shared/types/pagination";
 
-const KeywordSection = () => {
+type Props = {
+  data: PaginatedResponse<SubscriptionItemDto>;
+};
+
+const KeywordSection = ({ data }: Props) => {
   return (
     <section className="rounded-lg border p-6">
       <h2 className="text-xl font-semibold">키워드</h2>
@@ -10,7 +16,7 @@ const KeywordSection = () => {
         키워드를 등록하고 적용할 피드를 선택합니다.
       </p>
 
-      <KeywordCreateForm />
+      <KeywordCreateForm data={data} />
 
       <KeywordList />
     </section>
