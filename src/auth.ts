@@ -5,6 +5,7 @@ import { MongoDBAdapter } from "@auth/mongodb-adapter";
 import clientPromise from "@/shared/lib/db/mongodb";
 import { USER_ROLE } from "./features/users/constants/user-role";
 import { userStatsService } from "./features/admin/users/services/UserStatsService.instance";
+import { userKeywordSettingService } from "./features/keywords/services/UserKeywordSettingService.instance";
 
 /**
  * NextAuth v5 인증 설정.
@@ -142,6 +143,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       // 2. 가입 통계 기록 (signIn 콜백에서 뺄 것)
       const today = new Date().toISOString().split("T")[0];
       await userStatsService.recordNewUser(today);
+
+      // 3. 키워드 기본 설정 생성 추가
+      await userKeywordSettingService.createDefaultIfNotExists(user.id!);
     },
   },
 });
