@@ -13,6 +13,11 @@ export const SETTINGS_LIST: SettingsMenuItemType[] = [
     href: ROUTES.SETTINGS_SUBSCRIPTIONS,
   },
   {
+    category: "keywords",
+    label: "키워드 관리",
+    href: ROUTES.SETTINGS_KEYWORDS,
+  },
+  {
     category: "interests",
     label: "관심사",
     href: ROUTES.SETTINGS_INTERESTS,
