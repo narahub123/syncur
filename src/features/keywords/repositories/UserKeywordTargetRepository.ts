@@ -55,4 +55,9 @@ export class UserKeywordTargetRepository {
       },
     ]);
   }
+
+  // 키워드 타겟 삭제
+  async deleteByKeywordId(userKeywordId: string) {
+    return UserKeywordTargetModel.deleteMany({ userKeywordId });
+  }
 }

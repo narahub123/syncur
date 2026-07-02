@@ -25,4 +25,8 @@ export class UserKeywordTargetService {
   async findByKeywordIds(userKeywordIds: string[]) {
     return userKeywordTargetRepository.findByKeywordIdsWithFeed(userKeywordIds);
   }
+
+  async deleteByKeywordId(userKeywordId: string) {
+    return await userKeywordTargetRepository.deleteByKeywordId(userKeywordId);
+  }
 }

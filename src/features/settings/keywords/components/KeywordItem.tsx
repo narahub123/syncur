@@ -3,12 +3,15 @@ import { KeywordItemTarget } from "../dto";
 import { useRouter } from "next/navigation";
 import { ROUTES } from "@/shared/constants/routes";
 
+import KeywordDeleteButton from "./KeywordDeleteButton";
+
 interface KeywordItemProps {
+  keywordId: string;
   keyword: string;
   targets: KeywordItemTarget[];
 }
 
-const KeywordItem = ({ keyword, targets }: KeywordItemProps) => {
+const KeywordItem = ({ keywordId, keyword, targets }: KeywordItemProps) => {
   const router = useRouter();
 
   return (
@@ -46,11 +49,8 @@ const KeywordItem = ({ keyword, targets }: KeywordItemProps) => {
           <button className="shrink-0 rounded-md border px-3 py-1.5 text-sm">
             수정
           </button>
-
           {/* TODO: 키워드 삭제 */}
-          <button className="shrink-0 rounded-md border px-3 py-1.5 text-sm text-red-500">
-            삭제
-          </button>
+          <KeywordDeleteButton keywordId={keywordId} />
         </div>
       </div>
     </div>

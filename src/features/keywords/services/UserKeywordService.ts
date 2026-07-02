@@ -19,7 +19,39 @@ export class UserKeywordService {
       subscriptionIds: params.subscriptionIds ?? [],
     });
 
-    return keyword;
+    // 🔥 핵심: targets까지 포함해서 동일 구조 반환
+    const targets = await userKeywordTargetService.findByKeywordIds([
+      keyword._id.toString(),
+    ]);
+
+    const targetMap = new Map();
+
+    for (const t of targets) {
+      const key = t.userKeywordId.toString();
+
+      if (!targetMap.has(key)) {
+        targetMap.set(key, []);
+      }
+
+      if (!t.subscriptionId) {
+        targetMap.set(key, []);
+        continue;
+      }
+
+      targetMap.get(key)!.push({
+        subscriptionId: t.subscriptionId.toString(),
+        feedId: t.feedId.toString(),
+        feedName: t.feedName,
+      });
+    }
+
+    return {
+      userKeywordId: keyword._id.toString(),
+      displayKeyword: keyword.displayKeyword,
+      keyword: keyword.keyword,
+      isActive: keyword.isActive,
+      targets: targetMap.get(keyword._id.toString()) ?? [],
+    };
   }
 
   // 사용자의 키워드 목록 조회
@@ -66,5 +98,18 @@ export class UserKeywordService {
       isActive: k.isActive,
       targets: targetMap.get(k._id.toString()) ?? [],
     }));
+  }
+
+  // 사용자 키워드 삭제
+  async deleteUserKeyword(userId: string, userKeywordId: string) {
+    const keyword = await userKeywordRepository.findById(userKeywordId);
+
+    if (!keyword || keyword.userId.toString() !== userId) {
+      throw new Error("NOT_FOUND");
+    }
+
+    await userKeywordTargetService.deleteByKeywordId(userKeywordId);
+
+    await userKeywordRepository.deleteById(userKeywordId);
   }
 }

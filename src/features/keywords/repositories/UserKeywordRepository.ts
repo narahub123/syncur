@@ -18,4 +18,13 @@ export class UserKeywordRepository {
       isActive: false,
     });
   }
+
+  async findById(keywordId: string) {
+    return UserKeywordModel.findById(keywordId).lean();
+  }
+
+  // 키워드 삭제
+  async deleteById(userKeywordId: string) {
+    return UserKeywordModel.deleteOne({ _id: userKeywordId });
+  }
 }

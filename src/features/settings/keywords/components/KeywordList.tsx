@@ -10,7 +10,8 @@ const KeywordList = () => {
     <div className="mt-8 space-y-3">
       {keywords.map((item) => (
         <KeywordItem
-          key={item.keyword}
+          key={item.userKeywordId}
+          keywordId={item.userKeywordId}
           keyword={item.keyword}
           targets={item.targets}
         />
