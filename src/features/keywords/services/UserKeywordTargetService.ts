@@ -22,6 +22,10 @@ export class UserKeywordTargetService {
     );
   }
 
+  async findByKeywordId(userKeywordId: string) {
+    return userKeywordTargetRepository.findByKeywordId(userKeywordId);
+  }
+
   async findByKeywordIds(userKeywordIds: string[]) {
     return userKeywordTargetRepository.findByKeywordIdsWithFeed(userKeywordIds);
   }

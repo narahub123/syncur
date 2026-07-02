@@ -35,4 +35,28 @@ export class UserKeywordRepository {
       { new: true },
     );
   }
+
+  // 키워드 업데이트
+  async updateById(
+    userKeywordId: string,
+    data: {
+      displayKeyword: string;
+      keyword: string;
+      isActive?: boolean;
+    },
+  ) {
+    return UserKeywordModel.findByIdAndUpdate(
+      userKeywordId,
+      {
+        $set: {
+          displayKeyword: data.displayKeyword,
+          keyword: data.keyword,
+          ...(data.isActive !== undefined && {
+            isActive: data.isActive,
+          }),
+        },
+      },
+      { new: true },
+    ).lean();
+  }
 }

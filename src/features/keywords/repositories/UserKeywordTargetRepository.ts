@@ -7,6 +7,12 @@ export class UserKeywordTargetRepository {
     return UserKeywordTargetModel.create(data);
   }
 
+  async findByKeywordId(userKeywordId: string) {
+    return UserKeywordTargetModel.find({
+      userKeywordId,
+    });
+  }
+
   async findByKeywordIds(userKeywordIds: string[]) {
     return UserKeywordTargetModel.find({
       userKeywordId: { $in: userKeywordIds },

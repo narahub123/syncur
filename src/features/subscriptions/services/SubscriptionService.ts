@@ -231,4 +231,8 @@ export class SubscriptionService {
       return { success: false };
     }
   }
+
+  async findByUserIdWithFeed(userId: string) {
+    return subscriptionRepository.findByUserIdWithFeed(userId);
+  }
 }

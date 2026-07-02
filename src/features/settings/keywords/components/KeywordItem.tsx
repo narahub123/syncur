@@ -5,6 +5,7 @@ import { ROUTES } from "@/shared/constants/routes";
 
 import KeywordDeleteButton from "./KeywordDeleteButton";
 import KeywordActiveToggleButton from "./KeywordActiveToggleButton";
+import Link from "next/link";
 
 interface KeywordItemProps {
   keywordId: string;
@@ -57,9 +58,12 @@ const KeywordItem = ({
             isActive={isActive}
           />
           {/* TODO: 편집 모드 진입 */}
-          <button className="shrink-0 rounded-md border px-3 py-1.5 text-sm">
+          <Link
+            className="shrink-0 rounded-md border px-3 py-1.5 text-sm"
+            href={`${ROUTES.SETTINGS_KEYWORDS}/${keywordId}`}
+          >
             수정
-          </button>
+          </Link>
           {/* TODO: 키워드 삭제 */}
           <KeywordDeleteButton keywordId={keywordId} />
         </div>

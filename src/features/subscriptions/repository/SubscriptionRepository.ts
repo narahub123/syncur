@@ -1,3 +1,4 @@
+import { toObjectId } from "@/shared/utils/toObjectId";
 import { SubscriptionModel } from "../model/Subscription";
 import { SubscriptionLean } from "../types/leans";
 
@@ -73,6 +74,40 @@ export class SubscriptionRepository {
    */
   async findByUserId(userId: string): Promise<SubscriptionLean[]> {
     return SubscriptionModel.find({ userId }).lean().exec();
+  }
+
+  async findByUserIdWithFeed(userId: string) {
+    return SubscriptionModel.aggregate([
+      {
+        $match: {
+          userId: toObjectId(userId),
+        },
+      },
+      {
+        $lookup: {
+          from: "feeds",
+          localField: "feedId",
+          foreignField: "_id",
+          as: "feed",
+        },
+      },
+      {
+        $unwind: {
+          path: "$feed",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $project: {
+          _id: 1,
+          userId: 1,
+          feedId: 1,
+          createdAt: 1,
+          updatedAt: 1,
+          feedName: "$feed.name",
+        },
+      },
+    ]).exec();
   }
 
   /**
