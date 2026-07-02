@@ -21,4 +21,8 @@ export class UserKeywordTargetService {
       ),
     );
   }
+
+  async findByKeywordIds(userKeywordIds: string[]) {
+    return userKeywordTargetRepository.findByKeywordIdsWithFeed(userKeywordIds);
+  }
 }

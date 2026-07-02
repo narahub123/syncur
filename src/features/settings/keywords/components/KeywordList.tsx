@@ -1,21 +1,11 @@
+import { useUserKeywordsQuery } from "@/features/keywords/hooks/useUserKeywordsQuery";
 import KeywordItem from "./KeywordItem";
 
-const keywords = [
-  {
-    keyword: "React",
-    targets: ["전체"],
-  },
-  {
-    keyword: "AI",
-    targets: ["GitHub", "Velog"],
-  },
-  {
-    keyword: "Next.js",
-    targets: ["Reddit"],
-  },
-];
-
 const KeywordList = () => {
+  const { data: keywords, isLoading } = useUserKeywordsQuery();
+
+  if (!keywords) return null;
+
   return (
     <div className="mt-8 space-y-3">
       {keywords.map((item) => (
