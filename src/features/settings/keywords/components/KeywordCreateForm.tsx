@@ -3,6 +3,7 @@ import { useCreateKeywordMutation } from "@/features/keywords/hooks/useCreateKey
 import { SubscriptionItemDto } from "@/features/subscriptions/dto/subscriptionDto";
 import { PaginatedResponse } from "@/shared/types/pagination";
 import { MultiSelect } from "./MultiSelect";
+import { toast } from "sonner";
 
 type Props = {
   data: PaginatedResponse<SubscriptionItemDto>;
@@ -24,13 +25,11 @@ const KeywordCreateForm = ({ data }: Props) => {
   ];
 
   const handleChange = (value: string[]) => {
-    // ALL 선택 시 단독 유지
     if (value.includes("ALL")) {
       setTargets(["ALL"]);
       return;
     }
 
-    // 일반 선택 시 ALL 제거
     setTargets(value);
   };
 
@@ -39,17 +38,30 @@ const KeywordCreateForm = ({ data }: Props) => {
 
     const isAll = targets.includes("ALL");
 
-    mutation.mutate({
-      displayKeyword: keyword,
-      keyword: keyword.trim().toLowerCase(),
-      subscriptionIds: isAll ? [] : targets,
-    });
+    mutation.mutate(
+      {
+        displayKeyword: keyword,
+        keyword: keyword.trim().toLowerCase(),
+        subscriptionIds: isAll ? [] : targets,
+      },
+      {
+        onSuccess: () => {
+          toast.success("키워드가 등록되었습니다");
+
+          setKeyword("");
+          setTargets(["ALL"]);
+        },
+        onError: () => {
+          toast.error("키워드 등록에 실패했습니다");
+        },
+      },
+    );
   };
 
   return (
-    <div className="mt-6 flex gap-2">
+    <div className="mt-6 flex items-center gap-2">
       <input
-        className="flex-1 rounded-md border px-3 py-2"
+        className="flex-1 rounded-md border px-2 py-1 text-sm"
         placeholder="키워드를 입력하세요."
         value={keyword}
         onChange={(e) => setKeyword(e.target.value)}
@@ -58,7 +70,7 @@ const KeywordCreateForm = ({ data }: Props) => {
       <MultiSelect options={options} value={targets} onChange={handleChange} />
 
       <button
-        className="cursor-pointer rounded-md border px-4 py-2"
+        className="cursor-pointer rounded-md border px-3 py-1 text-sm"
         onClick={handleClick}
       >
         추가
