@@ -14,6 +14,7 @@ const KeywordList = () => {
           keywordId={item.userKeywordId}
           keyword={item.keyword}
           targets={item.targets}
+          isActive={item.isActive}
         />
       ))}
     </div>

@@ -112,4 +112,32 @@ export class UserKeywordService {
 
     await userKeywordRepository.deleteById(userKeywordId);
   }
+
+  // 사용자 키워드 활성 비활성
+  async toggleKeywordActive(params: {
+    userId: string;
+    userKeywordId: string;
+    isActive: boolean;
+  }) {
+    const keyword = await userKeywordRepository.findById(params.userKeywordId);
+
+    if (!keyword) {
+      throw new Error("KEYWORD_NOT_FOUND");
+    }
+
+    // 소유권 체크 (중요)
+    if (keyword.userId.toString() !== params.userId) {
+      throw new Error("FORBIDDEN");
+    }
+
+    const updated = await userKeywordRepository.toggleActive(
+      params.userKeywordId,
+      params.isActive,
+    );
+
+    return {
+      userKeywordId: updated!._id.toString(),
+      isActive: updated!.isActive,
+    };
+  }
 }

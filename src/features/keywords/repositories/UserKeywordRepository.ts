@@ -10,7 +10,7 @@ export class UserKeywordRepository {
   }
 
   async findByUserId(userId: string) {
-    return UserKeywordModel.find({ userId, isActive: true });
+    return UserKeywordModel.find({ userId });
   }
 
   async deactivate(id: string) {
@@ -26,5 +26,13 @@ export class UserKeywordRepository {
   // 키워드 삭제
   async deleteById(userKeywordId: string) {
     return UserKeywordModel.deleteOne({ _id: userKeywordId });
+  }
+
+  async toggleActive(userKeywordId: string, isActive: boolean) {
+    return UserKeywordModel.findByIdAndUpdate(
+      userKeywordId,
+      { isActive },
+      { new: true },
+    );
   }
 }

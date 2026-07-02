@@ -4,14 +4,21 @@ import { useRouter } from "next/navigation";
 import { ROUTES } from "@/shared/constants/routes";
 
 import KeywordDeleteButton from "./KeywordDeleteButton";
+import KeywordActiveToggleButton from "./KeywordActiveToggleButton";
 
 interface KeywordItemProps {
   keywordId: string;
   keyword: string;
+  isActive: boolean;
   targets: KeywordItemTarget[];
 }
 
-const KeywordItem = ({ keywordId, keyword, targets }: KeywordItemProps) => {
+const KeywordItem = ({
+  keywordId,
+  keyword,
+  isActive,
+  targets,
+}: KeywordItemProps) => {
   const router = useRouter();
 
   return (
@@ -45,6 +52,10 @@ const KeywordItem = ({ keywordId, keyword, targets }: KeywordItemProps) => {
         </div>
 
         <div className="flex gap-2">
+          <KeywordActiveToggleButton
+            keywordId={keywordId}
+            isActive={isActive}
+          />
           {/* TODO: 편집 모드 진입 */}
           <button className="shrink-0 rounded-md border px-3 py-1.5 text-sm">
             수정
