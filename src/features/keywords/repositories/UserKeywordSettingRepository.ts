@@ -1,6 +1,6 @@
 import { UserKeywordSettingModel } from "../models/UserKeywordSetting";
-import { FEED_FILTER } from "../constants/feed-filter";
-import { NOTIFY_FILTER } from "../constants/notify-filter";
+import { FEED_FILTER, FeedFilter } from "../constants/feed-filter";
+import { NOTIFY_FILTER, NotifyFilter } from "../constants/notify-filter";
 
 export class UserKeywordSettingRepository {
   async createDefault(userId: string) {
@@ -12,6 +12,33 @@ export class UserKeywordSettingRepository {
   }
 
   async findByUserId(userId: string) {
-    return UserKeywordSettingModel.findOne({ userId });
+    return UserKeywordSettingModel.findOne({ userId }).lean();
+  }
+
+  async updateFeedFilter(params: { userId: string; feedFilter: FeedFilter }) {
+    return UserKeywordSettingModel.findOneAndUpdate(
+      { userId: params.userId },
+      {
+        $set: {
+          defaultFeedFilter: params.feedFilter,
+        },
+      },
+      { returnDocument: "after" },
+    );
+  }
+
+  async updateNotifyFilter(params: {
+    userId: string;
+    notifyFilter: NotifyFilter;
+  }) {
+    return UserKeywordSettingModel.findOneAndUpdate(
+      { userId: params.userId },
+      {
+        $set: {
+          defaultNotifyFilter: params.notifyFilter,
+        },
+      },
+      { returnDocument: "after" },
+    );
   }
 }
