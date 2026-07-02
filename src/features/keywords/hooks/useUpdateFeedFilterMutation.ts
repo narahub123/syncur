@@ -1,9 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { UserKeywordSettingDocument } from "../models/UserKeywordSetting";
 import { updateFeedFilterAction } from "../actions/updateFeedFilterAction";
 import { userKeywordSettingQueryKey } from "../constants/queryKeys";
-
-type UpdateFeedFilterResponse = UserKeywordSettingDocument;
+import { UserKeywordSettingDto } from "../dto/userKeywordSettingDto";
 
 export const useUpdateFeedFilterMutation = () => {
   const queryClient = useQueryClient();
@@ -11,10 +9,10 @@ export const useUpdateFeedFilterMutation = () => {
   return useMutation({
     mutationFn: updateFeedFilterAction,
 
-    onSuccess: (updated: UpdateFeedFilterResponse) => {
+    onSuccess: (updated: UserKeywordSettingDto) => {
       queryClient.setQueryData(
         userKeywordSettingQueryKey(),
-        (old: UpdateFeedFilterResponse | undefined) => {
+        (old: UserKeywordSettingDto | undefined) => {
           if (!old) return updated;
 
           return {
